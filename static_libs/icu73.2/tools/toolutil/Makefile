@@ -10,8 +10,8 @@
 ## Steven R. Loomis
 
 ## Source directory information
-srcdir = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/icu73.2/source/./tools/toolutil
-top_srcdir = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/icu73.2/source/.
+srcdir = /home/iulian/github/android_spatialite/static_libs/icu73.2/source/./tools/toolutil
+top_srcdir = /home/iulian/github/android_spatialite/static_libs/icu73.2/source/.
 
 top_builddir = ../..
 
@@ -48,7 +48,7 @@ CXXFLAGS += $(LIBCXXFLAGS)
 CPPFLAGS += -I$(srcdir) -I$(top_srcdir)/common -I$(top_srcdir)/i18n $(LIBCPPFLAGS)
 
 # from icuinfo
-CPPFLAGS+=  "-DU_BUILD=\"arm-apple-darwin22.6.0\"" "-DU_HOST=\"x86_64-pc-linux-android\"" "-DU_CC=\"/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/x86_64-linux-android21-clang\"" "-DU_CXX=\"/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/x86_64-linux-android21-clang++\""
+CPPFLAGS+=  "-DU_BUILD=\"x86_64-pc-linux-gnu\"" "-DU_HOST=\"x86_64-pc-linux-android\"" "-DU_CC=\"/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang\"" "-DU_CXX=\"/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang++\""
 CPPFLAGS += -DUNISTR_FROM_CHAR_EXPLICIT=explicit -DUNISTR_FROM_STRING_EXPLICIT=explicit
 
 DEFS += -DU_TOOLUTIL_IMPLEMENTATION

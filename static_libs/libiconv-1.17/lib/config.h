@@ -67,7 +67,7 @@
 #define WORDS_LITTLEENDIAN 1
 
 /* Define to the value of ${prefix}, as a string. */
-#define INSTALLPREFIX "/Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/libiconv-1.17/build"
+#define INSTALLPREFIX "/home/iulian/github/android_spatialite/static_libs/libiconv-1.17/build"
 
 /* Define to '__inline__' or '__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */

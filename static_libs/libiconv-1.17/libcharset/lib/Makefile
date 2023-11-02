@@ -6,20 +6,20 @@
 srcdir = .
 
 # Directories used by "make install":
-prefix = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/libiconv-1.17/build
+prefix = /home/iulian/github/android_spatialite/static_libs/libiconv-1.17/build
 local_prefix = /usr/local
 exec_prefix = ${prefix}
 libdir = ${exec_prefix}/lib
 
 # Programs used by "make":
-CC = /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/x86_64-linux-android21-clang
+CC = /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang
 CFLAGS = -frtti -fexceptions -fPIC -fvisibility=hidden
 CPPFLAGS = 
 LDFLAGS = 
 INCLUDES = -I. -I$(srcdir) -I.. -I$(srcdir)/.. -I../include
 # -DBUILDING_LIBCHARSET: Change expansion of LIBCHARSET_DLL_EXPORTED macro.
 DEFS = -DBUILDING_LIBCHARSET -DHAVE_CONFIG_H
-LIBTOOL = /bin/sh $(top_builddir)/libtool
+LIBTOOL = /bin/bash $(top_builddir)/libtool
 LIBTOOL_COMPILE = $(LIBTOOL) --mode=compile
 LIBTOOL_LINK = $(LIBTOOL) --mode=link
 LIBTOOL_INSTALL = $(LIBTOOL) --mode=install
@@ -36,7 +36,7 @@ mkinstalldirs = $(SHELL) ../build-aux/mkinstalldirs
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
 
-SHELL = /bin/sh
+SHELL = /bin/bash
 
 # Before making a release, change this according to the libtool documentation,
 # section "Library interface versions".

@@ -24,7 +24,7 @@ cmake -DBUILD_APPS=OFF \
   -DCMAKE_CXX_FLAGS="$AND_CXXFLAGS" \
   -DSQLITE3_INCLUDE_DIR="$SQLITE_INSTALL_DIR" \
   -DSQLITE3_LIBRARY="$SQLITE_INSTALL_DIR/libsqlite3.a" \
-  .. \
-make clean && cmake --build . && make install
-cp -f -v "$BUILD_DIR/lib/"*.a "$JNI_LIB_ABI_DIR" || exit_with_message "cannot cp lib"
-cp -f -v -R "$BUILD_DIR"/../include "$JNI_DIR/proj" || exit_with_message "cannot cp include"
+  .. &&
+cmake --build . && make install &&
+{ cp -f -v "$BUILD_DIR/lib/"*.a "$JNI_LIB_ABI_DIR" || exit_with_message "cannot cp lib"
+cp -f -v -R "$BUILD_DIR"/../include "$JNI_DIR/proj" || exit_with_message "cannot cp include"; }

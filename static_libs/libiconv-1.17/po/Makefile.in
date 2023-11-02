@@ -14,15 +14,15 @@ PACKAGE = libiconv
 VERSION = 1.17
 PACKAGE_BUGREPORT = 
 
-SED = /opt/homebrew/bin/gsed
-SHELL = /bin/sh
+SED = /usr/bin/sed
+SHELL = /bin/bash
 
 
 srcdir = .
 top_srcdir = ..
 
 
-prefix = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/libiconv-1.17/build
+prefix = /home/iulian/github/android_spatialite/static_libs/libiconv-1.17/build
 exec_prefix = ${prefix}
 datarootdir = ${prefix}/share
 datadir = ${datarootdir}
@@ -35,13 +35,13 @@ INSTALL_DATA = ${INSTALL} -m 644
 # We use $(mkdir_p).
 # In automake <= 1.9.x, $(mkdir_p) is defined either as "mkdir -p --" or as
 # "$(mkinstalldirs)" or as "$(install_sh) -d". For these automake versions,
-# ${SHELL} /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/libiconv-1.17/build-aux/install-sh does not start with $(SHELL), so we add it.
+# ${SHELL} /home/iulian/github/android_spatialite/static_libs/libiconv-1.17/build-aux/install-sh does not start with $(SHELL), so we add it.
 # In automake >= 1.10, $(MKDIR_P) is derived from ${MKDIR_P}, which is defined
 # either as "/path/to/mkdir -p" or ".../install-sh -c -d". For these automake
 # versions, $(mkinstalldirs) and $(install_sh) are unused.
-mkinstalldirs = $(SHELL) ${SHELL} /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/libiconv-1.17/build-aux/install-sh -d
-install_sh = $(SHELL) ${SHELL} /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/libiconv-1.17/build-aux/install-sh
-MKDIR_P = .././build-aux/install-sh -c -d
+mkinstalldirs = $(SHELL) ${SHELL} /home/iulian/github/android_spatialite/static_libs/libiconv-1.17/build-aux/install-sh -d
+install_sh = $(SHELL) ${SHELL} /home/iulian/github/android_spatialite/static_libs/libiconv-1.17/build-aux/install-sh
+MKDIR_P = /usr/bin/mkdir -p
 mkdir_p = $(MKDIR_P)
 
 # When building gettext-tools, we prefer to use the built programs
@@ -49,17 +49,17 @@ mkdir_p = $(MKDIR_P)
 # are cross compiling.
 CROSS_COMPILING = @CROSS_COMPILING@
 
-GMSGFMT_ = /opt/homebrew/bin/msgfmt
-GMSGFMT_no = /opt/homebrew/bin/msgfmt
-GMSGFMT_yes = /opt/homebrew/bin/msgfmt
+GMSGFMT_ = :
+GMSGFMT_no = :
+GMSGFMT_yes = :
 GMSGFMT = $(GMSGFMT_$(USE_MSGCTXT))
-XGETTEXT_ = /opt/homebrew/bin/xgettext
-XGETTEXT_no = /opt/homebrew/bin/xgettext
-XGETTEXT_yes = /opt/homebrew/bin/xgettext
+XGETTEXT_ = :
+XGETTEXT_no = :
+XGETTEXT_yes = :
 XGETTEXT = $(XGETTEXT_$(USE_MSGCTXT))
-MSGMERGE = /opt/homebrew/bin/msgmerge
-MSGMERGE_UPDATE = /opt/homebrew/bin/msgmerge --update
-MSGMERGE_FOR_MSGFMT_OPTION = --for-msgfmt
+MSGMERGE = :
+MSGMERGE_UPDATE = : --update
+MSGMERGE_FOR_MSGFMT_OPTION = --no-location --quiet
 MSGINIT = msginit
 MSGCONV = msgconv
 MSGFILTER = msgfilter
@@ -497,11 +497,11 @@ update-gmo: Makefile $(GMOFILES)
 
 # Recreate Makefile by invoking config.status. Explicitly invoke the shell,
 # because execution permission bits may not work on the current file system.
-# Use /bin/sh, which is the shell determined by autoconf for the use by its
+# Use /bin/bash, which is the shell determined by autoconf for the use by its
 # scripts, not $(SHELL) which is hardwired to /bin/sh and may be deficient.
 Makefile: Makefile.in.in Makevars $(top_builddir)/config.status @POMAKEFILEDEPS@
 	cd $(top_builddir) \
-	  && /bin/sh ./config.status $(subdir)/$@.in po-directories
+	  && /bin/bash ./config.status $(subdir)/$@.in po-directories
 
 force:
 

@@ -1,5 +1,6 @@
 plugins {
     id("com.android.library")
+    id("maven-publish")
 }
 
 android {
@@ -50,6 +51,7 @@ tasks.register<Exec>("buildStaticLibs") {
     commandLine("./masterbuild.sh")
     environment("NDK_HOME", project.extensions.getByType<com.android.build.gradle.BaseExtension>().ndkDirectory)
     environment("PROJECT_ROOT", project.rootDir)
+    enabled=false
 }
 
 
@@ -65,4 +67,27 @@ dependencies {
 testImplementation("junit:junit:4.13.2")
 androidTestImplementation("androidx.test.ext:junit:1.1.5")
 androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+}
+
+
+// Because the components are created only during the afterEvaluate phase, you must
+// configure your publications using the afterEvaluate lifecycle method.
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            create<MavenPublication>("release") {
+                // Applies the component for the release build variant.
+                from(components["release"])
+
+                // You can then customize attributes of the publication as shown below.
+                groupId = "org.spatialite"
+                version = "2.0.8"
+
+                // Additional configuration for the publication can go here.
+                // For example, you can customize artifactId, which defaults to project.name
+                // artifactId = "your-artifact-id"
+            }
+        }
+    }
 }

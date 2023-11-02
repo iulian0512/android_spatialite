@@ -6,12 +6,12 @@
 srcdir = .
 
 # Programs used by "make":
-CC = /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/x86_64-linux-android21-clang
+CC = /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang
 CFLAGS = -frtti -fexceptions -fPIC
 CPPFLAGS = 
 LDFLAGS = 
 INCLUDES = -I. -I$(srcdir) -I../include -I$(srcdir)/../include -I../srclib -I$(srcdir)/../srclib -I..
-LIBTOOL = /bin/sh $(top_builddir)/libtool
+LIBTOOL = /bin/bash $(top_builddir)/libtool
 LIBTOOL_COMPILE = $(LIBTOOL) --mode=compile
 LIBTOOL_LINK = $(LIBTOOL) --mode=link
 LIBTOOL_INSTALL = $(LIBTOOL) --mode=install
@@ -21,7 +21,7 @@ RM = rm -f
 
 #### End of system configuration section. ####
 
-SHELL = /bin/sh
+SHELL = /bin/bash
 
 # Needed by $(LIBTOOL).
 top_builddir = ..

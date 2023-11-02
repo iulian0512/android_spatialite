@@ -8,7 +8,7 @@ CFLAGS =
 CXXFLAGS =  -std=c++11
 # DEFS only contains those UCONFIG_CPPFLAGS which are not auto-set by platform.h
 DEFS = 
-prefix = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/icu73.2/build/android/x86_64
+prefix = /home/iulian/github/android_spatialite/static_libs/icu73.2/build/android/x86_64
 exec_prefix = ${prefix}
 #bindir = ${exec_prefix}/bin
 libdir = ${exec_prefix}/lib

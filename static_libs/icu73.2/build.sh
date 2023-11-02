@@ -65,6 +65,7 @@ fi
 
 # Build the intermediate build if neded 
 if [[ ! -d "$ICU_INTERMEDIATE_OS_BUILD_DIR" ]]; then
+  echo "creating intermediate build in $ICU_INTERMEDIATE_OS_BUILD_DIR"
     mkdir -p "$ICU_INTERMEDIATE_OS_BUILD_DIR"
     cd "$ICU_INTERMEDIATE_OS_BUILD_DIR" || exit_with_message "cannot cd to $ICU_INTERMEDIATE_OS_BUILD_DIR"
     "${ICU_SRC_DIR}/./runConfigureICU" "$OS" \
@@ -80,7 +81,7 @@ if [[ ! -d "$ICU_INTERMEDIATE_OS_BUILD_DIR" ]]; then
         --enable-tests=no \
         --enable-samples=no \
         --enable-dyload=no &&
-        make
+        make || exit_with_message "could not create intermediate build"
 
 else 
   echo "skipping intermediate build because $ICU_INTERMEDIATE_OS_BUILD_DIR exists"
@@ -98,6 +99,7 @@ mkdir -p "$ICU_AND_ARCH_BUILD_DIR" || cd "$ICU_AND_ARCH_BUILD_DIR" || exit_with_
 source "$AND_TOOLCHAIN_FILE" || exit_with_message "cannot load andtoolchain";
 
 #build
+echo "building android icu $TARGET"
  "${ICU_SRC_DIR}/./runConfigureICU" Linux \
   --host="$TARGET" \
   --prefix="$ICU_AND_ARCH_BUILD_DIR" \

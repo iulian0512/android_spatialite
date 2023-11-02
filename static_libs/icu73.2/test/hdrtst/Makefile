@@ -32,8 +32,8 @@
 ##
 
 ## Source directory information
-srcdir = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/icu73.2/source/./test/hdrtst
-top_srcdir = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/icu73.2/source/.
+srcdir = /home/iulian/github/android_spatialite/static_libs/icu73.2/source/./test/hdrtst
+top_srcdir = /home/iulian/github/android_spatialite/static_libs/icu73.2/source/.
 
 top_builddir = ../..
 subdir = test/hdrtst

@@ -10,7 +10,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static junit.framework.Assert.assertEquals;
 
-@Ignore("ICU not supported. Native ICU library is not included since 2.0")
 @RunWith(AndroidJUnit4.class)
 public class ICUTest extends BaseTest {
     @Test

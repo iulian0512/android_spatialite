@@ -1,6 +1,6 @@
-#! /bin/sh
+#! /bin/bash
 # Generated automatically by config.status () 
-# Libtool was configured on host intergraphs-Mac-mini.local:
+# Libtool was configured on host iulian-ubuntu:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 
 # Provide generalized library-building support services.
@@ -42,7 +42,7 @@ macro_version=2.4.7
 macro_revision=2.4.7
 
 # Assembler program.
-AS="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/x86_64-linux-android21-clang"
+AS="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang"
 
 # DLL creation program.
 DLLTOOL="false"
@@ -66,7 +66,7 @@ fast_install=needless
 shared_archive_member_spec=
 
 # Shell to use when invoking shell scripts.
-SHELL="/bin/sh"
+SHELL="/bin/bash"
 
 # An echo program that protects backslashes.
 ECHO="printf %s\\n"
@@ -81,11 +81,11 @@ host_os=linux-android
 
 # The build system.
 build_alias=
-build=aarch64-apple-darwin22.6.0
-build_os=darwin22.6.0
+build=x86_64-pc-linux-gnu
+build_os=linux-gnu
 
 # A sed program that does not truncate output.
-SED="/opt/homebrew/bin/gsed"
+SED="/usr/bin/sed"
 
 # Sed that helps us avoid accidentally triggering echo(1) options like -n.
 Xsed="$SED -e 1s/^X//"
@@ -106,7 +106,7 @@ NM="nm"
 LN_S="ln -s"
 
 # What is the maximum length of a command?
-max_cmd_len=786432
+max_cmd_len=1572864
 
 # Object file suffix (normally "o").
 objext=o
@@ -148,7 +148,7 @@ want_nocaseglob="no"
 sharedlib_from_linklib_cmd="printf %s\\n"
 
 # The archiver.
-AR="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/llvm-ar"
+AR="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
 
 # Flags to create an archive (by configure).
 lt_ar_flags=cr
@@ -160,10 +160,10 @@ AR_FLAGS=${ARFLAGS-"$lt_ar_flags"}
 archiver_list_spec="@"
 
 # A symbol stripping program.
-STRIP="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/llvm-strip"
+STRIP="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
 
 # Commands used to install an old-style archive.
-RANLIB="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/llvm-ranlib"
+RANLIB="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib"
 old_postinstall_cmds="chmod 644 \$oldlib~\$RANLIB \$tool_oldlib"
 old_postuninstall_cmds=""
 
@@ -171,25 +171,25 @@ old_postuninstall_cmds=""
 lock_old_archive_extraction=no
 
 # A C compiler.
-LTCC="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/x86_64-linux-android21-clang"
+LTCC="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang"
 
 # LTCC compiler flags.
 LTCFLAGS="-frtti -fexceptions -fPIC"
 
 # Take the output of nm and produce a listing of raw symbols and C names.
-global_symbol_pipe="/opt/homebrew/bin/gsed -n -e 's/^.*[	 ]\\([ABCDGIRSTW][ABCDGIRSTW]*\\)[	 ][	 ]*\\([_A-Za-z][_A-Za-z0-9]*\\)\$/\\1 \\2 \\2/p' | /opt/homebrew/bin/gsed '/ __gnu_lto/d'"
+global_symbol_pipe="/usr/bin/sed -n -e 's/^.*[	 ]\\([ABCDGIRSTW][ABCDGIRSTW]*\\)[	 ][	 ]*\\([_A-Za-z][_A-Za-z0-9]*\\)\$/\\1 \\2 \\2/p' | /usr/bin/sed '/ __gnu_lto/d'"
 
 # Transform the output of nm in a proper C declaration.
-global_symbol_to_cdecl="/opt/homebrew/bin/gsed -n -e 's/^T .* \\(.*\\)\$/extern int \\1();/p' -e 's/^[ABCDGIRSTW][ABCDGIRSTW]* .* \\(.*\\)\$/extern char \\1;/p'"
+global_symbol_to_cdecl="/usr/bin/sed -n -e 's/^T .* \\(.*\\)\$/extern int \\1();/p' -e 's/^[ABCDGIRSTW][ABCDGIRSTW]* .* \\(.*\\)\$/extern char \\1;/p'"
 
 # Transform the output of nm into a list of symbols to manually relocate.
 global_symbol_to_import=""
 
 # Transform the output of nm in a C name address pair.
-global_symbol_to_c_name_address="/opt/homebrew/bin/gsed -n -e 's/^: \\(.*\\) .*\$/  {\"\\1\", (void *) 0},/p' -e 's/^[ABCDGIRSTW][ABCDGIRSTW]* .* \\(.*\\)\$/  {\"\\1\", (void *) \\&\\1},/p'"
+global_symbol_to_c_name_address="/usr/bin/sed -n -e 's/^: \\(.*\\) .*\$/  {\"\\1\", (void *) 0},/p' -e 's/^[ABCDGIRSTW][ABCDGIRSTW]* .* \\(.*\\)\$/  {\"\\1\", (void *) \\&\\1},/p'"
 
 # Transform the output of nm in a C name address pair when lib prefix is needed.
-global_symbol_to_c_name_address_lib_prefix="/opt/homebrew/bin/gsed -n -e 's/^: \\(.*\\) .*\$/  {\"\\1\", (void *) 0},/p' -e 's/^[ABCDGIRSTW][ABCDGIRSTW]* .* \\(lib.*\\)\$/  {\"\\1\", (void *) \\&\\1},/p' -e 's/^[ABCDGIRSTW][ABCDGIRSTW]* .* \\(.*\\)\$/  {\"lib\\1\", (void *) \\&\\1},/p'"
+global_symbol_to_c_name_address_lib_prefix="/usr/bin/sed -n -e 's/^: \\(.*\\) .*\$/  {\"\\1\", (void *) 0},/p' -e 's/^[ABCDGIRSTW][ABCDGIRSTW]* .* \\(lib.*\\)\$/  {\"\\1\", (void *) \\&\\1},/p' -e 's/^[ABCDGIRSTW][ABCDGIRSTW]* .* \\(.*\\)\$/  {\"lib\\1\", (void *) \\&\\1},/p'"
 
 # The name lister interface.
 nm_interface="BSD nm"
@@ -201,7 +201,7 @@ nm_file_list_spec="@"
 lt_sysroot=
 
 # Command to truncate a binary pipe.
-lt_truncate_bin="/bin/dd bs=4096 count=1"
+lt_truncate_bin="/usr/bin/dd bs=4096 count=1"
 
 # The name of the directory that contains temporary libtool files.
 objdir=.libs
@@ -291,7 +291,7 @@ finish_eval=""
 hardcode_into_libs=yes
 
 # Compile-time system search path for libraries.
-sys_lib_search_path_spec="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/darwin-x86_64/lib64/clang/12.0.8 /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/darwin-x86_64/lib64/clang/12.0.8/lib/linux/x86_64 /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/lib/gcc/x86_64-linux-android/4.9.x /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/sysroot/usr/lib/x86_64-linux-android/21 /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/sysroot/usr/lib/x86_64-linux-android /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/sysroot/usr/lib "
+sys_lib_search_path_spec="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/12.0.8 /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/12.0.8/lib/linux/x86_64 /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/x86_64-linux-android/4.9.x /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/x86_64-linux-android/21 /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/x86_64-linux-android /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib "
 
 # Detected run-time system search path for libraries.
 sys_lib_dlsearch_path_spec="/lib /usr/lib"
@@ -309,12 +309,12 @@ dlopen_self=unknown
 dlopen_self_static=unknown
 
 # Commands to strip libraries.
-old_striplib="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/llvm-strip --strip-debug"
-striplib="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/llvm-strip --strip-unneeded"
+old_striplib="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip --strip-debug"
+striplib="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip --strip-unneeded"
 
 
 # The linker used to build libraries.
-LD="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/ld"
+LD="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/ld"
 
 # How to create reloadable object files.
 reload_flag=" -r"
@@ -324,7 +324,7 @@ reload_cmds="\$LD\$reload_flag -o \$output\$reload_objs"
 old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs~\$RANLIB \$tool_oldlib"
 
 # A language specific compiler.
-CC="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/x86_64-linux-android21-clang"
+CC="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang"
 
 # Is the compiler the GNU compiler?
 with_gcc=yes

@@ -53,7 +53,7 @@ loaddefs()
 # etc.  If ICU is not installed in this directory, you must change the
 # following line.  There should exist ${prefix}/include/unicode/utypes.h
 # for example.
-default_prefix="/Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/icu73.2/build/android/x86_64"
+default_prefix="/home/iulian/github/android_spatialite/static_libs/icu73.2/build/android/x86_64"
 if [ "x${prefix}" = "x" ]; then prefix="$default_prefix"; fi
 exec_prefix="${prefix}"
 libdir="${exec_prefix}/lib"
@@ -150,8 +150,8 @@ ICULIBS_COMMON_LIB_NAME_A="${LIBICU}${COMMON_STUBNAME}${ICULIBSUFFIX}.${A}"
 ICULIBS="${ICULIBS_BASE} ${ICULIBS_I18N} ${ICULIBS_COMMON} ${ICULIBS_DATA} "
 
 # Proper echo newline handling is needed in icu-config
-ECHO_N=""
-ECHO_C="\c"
+ECHO_N="-n"
+ECHO_C=""
 # Not currently being used but good to have for proper tab handling
 ECHO_T=""
 
@@ -202,15 +202,15 @@ platform="U_LINUX"
 #       *4*  compiler flags and misc. options
 #
 ##################################################################
-AR="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/llvm-ar"
+AR="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
 # initial tab keeps it out of the shell version.
 ARFLAGS=" ${ARFLAGS}"
-CC="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/x86_64-linux-android21-clang"
-CPP="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/x86_64-linux-android21-clang -E"
+CC="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang"
+CPP="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang -E"
 CFLAGS=""
 CPPFLAGS="-I${prefix}/include"
 CXXFLAGS="-std=c++11"
-CXX="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/x86_64-linux-android21-clang++"
+CXX="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang++"
 DEFAULT_MODE="common"
 DEFS="-DPACKAGE_NAME=\"ICU\" -DPACKAGE_TARNAME=\"International\ Components\ for\ Unicode\" -DPACKAGE_VERSION=\"73.2\" -DPACKAGE_STRING=\"ICU\ 73.2\" -DPACKAGE_BUGREPORT=\"http://icu-project.org/bugs\" -DPACKAGE_URL=\"http://icu-project.org\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DSIZEOF_VOID_P=8 -DHAVE_LIBM=1 -DHAVE_ELF_H=1 -DHAVE_GETTIMEOFDAY=1 -DHAVE_INTTYPES_H=1 -DHAVE_DIRENT_H=1 -DHAVE_WCHAR_H=1 -DSIZEOF_WCHAR_T=4 "
 # use a consistent INSTALL 
@@ -224,9 +224,9 @@ LIB_M=""
 LIB_VERSION="73.2"
 LIB_VERSION_MAJOR="73"
 MKINSTALLDIRS="${SHELL} ${pkgdatadir}/mkinstalldirs"
-RANLIB="/Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/llvm-ranlib"
+RANLIB="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib"
 RMV="rm -rf"
-SHELL="/bin/sh"
+SHELL="/bin/bash"
 SHLIB_c="${CC} ${DEFS} ${CPPFLAGS} ${CFLAGS} ${LDFLAGS} -shared"
 SHLIB_cc="${CXX} ${DEFS} ${CPPFLAGS} ${CXXFLAGS} ${LDFLAGS} -shared"
 U_IS_BIG_ENDIAN="0"

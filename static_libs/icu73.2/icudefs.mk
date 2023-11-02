@@ -15,14 +15,14 @@
 
 # Shell to use
 
-SHELL = /bin/sh
+SHELL = /bin/bash
 
 # Instruct Python to never write any byte code to the ICU source tree.
 export PYTHONDONTWRITEBYTECODE = 1
 
 # Standard directories
 
-prefix = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/icu73.2/build/android/x86_64
+prefix = /home/iulian/github/android_spatialite/static_libs/icu73.2/build/android/x86_64
 exec_prefix = ${prefix}
 
 bindir = ${exec_prefix}/bin
@@ -35,7 +35,7 @@ mandir = ${datarootdir}/man
 sysconfdir = ${prefix}/etc
 # controls the include of $(top_builddir)/icucross.mk at bottom of file
 cross_compiling = yes
-cross_buildroot = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/icu73.2/build/intermediate_Darwin
+cross_buildroot = /home/iulian/github/android_spatialite/static_libs/icu73.2/build/intermediate_Linux
 
 # Package information
 
@@ -114,14 +114,14 @@ ICULIBSUFFIX=
 ENABLE_DEBUG = 0
 ENABLE_RELEASE = 1
 EXEEXT = 
-CC = /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/x86_64-linux-android21-clang
-CXX = /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/x86_64-linux-android21-clang++
-AR = /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/llvm-ar
+CC = /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang
+CXX = /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang++
+AR = /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
 ARFLAGS =  r
-RANLIB = /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/llvm-ranlib
+RANLIB = /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib
 COMPILE_LINK_ENVVAR = 
 UCLN_NO_AUTO_CLEANUP = 1
-SED = /opt/homebrew/bin/gsed
+SED = /usr/bin/sed
 
 # Various flags for the tools
 
@@ -163,8 +163,8 @@ ENABLE_SHARED =
 
 # Echo w/o newline
 
-#ECHO_N = 
-#ECHO_C = \c
+#ECHO_N = -n
+#ECHO_C = 
 
 # Commands to compile
 COMPILE.c=    $(CC) $(CPPFLAGS) $(DEFS) $(CFLAGS) -c

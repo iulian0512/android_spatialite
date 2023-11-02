@@ -21,7 +21,6 @@ import junit.framework.TestSuite;
 
 import org.junit.Ignore;
 
-@Ignore
 public class NewDatabasePerformanceTestSuite extends TestSuite {
 
     public static TestSuite suite() {

@@ -1,6 +1,6 @@
 # Package Information for pkg-config
 
-prefix=/Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/librttopo-1.1.0/build
+prefix=/home/iulian/github/android_spatialite/static_libs/librttopo-1.1.0/build
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include

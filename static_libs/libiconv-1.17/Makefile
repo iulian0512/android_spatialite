@@ -6,7 +6,7 @@
 srcdir = .
 
 # Directories used by "make install":
-prefix = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/libiconv-1.17/build
+prefix = /home/iulian/github/android_spatialite/static_libs/libiconv-1.17/build
 local_prefix = /usr/local
 exec_prefix = ${prefix}
 datarootdir = ${prefix}/share
@@ -27,7 +27,7 @@ mkinstalldirs = $(SHELL) ./build-aux/mkinstalldirs
 
 #### End of system configuration section. ####
 
-SHELL = /bin/sh
+SHELL = /bin/bash
 
 all : lib/localcharset.h force
 	cd lib && $(MAKE) all

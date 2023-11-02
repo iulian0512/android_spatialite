@@ -80,7 +80,7 @@ for arch in "${archs[@]}"; do
     ($script)
     exit_status=$?
     if [ $exit_status -ne 0 ]; then
-      echo "Script failed with exit status $exit_status, exiting."
+      echo "Script '$script' failed with exit status $exit_status, exiting."
       exit 1
     fi
   done

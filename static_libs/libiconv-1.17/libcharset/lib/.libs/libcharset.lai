@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/libiconv-1.17/build/lib'
+libdir='/home/iulian/github/android_spatialite/static_libs/libiconv-1.17/build/lib'

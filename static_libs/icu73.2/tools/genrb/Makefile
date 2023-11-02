@@ -7,8 +7,8 @@
 #################################################################################
 
 ## Source directory information
-srcdir = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/icu73.2/source/./tools/genrb
-top_srcdir = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/icu73.2/source/.
+srcdir = /home/iulian/github/android_spatialite/static_libs/icu73.2/source/./tools/genrb
+top_srcdir = /home/iulian/github/android_spatialite/static_libs/icu73.2/source/.
 
 top_builddir = ../..
 

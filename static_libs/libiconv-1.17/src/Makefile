@@ -7,7 +7,7 @@ srcdir = .
 top_srcdir = ..
 
 # Directories used by "make install":
-prefix = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/libiconv-1.17/build
+prefix = /home/iulian/github/android_spatialite/static_libs/libiconv-1.17/build
 local_prefix = /usr/local
 exec_prefix = ${prefix}
 bindir = ${exec_prefix}/bin
@@ -17,12 +17,12 @@ datadir = ${datarootdir}
 localedir = ${datarootdir}/locale
 
 # Programs used by "make":
-CC = /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/x86_64-linux-android21-clang
+CC = /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang
 CFLAGS = -frtti -fexceptions -fPIC
 CPPFLAGS = 
 LDFLAGS = 
 INCLUDES = -I. -I$(srcdir) -I.. -I../include -I$(srcdir)/../include -I../srclib -I$(srcdir)/../srclib
-LIBTOOL = /bin/sh $(top_builddir)/libtool
+LIBTOOL = /bin/bash $(top_builddir)/libtool
 LIBTOOL_COMPILE = $(LIBTOOL) --mode=compile
 LIBTOOL_LINK = $(LIBTOOL) --mode=link
 LIBTOOL_INSTALL = $(LIBTOOL) --mode=install
@@ -38,13 +38,13 @@ INSTALL_DATA = ${INSTALL} -m 644
 mkinstalldirs = $(SHELL) ../build-aux/mkinstalldirs
 
 # Programs used by "make install-strip":
-STRIP = /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/llvm-strip
+STRIP = /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
-install_sh = ${SHELL} /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/libiconv-1.17/build-aux/install-sh
+install_sh = ${SHELL} /home/iulian/github/android_spatialite/static_libs/libiconv-1.17/build-aux/install-sh
 
 #### End of system configuration section. ####
 
-SHELL = /bin/sh
+SHELL = /bin/bash
 
 PACKAGE_VERSION = 1.17
 

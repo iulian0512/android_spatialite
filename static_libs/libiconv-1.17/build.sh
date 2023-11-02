@@ -15,7 +15,7 @@ rm -rf "$BUILD_DIR" || exit_with_message "cannot cleanup build dir";
 mkdir -pv "$BUILD_DIR"  || exit_with_message "cannot make dirs";
 echo "build dir is $BUILD_DIR";
 chmod +x configure;
-./configure --prefix="$BUILD_DIR" --host="arm-linux-android" --enable-static=yes --enable-shared=no \
-&& make clean && make && make install &&
+./configure --prefix="$BUILD_DIR" --host="arm-linux-android" --enable-static=yes --enable-shared=no &&
+make clean && make && make install &&
 { cp -f -v "$BUILD_DIR/lib/"*.a "$JNI_LIB_ABI_DIR" || exit_with_message "cannot cp lib" &&
 cp -f -v -R "$BUILD_DIR/include" "$JNI_DIR/iconv" || exit_with_message "cannot cp include"; }

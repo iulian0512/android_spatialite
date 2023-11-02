@@ -6,13 +6,13 @@
 srcdir = .
 
 # Directories used by "make install":
-prefix = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/libiconv-1.17/build
+prefix = /home/iulian/github/android_spatialite/static_libs/libiconv-1.17/build
 local_prefix = /usr/local
 exec_prefix = ${prefix}
 libdir = ${exec_prefix}/lib
 
 # Programs used by "make":
-CC = /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/x86_64-linux-android21-clang
+CC = /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang
 CFLAGS = -frtti -fexceptions -fPIC -fvisibility=hidden
 CPPFLAGS = 
 LDFLAGS =  $(LDFLAGS_no)
@@ -30,12 +30,12 @@ DEFS = \
   -Dset_relocation_prefix=libiconv_set_relocation_prefix \
   -Drelocate=libiconv_relocate \
   -Drelocate2=libiconv_relocate2 -DHAVE_CONFIG_H
-LIBTOOL = /bin/sh $(top_builddir)/libtool
+LIBTOOL = /bin/bash $(top_builddir)/libtool
 LIBTOOL_COMPILE = $(LIBTOOL) --mode=compile
 LIBTOOL_LINK = $(LIBTOOL) --mode=link
 LIBTOOL_INSTALL = $(LIBTOOL) --mode=install
 LIBTOOL_UNINSTALL = $(LIBTOOL) --mode=uninstall
-AR = /Users/ics/Library/Android/sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/Darwin-x86_64/bin/llvm-ar
+AR = /home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
 # Windows resource compiler (windres). Used via libtool.
 RC = 
 CP = cp
@@ -52,7 +52,7 @@ mkinstalldirs = $(SHELL) ../build-aux/mkinstalldirs
 
 #### End of system configuration section. ####
 
-SHELL = /bin/sh
+SHELL = /bin/bash
 
 # Before making a release, change this according to the libtool documentation,
 # section "Library interface versions".

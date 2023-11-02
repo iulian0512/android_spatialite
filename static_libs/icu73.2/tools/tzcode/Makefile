@@ -2,8 +2,8 @@
 # License & terms of use: http://www.unicode.org/copyright.html
 # Some Portions Copyright (c) 2006-2012 IBM and others. All Rights Reserved.
 
-srcdir = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/icu73.2/source/./tools/tzcode
-top_srcdir = /Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/icu73.2/source/.
+srcdir = /home/iulian/github/android_spatialite/static_libs/icu73.2/source/./tools/tzcode
+top_srcdir = /home/iulian/github/android_spatialite/static_libs/icu73.2/source/.
 
 top_builddir = ../..
 

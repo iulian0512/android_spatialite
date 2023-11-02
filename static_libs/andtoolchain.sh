@@ -21,7 +21,7 @@ echo "API level is set to $API"
 [ -z "$AND_CXXFLAGS" ] && exit_with_message "Error: AND_CXXFLAGS environment variable is not set."
 
 
-UNAME_S=$(uname -s);
+UNAME_S=$(uname -s | tr '[:upper:]' '[:lower:]');
 
 # Set TARGET based on TARGET_ARCH_ABI
 case $TARGET_ARCH_ABI in
