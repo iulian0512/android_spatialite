@@ -1,0 +1,7 @@
+PROJ_GuessSridFromZipSHP() - valid Shp basename existing .PRJ
+:memory: #use in-memory database
+SELECT PROJ_GuessSridFromZipSHP('./elba.zip', 'elba-pg');
+1 # rows (not including the header row)
+1 # columns
+PROJ_GuessSridFromZipSHP('./elba.zip', 'elba-pg')
+3003

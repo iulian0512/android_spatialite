@@ -1,0 +1,7 @@
+GEOSMinimumBoundingCircle - VALID BLOB Geometry
+:memory: #use in-memory database
+SELECT CastToInteger(ST_Area(GEOSMinimumBoundingCircle(GeomFromText('LINESTRING(0 0, 10 10)'))))
+1 # rows (not including the header row)
+1 # columns
+CastToInteger(ST_Area(GEOSMinimumBoundingCircle(GeomFromText('LINESTRING(0 0, 10 10)'))))
+156

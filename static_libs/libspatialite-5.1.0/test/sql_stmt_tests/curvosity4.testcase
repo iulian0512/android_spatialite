@@ -1,0 +1,7 @@
+ST_CurvosityIndex - invalid NULL geom
+:memory: #use in-memory database
+SELECT ST_CurvosityIndex(NULL);
+1 # rows (not including the header row)
+1 # columns
+ST_CurvosityIndex(NULL)
+(NULL)

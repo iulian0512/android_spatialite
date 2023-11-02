@@ -1,0 +1,7 @@
+GML MultiPoint Z: excessive precision
+:memory: #use in-memory database
+SELECT AsGML(3, GeomFromText('MULTIPOINTZ(1 2 100, 3 4 100)', 4326), 44);
+1 # rows (not including the header row)
+1 # columns
+AsGML(3, GeomFromText('MULTIPOINTZ(1 2 100, 3 4 100)', 4326), 44)
+<gml:MultiPoint srsName="urn:ogc:def:crs:EPSG:4326"><gml:pointMember><gml:Point><gml:pos srsDimension="3">2 1 100</gml:pos></gml:Point></gml:pointMember><gml:pointMember><gml:Point><gml:pos srsDimension="3">4 3 100</gml:pos></gml:Point></gml:pointMember></gml:MultiPoint>

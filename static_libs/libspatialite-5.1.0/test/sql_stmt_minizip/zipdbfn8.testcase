@@ -1,0 +1,7 @@
+Zipfile_DbfN - BLOB index
+:memory: #use in-memory database
+SELECT Zipfile_DbfN('./elba.zip', zeroblob(4));
+1 # rows (not including the header row)
+1 # columns
+Zipfile_DbfN('./elba.zip', zeroblob(4));
+(NULL)

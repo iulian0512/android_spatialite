@@ -1,0 +1,7 @@
+PROJ_GuessSridFromZipSHP() - NULL Shp basename
+:memory: #use in-memory database
+SELECT PROJ_GuessSridFromZipSHP('./elba.zip', NULL);
+1 # rows (not including the header row)
+1 # columns
+PROJ_GuessSridFromZipSHP('./elba.zip', NULL)
+(NULL)

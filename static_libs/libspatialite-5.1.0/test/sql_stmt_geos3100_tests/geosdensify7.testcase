@@ -1,0 +1,7 @@
+GeosDensify - valid LINESTRING Geometry
+:memory: #use in-memory database
+SELECT ST_AsText(GeosDensify(GeomFromText('LINESTRING(10 10, 12 10)'), 1.0))
+1 # rows (not including the header row)
+1 # columns
+ST_AsText(GeosDensify(GeomFromText('LINESTRING(10 10, 12 10)'), 1.0))
+LINESTRING(10 10, 11 10, 12 10)

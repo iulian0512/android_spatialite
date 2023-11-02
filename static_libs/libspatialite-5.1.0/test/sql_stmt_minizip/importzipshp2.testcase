@@ -1,0 +1,7 @@
+ImportZipSHP - NULL table
+:memory: #use in-memory database
+SELECT ImportZipSHP('test.zip', 'shapefile', NULL, 'UTF-8');
+1 # rows (not including the header row)
+1 # columns
+ImportZipSHP('test.zip', 'shapefile', NULL, 'UTF-8')
+(NULL)

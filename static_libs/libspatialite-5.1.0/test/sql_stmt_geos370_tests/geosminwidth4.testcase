@@ -1,0 +1,7 @@
+GEOSMinimumWidth- TEXT Geometry
+:memory: #use in-memory database
+SELECT GEOSMinimumWidth('geom')
+1 # rows (not including the header row)
+1 # columns
+GEOSMinimumWidth('geom')
+(NULL)

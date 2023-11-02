@@ -1,0 +1,7 @@
+Rl2_MapConfigurationAbstractN - TEXT index 
+:memory: #use in-memory database
+SELECT Rl2_MapConfigurationAbstractN('one');
+1 # rows (not including the header row)
+1 # columns
+Rl2_MapConfigurationAbstractN('one');
+(NULL)

@@ -1,0 +1,7 @@
+ST_LinestringMaxSegmentLength - invalid MULTILINESTRING geom
+:memory: #use in-memory database
+SELECT ST_LinestringMaxSegmentLength(GeomFromText('MULTILINESTRING((10 42, 11 42), (11 44, 14 44))', 4326));
+1 # rows (not including the header row)
+1 # columns
+ST_LinestringMaxSegmentLength(GeomFromText('MULTILINESTRING((10 42, 11 42), (11 44, 14 44))', 4326))
+(NULL)

@@ -1,0 +1,7 @@
+ST_DownhillHeight - invalid text geom
+:memory: #use in-memory database
+SELECT ST_DownhillHeight('geom');
+1 # rows (not including the header row)
+1 # columns
+ST_DownhillHeight('geom')
+(NULL)

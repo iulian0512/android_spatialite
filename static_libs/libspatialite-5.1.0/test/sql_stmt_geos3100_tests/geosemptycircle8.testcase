@@ -1,0 +1,7 @@
+GEOSLargestEmptyCircle - VALID BLOB Geometry TEXT tolerance
+:memory: #use in-memory database
+SELECT AsText(GEOSLargestEmptyCircle(GeomFromText('MULTILINESTRING((0 0, 0 20), (10 0, 10 10), (1 10, 9 10))'), 'tolerance'))
+1 # rows (not including the header row)
+1 # columns
+AsText(GEOSLargestEmptyCircle(GeomFromText('MULTILINESTRING((0 0, 0 20), (10 0, 10 10), (1 10, 9 10))'), 'tolerance'))
+(NULL)

@@ -1,0 +1,8 @@
+RegisterMapConfiguration - Text config
+:memory: #use in-memory database
+SELECT RL2_RegisterMapConfiguration('alpha');
+1 # rows (not including the header row)
+1 # columns
+RL2_RegisterMapConfiguration('alpha')
+-1
+

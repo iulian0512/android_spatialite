@@ -1,0 +1,7 @@
+MinimumBoundingRadius- INT Geometry
+:memory: #use in-memory database
+SELECT MinimumBoundingRadius(1)
+1 # rows (not including the header row)
+1 # columns
+MinimumBoundingRadius(1)
+(NULL)

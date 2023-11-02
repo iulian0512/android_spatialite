@@ -1,0 +1,7 @@
+WMS_RegisterStyle() - Int layer-name
+:memory: #use in-memory database
+SELECT WMS_RegisterStyle('some-url', 1, 'name', 'title', 'abstract');
+1 # rows (not including the header row)
+1 # columns
+WMS_RegisterStyle('some-url', 1, 'name', 'title', 'abstract')
+-1

@@ -1,0 +1,7 @@
+Zipfile_ShpN - DOUBLE zipfile
+:memory: #use in-memory database
+SELECT Zipfile_ShpN(1.1, 2);
+1 # rows (not including the header row)
+1 # columns
+Zipfile_ShpN(1.1, 2);
+(NULL)

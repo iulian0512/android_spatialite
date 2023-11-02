@@ -1,0 +1,7 @@
+RemoveExtraSpaces() - invalid BLOB
+:memory: #use in-memory database
+SELECT RemoveExtraSpaces(zeroblob(19));
+1 # rows (not including the header row)
+1 # columns
+RemoveExtraSpaces(zeroblob(19))
+(NULL)

@@ -1,0 +1,7 @@
+GEOSMinimumWidth- INT Geometry
+:memory: #use in-memory database
+SELECT GEOSMinimumWidth(1)
+1 # rows (not including the header row)
+1 # columns
+GEOSMinimumWidth(1)
+(NULL)

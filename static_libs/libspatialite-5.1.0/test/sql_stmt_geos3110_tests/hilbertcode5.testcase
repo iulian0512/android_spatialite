@@ -1,0 +1,7 @@
+HilbertCode - Invalid BLOB Geometry
+:memory: #use in-memory database
+SELECT HilbertCode(zeroblob(4), BuildMbr(-180, -90, 180, 90), 16)
+1 # rows (not including the header row)
+1 # columns
+HilbertCode(zeroblob(4), BuildMbr(-180, -90, 180, 90), 16)
+(NULL)

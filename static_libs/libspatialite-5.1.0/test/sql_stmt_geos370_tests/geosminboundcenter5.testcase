@@ -1,0 +1,7 @@
+MinimumBoundingCenter INVALID BLOB  Geometry
+:memory: #use in-memory database
+SELECT MinimumBoundingCenter(zeroblob(16))
+1 # rows (not including the header row)
+1 # column
+MinimumBoundingCenter(zeroblob(16))
+(NULL)

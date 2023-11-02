@@ -1,0 +1,7 @@
+MinimumBoundingCenter VALID BLOB  Geometry
+:memory: #use in-memory database
+SELECT AsText(MinimumBoundingCenter(GeomFromText('LINESTRING(0 0, 10 10)')))
+1 # rows (not including the header row)
+1 # column
+AsText(MinimumBoundingCenter(GeomFromText('LINESTRING(0 0, 10 10)')))
+POINT(5 5)

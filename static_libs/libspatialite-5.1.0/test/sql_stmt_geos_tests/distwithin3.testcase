@@ -1,0 +1,7 @@
+DistanceWithin - INT Geom-1
+:memory: #use in-memory database
+SELECT ST_DistanceWithin(2, MakePoint(4, 6), 5.5)
+1 # rows (not including the header row)
+1 # columns
+ST_DistanceWithin(2, MakePoint(4, 6), 5.5)
+-1

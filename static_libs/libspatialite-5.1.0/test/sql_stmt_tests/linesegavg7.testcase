@@ -1,0 +1,7 @@
+ST_LinestringAvgSegmentLength - invalid POLYGON geom
+:memory: #use in-memory database
+SELECT ST_LinestringAvgSegmentLength(GeomFromText('POLYGON((10 43, 11 43, 11 44, 10 44, 10 43))', 4326));
+1 # rows (not including the header row)
+1 # columns
+ST_LinestringAvgSegmentLength(GeomFromText('POLYGON((10 43, 11 43, 11 44, 10 44, 10 43))', 4326))
+(NULL)

@@ -1,0 +1,7 @@
+GEOSMinimumClearance- INVALID BLOB Geometry
+:memory: #use in-memory database
+SELECT GEOSMinimumClearance(zeroblob(12))
+1 # rows (not including the header row)
+1 # columns
+GEOSMinimumClearance(zeroblob(12))
+(NULL)

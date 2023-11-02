@@ -1,0 +1,7 @@
+DistanceWithin - DOUBLE radius
+:memory: #use in-memory database
+SELECT ST_DistanceWithin(MakePoint(1, 2), MakePoint(4, 6), 5.2)
+1 # rows (not including the header row)
+1 # columns
+ST_DistanceWithin(MakePoint(1, 2), MakePoint(4, 6), 5.2)
+1

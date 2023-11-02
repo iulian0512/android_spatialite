@@ -1,0 +1,7 @@
+DistanceWithin - DOUBLE Geom-2
+:memory: #use in-memory database
+SELECT ST_DistanceWithin(MakePoint(1, 2), 3.3, 5.5)
+1 # rows (not including the header row)
+1 # columns
+ST_DistanceWithin(MakePoint(1, 2), 3.3, 5.5)
+-1

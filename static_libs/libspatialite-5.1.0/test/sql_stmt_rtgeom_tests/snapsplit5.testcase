@@ -1,0 +1,7 @@
+SnapAndSplit, invalid BLOB LINESTRING
+:memory: #use in-memory database
+SELECT SnapAndSplit(zeroblob(10), GeomFromText('MULTIPOINT(5 0, 10 5, 5 10,  0 5)', 4326), 0.1);
+1 # rows (not including the header row)
+1 # columns
+SnapAndSplit(zeroblob(10), GeomFromText('MULTIPOINT(5 0, 10 5, 5 10,  0 5)', 4326), 0.1)
+(NULL)

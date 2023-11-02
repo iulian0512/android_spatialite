@@ -1,0 +1,7 @@
+GEOSLargestEmptyCircle - FLOAT Geometry
+:memory: #use in-memory database
+SELECT GEOSLargestEmptyCircle(1.2, 0.0)
+1 # rows (not including the header row)
+1 # columns
+GEOSLargestEmptyCircle(1.2, 0.0)
+(NULL)

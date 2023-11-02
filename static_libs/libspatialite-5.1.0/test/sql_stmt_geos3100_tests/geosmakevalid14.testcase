@@ -1,0 +1,7 @@
+GeosMakeValid - keep_collapsed TRUE
+:memory: #use in-memory database
+SELECT ST_AsText(GeosMakeValid(GeomFromText('POLYGON((100 100, 101 100, 110 100, 100 100))'), 1))
+1 # rows (not including the header row)
+1 # columns
+ST_AsText(GeosMakeValid(GeomFromText('POLYGON((100 100, 101 100, 110 100, 100 100))'), 1))
+LINESTRING(100 100, 101 100, 110 100, 100 100)

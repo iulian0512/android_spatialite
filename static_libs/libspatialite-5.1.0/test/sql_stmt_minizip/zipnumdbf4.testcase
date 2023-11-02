@@ -1,0 +1,7 @@
+Zipfile_NumDBF - BLOB zipfile
+:memory: #use in-memory database
+SELECT Zipfile_NumDBF(zeroblob(6));
+1 # rows (not including the header row)
+1 # columns
+Zipfile_NumDBF(zeroblob(6))
+(NULL)

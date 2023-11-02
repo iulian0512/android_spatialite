@@ -1,0 +1,7 @@
+ST_GetPointIndex() - TEXT check multiple
+:memory: #use in-memory database
+SELECT ST_GetPointIndex(GeomFromText('LINESTRING(0 0, 1 0, 1 1, 2 1)'), MakePoint(1.1, 1.1), 'true')
+1 # rows (not including the header row)
+1 # columns
+ST_GetPointIndex(GeomFromText('LINESTRING(0 0, 1 0, 1 1, 2 1)'), MakePoint(1.1, 1.1), 'true')
+(NULL)

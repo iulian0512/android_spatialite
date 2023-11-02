@@ -1,0 +1,7 @@
+ST_LinestringAvgSegmentLength - valid LINESTRING geom
+:memory: #use in-memory database
+SELECT ST_LinestringAvgSegmentLength(GeomFromText('LINESTRING(10 42, 11 42, 11 44, 14 44)', 4326));
+1 # rows (not including the header row)
+1 # columns
+ST_LinestringAvgSegmentLength(GeomFromText('LINESTRING(10 42, 11 42, 11 44, 14 44)', 4326))
+2.0

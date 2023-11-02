@@ -1,0 +1,7 @@
+ReducePrecision - FLOAT Geometry
+:memory: #use in-memory database
+SELECT ReducePrecision(1.2, 0)
+1 # rows (not including the header row)
+1 # columns
+ReducePrecision(1.2, 0)
+(NULL)

@@ -1,0 +1,7 @@
+ST_UphillHeight - invalid double geom
+:memory: #use in-memory database
+SELECT ST_UphillHeight(1.5);
+1 # rows (not including the header row)
+1 # columns
+ST_UphillHeight(1.5)
+(NULL)

@@ -1,0 +1,7 @@
+GEOSMinimumClearance- NULL Geometry
+:memory: #use in-memory database
+SELECT GEOSMinimumClearance(NULL)
+1 # rows (not including the header row)
+1 # columns
+GEOSMinimumClearance(NULL)
+(NULL)

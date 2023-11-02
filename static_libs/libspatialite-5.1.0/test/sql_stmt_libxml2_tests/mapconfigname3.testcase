@@ -1,0 +1,7 @@
+Rl2_MapConfigurationNameN - BLOB index 
+:memory: #use in-memory database
+SELECT Rl2_MapConfigurationNameN(zeroblob(4));
+1 # rows (not including the header row)
+1 # columns
+Rl2_MapConfigurationNameN(zeroblob(4));
+(NULL)

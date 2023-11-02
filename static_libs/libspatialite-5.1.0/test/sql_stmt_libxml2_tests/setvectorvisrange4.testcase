@@ -1,0 +1,7 @@
+SetVectorCoverageVisibilityRange - Double MinScale
+:memory: #use in-memory database
+SELECT SE_SetVectorCoverageVisibilityRange('coverage', 1000.5, NULL);
+1 # rows (not including the header row)
+1 # columns
+SE_SetVectorCoverageVisibilityRange('coverage', 1000.5, NULL)
+0

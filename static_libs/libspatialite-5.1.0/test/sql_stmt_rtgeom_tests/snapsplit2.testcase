@@ -1,0 +1,7 @@
+SnapAndSplit, INT LINESTRING
+:memory: #use in-memory database
+SELECT SnapAndSplit(1, GeomFromText('MULTIPOINT(5 0, 10 5, 5 10,  0 5)', 4326), 0.1);
+1 # rows (not including the header row)
+1 # columns
+SnapAndSplit(1, GeomFromText('MULTIPOINT(5 0, 10 5, 5 10,  0 5)', 4326), 0.1)
+(NULL)

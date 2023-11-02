@@ -1,0 +1,7 @@
+ST_DownhillHeight - 3D Linestring geom
+:memory: #use in-memory database
+SELECT ST_DownhillHeight(GeomFromText('LINESTRING Z(10 10 0, 20 20 10, 30 30 5)', 4326));
+1 # rows (not including the header row)
+1 # columns
+ST_DownhillHeight(GeomFromText('LINESTRING Z(10 10 0, 20 20 10, 30 30 5)', 4326))
+5.0

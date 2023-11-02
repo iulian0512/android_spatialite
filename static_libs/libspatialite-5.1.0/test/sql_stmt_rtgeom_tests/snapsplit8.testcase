@@ -1,0 +1,7 @@
+SnapAndSplit, TEXT MULTIPOINT
+:memory: #use in-memory database
+SELECT SnapAndSplit(GeomFromText('LINESTRING(0 0, 10 0, 10 10, 0 10, 0 0)', 4326), 'multipoint', 0.1);
+1 # rows (not including the header row)
+1 # columns
+SnapAndSplit(GeomFromText('LINESTRING(0 0, 10 0, 10 10, 0 10, 0 0)', 4326), 'multipoint', 0.1)
+(NULL)

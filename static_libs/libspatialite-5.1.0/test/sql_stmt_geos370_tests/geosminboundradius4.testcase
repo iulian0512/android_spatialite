@@ -1,0 +1,7 @@
+MinimumBoundingRadius- TEXT Geometry
+:memory: #use in-memory database
+SELECT MinimumBoundingRadius('geom')
+1 # rows (not including the header row)
+1 # columns
+MinimumBoundingRadius('geom')
+(NULL)

@@ -1,0 +1,7 @@
+ReloadMapConfiguration - Text config_name
+:memory: #use in-memory database
+SELECT RL2_ReloadMapConfiguration('alpha', zeroblob(100));
+1 # rows (not including the header row)
+1 # columns
+RL2_ReloadMapConfiguration('alpha', zeroblob(100))
+0

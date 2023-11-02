@@ -1,0 +1,7 @@
+ST_LinestringMinSegmentLength - NULL ignore-repeated
+:memory: #use in-memory database
+SELECT ST_LinestringMinSegmentLength(GeomFromText('LINESTRING(10 42, 11 42, 11 44, 14 44)', 4326), NULL);
+1 # rows (not including the header row)
+1 # columns
+ST_LinestringMinSegmentLength(GeomFromText('LINESTRING(10 42, 11 42, 11 44, 14 44)', 4326), NULL)
+(NULL)

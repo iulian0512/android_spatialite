@@ -1,0 +1,7 @@
+ImportZipSHP - existing shapefile
+:memory: #use in-memory database
+SELECT ImportZipSHP('./elba.zip', 'elba-pg', 'zipshptable', 'UTF-8', 3003);
+1 # rows (not including the header row)
+1 # columns
+ImportZipSHP('./elba.zip', 'elba-pg', 'zipshptable', 'UTF-8', 3003)
+10

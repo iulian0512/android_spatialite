@@ -1,0 +1,7 @@
+MinimumBoundingCenter TEXT  Geometry
+:memory: #use in-memory database
+SELECT MinimumBoundingCenter('geom')
+1 # rows (not including the header row)
+1 # column
+MinimumBoundingCenter('geom')
+(NULL)

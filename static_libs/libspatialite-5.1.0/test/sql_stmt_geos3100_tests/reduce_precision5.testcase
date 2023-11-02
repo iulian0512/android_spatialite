@@ -1,0 +1,7 @@
+ReducePrecision - INVALID BLOB Geometry
+:memory: #use in-memory database
+SELECT ReducePrecision(zeroblob(10), 0)
+1 # rows (not including the header row)
+1 # columns
+ReducePrecision(zeroblob(10), 0)
+(NULL)

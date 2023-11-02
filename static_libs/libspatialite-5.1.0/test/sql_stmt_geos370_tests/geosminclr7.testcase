@@ -1,0 +1,7 @@
+GEOSMinimumClearance- VALID BLOB Geometry - POINT
+:memory: #use in-memory database
+SELECT GEOSMinimumClearance(GeomFromText('POINT(0 0)'))
+1 # rows (not including the header row)
+1 # columns
+GEOSMinimumClearance(GeomFromText('POINT(0 0)'))
+Inf

@@ -1,0 +1,7 @@
+ConstrainedDelaunayTriangulation - POINT Geometry
+:memory: #use in-memory database
+SELECT ST_AsText(ConstrainedDelaunayTriangulation(MakePoint(0,0)))
+1 # rows (not including the header row)
+1 # columns
+ST_AsText(ConstrainedDelaunayTriangulation(MakePoint(0,0)))
+(NULL)

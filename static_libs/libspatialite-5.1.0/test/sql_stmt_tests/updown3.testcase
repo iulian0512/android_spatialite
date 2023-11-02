@@ -1,0 +1,7 @@
+ST_UpDownHeight - invalid text geom
+:memory: #use in-memory database
+SELECT ST_UpDownHeight('geom');
+1 # rows (not including the header row)
+1 # columns
+ST_UpDownHeight('geom')
+(NULL)

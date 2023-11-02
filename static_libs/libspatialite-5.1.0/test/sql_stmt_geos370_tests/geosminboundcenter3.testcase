@@ -1,0 +1,7 @@
+MinimumBoundingCenter FLOAT  Geometry
+:memory: #use in-memory database
+SELECT MinimumBoundingCenter(2.8)
+1 # rows (not including the header row)
+1 # column
+MinimumBoundingCenter(2.8)
+(NULL)

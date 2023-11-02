@@ -1,0 +1,7 @@
+MinimumBoundingRadius- VALID BLOB  Geometry
+:memory: #use in-memory database
+SELECT MinimumBoundingRadius(GeomFromText('LINESTRING(0 10, 10 10)'))
+1 # rows (not including the header row)
+1 # columns
+MinimumBoundingRadius(GeomFromText('LINESTRING(0 10, 10 10)'))
+5.0

@@ -1,0 +1,7 @@
+ST_LinestringMaxSegmentLength - INT geom
+:memory: #use in-memory database
+SELECT ST_LinestringMaxSegmentLength(1);
+1 # rows (not including the header row)
+1 # columns
+ST_LinestringMaxSegmentLength(1)
+(NULL)

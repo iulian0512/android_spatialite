@@ -1,0 +1,7 @@
+PROJ_GuessSridFromZipSHP() - DOUBLE zipfile
+:memory: #use in-memory database
+SELECT PROJ_GuessSridFromZipSHP(2.3, 'elba-ln');
+1 # rows (not including the header row)
+1 # columns
+PROJ_GuessSridFromZipSHP(2.3, 'elba-ln')
+(NULL)

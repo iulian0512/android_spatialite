@@ -1,0 +1,7 @@
+GeosMakeValid - INT Geometry
+:memory: #use in-memory database
+SELECT ST_AsText(GeosMakeValid(1))
+1 # rows (not including the header row)
+1 # columns
+ST_AsText(GeosMakeValid(1))
+(NULL)

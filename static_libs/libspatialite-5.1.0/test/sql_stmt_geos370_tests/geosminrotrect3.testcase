@@ -1,0 +1,7 @@
+GEOSMinimumRotatedRectangle - FLOAT Geometry
+:memory: #use in-memory database
+SELECT GEOSMinimumRotatedRectangle(1.5)
+1 # rows (not including the header row)
+1 # columns
+GEOSMinimumRotatedRectangle(1.5)
+(NULL)

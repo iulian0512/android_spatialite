@@ -1,0 +1,7 @@
+GeosDensify - TEXT Geometry
+:memory: #use in-memory database
+SELECT ST_AsText(GeosDensify('geom', 1.0))
+1 # rows (not including the header row)
+1 # columns
+ST_AsText(GeosDensify('geom', 1.0))
+(NULL)

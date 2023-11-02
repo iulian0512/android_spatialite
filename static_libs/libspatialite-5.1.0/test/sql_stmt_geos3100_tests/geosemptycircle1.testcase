@@ -1,0 +1,7 @@
+GEOSLargestEmptyCircle - NULL Geometry
+:memory: #use in-memory database
+SELECT GEOSLargestEmptyCircle(NULL, 0.0)
+1 # rows (not including the header row)
+1 # columns
+GEOSLargestEmptyCircle(NULL, 0.0)
+(NULL)

@@ -1,0 +1,7 @@
+GEOSMaximumInscribedCircle - VALID BLOB  Geometry, BLOB tolerance
+:memory: #use in-memory database
+SELECT AsText(GEOSMaximumInscribedCircle(GeomFromText('POLYGON ((0 0, 10 0, 10 20, 0 20, 0 0))'), zeroblob(4)))
+1 # rows (not including the header row)
+1 # columns
+AsText(GEOSMaximumInscribedCircle(GeomFromText('POLYGON ((0 0, 10 0, 10 20, 0 20, 0 0))'), zeroblob(4)))
+(NULL)

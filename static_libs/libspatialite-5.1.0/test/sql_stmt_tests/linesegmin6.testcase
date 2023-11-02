@@ -1,0 +1,7 @@
+ST_LinestringMinSegmentLength - invalid POINT geom
+:memory: #use in-memory database
+SELECT ST_LinestringMinSegmentLength(MakePoint(11, 43, 4326));
+1 # rows (not including the header row)
+1 # columns
+ST_LinestringMinSegmentLength(MakePoint(11, 43, 4326))
+(NULL)

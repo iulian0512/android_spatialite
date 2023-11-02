@@ -1,0 +1,12 @@
+# Package Information for pkg-config
+
+prefix=/Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/libspatialite-5.1.0/build
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: spatialite
+Description: Spatial SQL database engine based on SQLite
+Version: 5.1.0
+Libs: -L${libdir} -lspatialite -lz  -L/Users/ics/temp/spatialite5.1.0_build/astudio_proj/static_libs/geos-3.12.0/build/lib -lgeos_c  -lsqlite3 -lm
+Cflags: -I${includedir}

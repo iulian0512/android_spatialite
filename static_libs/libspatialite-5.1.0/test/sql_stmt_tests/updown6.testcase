@@ -1,0 +1,7 @@
+ST_UpDownHeight - invalid Point geom
+:memory: #use in-memory database
+SELECT ST_UpDownHeight(MakePoint(11, 42, 4326));
+1 # rows (not including the header row)
+1 # columns
+ST_UpDownHeight(MakePoint(11, 42, 4326))
+(NULL)

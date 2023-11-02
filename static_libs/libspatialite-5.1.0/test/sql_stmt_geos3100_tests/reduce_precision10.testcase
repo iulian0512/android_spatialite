@@ -1,0 +1,7 @@
+ReducePrecision - VALID BLOB Geometrym BLOB tolerance
+:memory: #use in-memory database
+SELECT AsText(ReducePrecision(GeomFromText('POLYGON((0.12 0.12, 10.13 0.13, 10.15 10.15, 0.14 10.14, 0.12 0.12))'), zeroblob(5)))
+1 # rows (not including the header row)
+1 # columns
+AsText(ReducePrecision(GeomFromText('POLYGON((0.12 0.12, 10.13 0.13, 10.15 10.15, 0.14 10.14, 0.12 0.12))'), zeroblob(5)))
+(NULL)

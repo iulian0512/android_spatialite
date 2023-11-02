@@ -1,0 +1,7 @@
+GEOSMinimumBoundingCircle - INVALID BLOB Geometry
+:memory: #use in-memory database
+SELECT GEOSMinimumBoundingCircle(zeroblob(15))
+1 # rows (not including the header row)
+1 # columns
+GEOSMinimumBoundingCircle(zeroblob(15))
+(NULL)

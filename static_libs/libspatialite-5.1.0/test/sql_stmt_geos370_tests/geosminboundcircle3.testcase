@@ -1,0 +1,7 @@
+GEOSMinimumBoundingCircle - FLOAT Geometry
+:memory: #use in-memory database
+SELECT GEOSMinimumBoundingCircle(1.5)
+1 # rows (not including the header row)
+1 # columns
+GEOSMinimumBoundingCircle(1.5)
+(NULL)

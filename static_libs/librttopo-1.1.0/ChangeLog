@@ -1,0 +1,1248 @@
+2019-07-27  Sandro Santilli <strk@kbt.io>
+
+	* NEWS.md, configure.ac: Set final version to 1.1.0
+
+2019-06-06  Sandro Santilli <strk@kbt.io>
+
+	* README.md: Update Dronie badge
+
+2018-05-24  Sandro Santilli <strk@kbt.io>
+
+	* : commit 8aa2dca5608d128f2e453da443b46cb1b738ba21 Author:
+	missinglink <peter@geocode.earth> Date:   Thu May 24 03:57:43 2018
+	-0700
+
+2018-05-08  missinglink <peter@geocode.earth>
+
+	* README.md: readme: fix link URL the markdown parser on git.osgeo.org appends the '.' to the URL,
+	this PR prevents that and the 404 when clicking it.
+
+2018-01-25  Sandro Santilli <strk@kbt.io>
+
+	* README.md, headers/librttopo.h, headers/librttopo_geom.h.in,
+	src/box2d.c, src/bytebuffer.c, src/bytebuffer.h, src/g_box.c,
+	src/g_serialized.c, src/g_util.c, src/librttopo_geom_internal.h,
+	src/librttopo_internal.h, src/measures.c, src/measures.h,
+	src/measures3d.c, src/measures3d.h, src/ptarray.c,
+	src/rtalgorithm.c, src/rtcircstring.c, src/rtcollection.c,
+	src/rtcompound.c, src/rtcurvepoly.c, src/rtgeodetic.c,
+	src/rtgeodetic.h, src/rtgeom.c, src/rtgeom_api.c,
+	src/rtgeom_debug.c, src/rtgeom_geos.c, src/rtgeom_geos.h,
+	src/rtgeom_geos_clean.c, src/rtgeom_geos_node.c,
+	src/rtgeom_geos_split.c, src/rtgeom_log.h, src/rtgeom_topo.c,
+	src/rthomogenize.c, src/rtin_geojson.c, src/rtin_twkb.c,
+	src/rtin_wkb.c, src/rtiterator.c, src/rtline.c,
+	src/rtlinearreferencing.c, src/rtmcurve.c, src/rtmline.c,
+	src/rtmpoint.c, src/rtmpoly.c, src/rtmsurface.c,
+	src/rtout_encoded_polyline.c, src/rtout_geojson.c, src/rtout_gml.c,
+	src/rtout_kml.c, src/rtout_svg.c, src/rtout_twkb.c,
+	src/rtout_twkb.h, src/rtout_wkb.c, src/rtout_wkt.c,
+	src/rtout_x3d.c, src/rtpoint.c, src/rtpoly.c, src/rtprint.c,
+	src/rtpsurface.c, src/rtspheroid.c, src/rtstroke.c,
+	src/rtt_tpsnap.c, src/rttin.c, src/rttree.c, src/rttree.h,
+	src/rttriangle.c, src/rtutil.c, src/stringbuffer.c,
+	src/stringbuffer.h, src/varint.c, src/varint.h: Update official
+	website (gogs -> gitea)
+
+2018-01-24  Sandro Santilli <strk@kbt.io>
+
+	* HOWTO_RELEASE: ChangeLog is now only included in dist
+
+2017-04-12  Sandro Santilli <strk@kbt.io>
+
+	* README.md: Update drone badge url
+
+2017-02-07  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Print more digits about edgeend azimuths
+
+2017-01-24  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo.h, src/rtt_tpsnap.c: tpsnap: Accept removal
+	tolerance separately Syncs with version 13 of algo:
+
+	https://git.osgeo.org/gogs/rttopo/librttopo/wiki/SnapToTopo-algorithmCloses #20
+
+2017-01-24  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo.h: Record new tpsnap algorithm version
+
+2017-01-16  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Fix use of uninitialized variable
+
+2017-01-04  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Skip points outside of pointarray snap-expanded
+	bounding box Speeds up finding vertices within snap distance
+
+2017-01-03  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Simplify code after drop of pairs concept
+
+2017-01-02  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Sort equidistant snap points by x/y
+
+2016-12-27  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Consider snap vertices in isolation, rather than
+	in pairs
+
+2016-12-27  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Use half the calls to getPoint2d_p while finding
+	closest segment
+
+2016-12-20  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo.h, src/rtt_tpsnap.c: rtt_tpsnap: do not break on
+	first vertex removal Upgrades algoritm to version 11 of
+
+	https://git.osgeo.org/gogs/rttopo/librttopo/wiki/SnapToTopo-algorithm
+
+2016-12-19  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Output debug line for each snapped pointarray
+
+2016-12-12  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo.h, src/rtt_tpsnap.c: rtt_tpsnap: consider all
+	edges for the removal phase Upgrade algoritm to version 10 of
+
+	https://git.osgeo.org/gogs/rttopo/librttopo/wiki/SnapToTopo-algorithmCloses #18
+
+2016-12-10  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Fix comment
+
+2016-12-09  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Report offset of snapping pair at debug level 1
+
+2016-12-09  Sandro Santilli <strk@kbt.io>
+
+	* configure.ac: Allow passing level to --enable-debug
+
+2016-12-06  Sandro Santilli <strk@kbt.io>
+
+	* src/Makefile.am: Fix distcheck
+
+2016-11-25  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo.h, src/rtt_tpsnap.c, src/rtutil.c: rtt_tpsnap:
+	add recursive step, as in version 9 of algorithm
+
+2016-11-24  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo.h, src/rtt_tpsnap.c: rtt_tpsnap: perform vertex
+	addition before vertex removal Matches with version 8 of the algoritm as documented on the wiki:
+
+	https://git.osgeo.org/gogs/rttopo/librttopo/wiki/SnapToTopo-algorithmFixes #17
+
+2016-11-23  Sandro Santilli <strk@kbt.io>
+
+	* src/Makefile.am: Make sure that rttopo_config.h is also found in
+	build dir
+
+2016-11-23  Sandro Santilli <strk@kbt.io>
+
+	* src/Makefile.am: Fix off-tree builds
+
+2016-11-23  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Show up to 15 significant digits in debugging
+	outputs
+
+2016-11-23  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Fix debug macro invocation
+
+2016-11-23  Sandro Santilli <strk@kbt.io>
+
+	* configure.ac: Add --enable-debug switch
+
+2016-11-23  Sandro Santilli <strk@kbt.io>
+
+	* src/box2d.c, src/bytebuffer.c, src/g_box.c, src/g_serialized.c,
+	src/g_util.c, src/measures.c, src/measures3d.c, src/rtalgorithm.c,
+	src/rtcircstring.c, src/rtcollection.c, src/rtcompound.c,
+	src/rtcurvepoly.c, src/rtgeodetic.c, src/rtgeom.c,
+	src/rtgeom_debug.c, src/rtgeom_geos_split.c, src/rthomogenize.c,
+	src/rtin_twkb.c, src/rtiterator.c, src/rtline.c,
+	src/rtlinearreferencing.c, src/rtmcurve.c, src/rtmline.c,
+	src/rtmpoint.c, src/rtmpoly.c, src/rtmsurface.c,
+	src/rtout_encoded_polyline.c, src/rtout_geojson.c, src/rtout_gml.c,
+	src/rtout_kml.c, src/rtout_svg.c, src/rtout_twkb.c,
+	src/rtout_wkb.c, src/rtout_wkt.c, src/rtout_x3d.c, src/rtpoly.c,
+	src/rtprint.c, src/rtpsurface.c, src/rtspheroid.c, src/rtstroke.c,
+	src/rttin.c, src/rttree.c, src/rttriangle.c, src/stringbuffer.c,
+	src/varint.c: Make sure every .c file includes configuration Fixes accidental omission of version-dependent features
+
+2016-11-23  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_geos_clean.c: Add missing config include
+
+2016-11-23  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Fix endpoint check upon vertex removal
+
+2016-11-23  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Add more debugging lines
+
+2016-11-23  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Fix endpoint check and snapping segment
+
+2016-11-23  Sandro Santilli <strk@kbt.io>
+
+	* src/rtutil.c: Add commented out macro to help with debugging
+	sessions
+
+2016-11-23  Sandro Santilli <strk@kbt.io>
+
+	* src/rtutil.c: Reorganize code so that comments do make more sense
+
+2016-11-23  Sandro Santilli <strk@kbt.io>
+
+	* src/librttopo_internal.h: Do not include rttopo_config.h from
+	another header file This is to allow locally overriding debug macros...
+
+2016-11-22  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Fix debug build
+
+2016-11-22  Sandro Santilli <strk@kbt.io>
+
+	* src/librttopo_geom_internal.h, src/rtgeom_api.c,
+	src/rtgeom_geos.c, src/rtgeom_geos_node.c: Do not include
+	rttopo_config.h from header file This is to allow locally overriding debug macros
+
+2016-11-21  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Add documentation to
+	_rtgeom_tpsnap_ptarray_remove internal func
+
+2016-11-21  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Rename variables to make code more readable
+
+2016-11-21  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Fix _rtgeom_tpsnap_ptarray_remove edge segment
+	points extraction
+
+2016-11-21  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_api.c: Do not continue executing rt_getPoint4d upon
+	error And document return code
+
+2016-11-21  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_geos.c: Drop conditional GEOS blocks that would never
+	be used We required GEOS-3.5.0+ so there's no reason to include code to deal
+	with older versions
+
+2016-11-21  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Ensure geos is initialized while running
+	rtt_tpsnap
+
+2016-11-21  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_geos.c: Fix return code upon GEOSCoordSeq_create_r
+	error
+
+2016-11-18  Sandro Santilli <strk@kbt.io>
+
+	* NEWS.md, headers/librttopo.h, src/rtgeom_topo.c: Allow optional
+	bbox for the getEdgeWithinBox2D backend callback Request support for NULL bbox pointer arg in the backend driver
+	callback. This allows for easier optimizations of "fetch all edges"
+	operation while avoiding to add a new callback.
+
+2016-11-16  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Do not accept for an hole a shell with same
+	bbox
+
+2016-11-16  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Improve debugging output
+
+2016-11-16  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Add sign to edge ring debug output
+
+2016-11-14  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Fix qsort call
+
+2016-11-14  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Fix short allocation in RTT_VPAIR_ARRAY_PUSH
+
+2016-11-14  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Use RTT_ prefix consistently
+
+2016-11-14  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Fix short allocation
+
+2016-11-12  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Check that no faces exist upon entering
+	rtt_AddLineNoFace Patch by Alessandro Furieri Closes #15
+
+2016-11-11  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Fix bogus determination shell containing
+	outermost ring Fixes #14
+
+2016-11-10  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Place a commented-out DEBUG macro
+
+2016-11-09  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Do not free unallocated pointer
+
+2016-11-09  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Remove unused variable
+
+2016-11-08  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Fix memory leak in _rtgeom_tpsnap_ptarray_add
+
+2016-11-08  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Fix missing initialization of edge point array
+
+2016-11-07  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Fix memory leaks
+
+2016-11-06  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Have rtt_Polygonize check preconditions and
+	tolerate no edges Preconditions are:  - Face table only has universe face Patch by Alessandro Furieri, slighly twiked by myself.  Closes #13
+
+2016-11-05  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Ensure GEOS is initialized upon entering
+	rtt_Polygonize
+
+2016-11-04  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Do not continue on error, and print nod einfo
+	before releasing them
+
+2016-11-04  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Do not complain if unable to derive face info,
+	when not asked to
+
+2016-11-04  Sandro Santilli <strk@kbt.io>
+
+	* src/rtt_tpsnap.c: Fix rtt_tpsnap implemented signature
+
+2016-11-04  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo.h, src/rtgeom_topo.c: Improve rtt_Polygonize
+	error handling, expose in headers with docs
+
+2016-10-31  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo.h, src/Makefile.am, src/{rtgeom_tpsnap.c =>
+	rtt_tpsnap.c}: Rename file to match function it contains, update
+	rtt_tpsnap version
+
+2016-10-31  Sandro Santilli <strk@kbt.io>
+
+	* NEWS.md: Add notice about the new rtt_tpsnap function
+
+2016-10-18  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo.h, src/Makefile.am, src/librttopo_internal.h,
+	src/rtgeom_topo.c, src/rtgeom_tpsnap.c: Implement rtt_tpsnap
+	function Closes #12
+
+2016-10-27  Sandro Santilli <strk@kbt.io>
+
+	* Makefile.am: Fix distcheck and avoid overriding ChangeLog in
+	distributions
+
+2016-10-27  Sandro Santilli <strk@kbt.io>
+
+	* Makefile.am: Generate ChangeLog in builddir, clean it up on make
+	clean
+
+2016-10-27  Sandro Santilli <strk@kbt.io>
+
+	* ChangeLog, Makefile.am: Remove ChangeLog from repository, generate
+	on dist
+
+2016-09-27  Sandro Santilli <strk@kbt.io>
+
+	* NEWS.md, src/rtgeom_topo.c: Add rtt_Polygonize function The function determines all faces generated by correcly linked
+	edges, creates face records and updates edge attributes accordingly
+
+2016-09-24  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Do not complain about side-location conflicts
+	if not asked to check faces
+
+2016-09-08  Sandro Santilli <strk@kbt.io>
+
+	* NEWS.md: Add rtt_AddLineNoFace new
+
+2016-09-08  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Do not attempt to update MBR of unexistent face
+
+2016-09-08  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Do not look for edge endpoints face
+	containement when not asked to
+
+2016-09-08  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Do not complain if unable to derive face info,
+	when not asked to
+
+2016-09-07  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo.h, src/rtgeom_topo.c: Add rtt_AddLineNoFace
+	function The function adds edges w/out checking for face splits and leaving
+	the topology in an invalid state (with null left/right faces)
+
+2016-09-08  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo_geom.h.in, src/librttopo_geom_internal.h: Move
+	BOX3D signatures to private header
+
+2016-09-08  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo_geom.h.in, src/librttopo_geom_internal.h: Hide
+	clamp_srid and error_if_srid_mismatch from public API They would clash with liblwgeom API when both used by the same
+	client.
+
+2016-09-06  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_topo.c: Do not consider a tolerance of 0 as a grid of 0
+	size Fixes spatialite testsuite
+
+2016-09-06  Sandro Santilli <strk@kbt.io>
+
+	* src/bytebuffer.c, src/g_box.c, src/g_serialized.c,
+	src/measures.c, src/measures3d.c, src/ptarray.c, src/rtalgorithm.c,
+	src/rtcircstring.c, src/rtcollection.c, src/rtcompound.c,
+	src/rtcurvepoly.c, src/rtgeodetic.c, src/rtgeom.c,
+	src/rtgeom_api.c, src/rtgeom_debug.c, src/rtgeom_geos.c,
+	src/rtgeom_geos_clean.c, src/rtgeom_geos_split.c, src/rtgeom_log.h,
+	src/rtgeom_topo.c, src/rtin_geojson.c, src/rtin_twkb.c,
+	src/rtin_wkb.c, src/rtline.c, src/rtlinearreferencing.c,
+	src/rtmpoint.c, src/rtout_twkb.c, src/rtout_wkb.c, src/rtout_wkt.c,
+	src/rtpoint.c, src/rtpoly.c, src/rtspheroid.c, src/rtstroke.c,
+	src/rttree.c, src/rttriangle.c, src/rtutil.c: Fix debug build
+
+2016-09-06  Sandro Santilli <strk@kbt.io>
+
+	* NEWS.md, headers/librttopo.h, src/rtgeom_topo.c: Change semantic
+	of value 0 for tolerance parameter Let 0 really mean 0, use -1 to mean "automatically determine"
+
+2016-09-06  Sandro Santilli <strk@kbt.io>
+
+	* HOWTO_RELEASE, src/Makefile.am: Fix library version info
+
+2016-09-05  Sandro Santilli <strk@kbt.io>
+
+	* NEWS.md, configure.ac: Retarget master to 1.1.0-dev
+
+2016-07-18  Sandro Santilli <strk@kbt.io>
+
+	* README.md: Add drone/osgeo badge
+
+2016-07-18  Sandro Santilli <strk@kbt.io>
+
+	* .drone.yml: Add drone configuration
+
+2016-07-18  Sandro Santilli <strk@kbt.io>
+
+	* .gitignore, docker/build-test/Dockerfile.debian-sid,
+	docker/build-test/Makefile: Add build instructions for build-test
+	docker image
+
+2016-07-18  Sandro Santilli <strk@kbt.io>
+
+	* .gitlab-ci.yml: Add warning flags to build config
+
+2016-07-18  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo.h, headers/librttopo_geom.h.in, src/box2d.c,
+	src/librttopo_geom_internal.h, src/librttopo_internal.h,
+	src/ptarray.c, src/rtgeom_geos.c, src/rtgeom_geos.h,
+	src/rtgeom_geos_clean.c, src/rtgeom_geos_node.c,
+	src/rtgeom_geos_split.c, src/rtgeom_log.h, src/rtgeom_topo.c,
+	src/rtin_geojson.c, src/rtline.c, src/rtlinearreferencing.c,
+	src/rtout_gml.c, src/rtpoly.c, src/rtprint.c, src/rtutil.c,
+	src/varint.c, src/varint.h: Fix my email address
+
+2016-07-18  Sandro Santilli <strk@kbt.io>
+
+	* src/rtgeom_geos_split.c: Fix undefined references.  Closes #11
+
+2016-07-04  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo.h: Wrap to 80 cols
+
+2016-07-04  Sandro Santilli <strk@kbt.io>
+
+	* headers/librttopo.h, headers/librttopo_geom.h.in, src/box2d.c,
+	src/librttopo_geom_internal.h, src/librttopo_internal.h,
+	src/ptarray.c, src/rtgeom_geos.c, src/rtgeom_geos.h,
+	src/rtgeom_geos_clean.c, src/rtgeom_geos_node.c,
+	src/rtgeom_geos_split.c, src/rtgeom_log.h, src/rtgeom_topo.c,
+	src/rtin_geojson.c, src/rtline.c, src/rtlinearreferencing.c,
+	src/rtout_gml.c, src/rtpoly.c, src/rtprint.c, src/rtutil.c,
+	src/varint.c, src/varint.h: Update my email address
+
+2016-07-01  Sandro Santilli <strk@kbt.io>
+
+	* NEWS.md, src/librttopo_geom_internal.h, src/rtgeom_geos_split.c: 
+	Avoid any drift of cutter point on lines split Should fix splitting operations on at least arm64, ppc64el and
+	s390x.  See postgis#3422 and postgis#3401 Add port info to rtgeom_geos_split.c, set to postgis.r14594
+
+2016-05-19  Sandro Santilli <strk@kbt.io>
+
+	* NEWS.md, configure.ac: Change version to 1.0.1-dev
+
+2016-05-18  Sandro Santilli <strk@kbt.io>
+
+	* ChangeLog, configure.ac: Release 1.0.0 Includes regenerated ChangeLog
+
+2016-05-07  Sandro Santilli <strk@keybit.net>
+
+	* ChangeLog: Add ChangeLog file in repository
+
+2016-05-07  Sandro Santilli <strk@keybit.net>
+
+	* HOWTO_RELEASE, Makefile.am: Rework ChangeLog generation rule Generation target is now "cl" and also works when build dir is not
+	below source dir.  ChangeLog is pushed to repo.
+
+2016-05-07  Sandro Santilli <strk@keybit.net>
+
+	* .gitignore: Ignore more generated files
+
+2016-05-07  Sandro Santilli <strk@keybit.net>
+
+	* configure.ac: Set version to 1.0.0-RC3 (and update admin email)
+
+2016-05-07  Sandro Santilli <strk@keybit.net>
+
+	* src/rtutil.c: Release GEOS context on rtgeom_finish Patch by Alessandro Furieri
+
+2016-05-07  Sandro Santilli <strk@keybit.net>
+
+	* headers/librttopo_geom.h.in: Rewrite the introductory section of
+	docs
+
+2016-05-06  Sandro Santilli <strk@keybit.net>
+
+	* src/rtgeom_geos.c: Do not override pre-initialized GEOS handler in
+	rttopo context Fixes leaks of GEOS contexts.  Thanks Alessandro Furieri for
+	spotting this.
+
+2016-05-06  Sandro Santilli <strk@keybit.net>
+
+	* .editorconfig, headers/librttopo.h, headers/librttopo_geom.h.in,
+	src/box2d.c, src/bytebuffer.c, src/bytebuffer.h, src/g_box.c,
+	src/g_serialized.c, src/g_util.c, src/librttopo_geom_internal.h,
+	src/measures.c, src/measures.h, src/measures3d.c, src/measures3d.h,
+	src/ptarray.c, src/rtalgorithm.c, src/rtcircstring.c,
+	src/rtcollection.c, src/rtcompound.c, src/rtcurvepoly.c,
+	src/rtgeodetic.c, src/rtgeodetic.h, src/rtgeom.c, src/rtgeom_api.c,
+	src/rtgeom_debug.c, src/rtgeom_geos.c, src/rtgeom_geos_clean.c,
+	src/rtgeom_geos_node.c, src/rtgeom_geos_split.c, src/rtgeom_log.h,
+	src/rtgeom_topo.c, src/rthomogenize.c, src/rtin_geojson.c,
+	src/rtin_twkb.c, src/rtin_wkb.c, src/rtiterator.c, src/rtline.c,
+	src/rtlinearreferencing.c, src/rtmline.c, src/rtmpoint.c,
+	src/rtmpoly.c, src/rtout_encoded_polyline.c, src/rtout_geojson.c,
+	src/rtout_gml.c, src/rtout_kml.c, src/rtout_svg.c,
+	src/rtout_twkb.c, src/rtout_twkb.h, src/rtout_wkb.c,
+	src/rtout_wkt.c, src/rtout_x3d.c, src/rtpoint.c, src/rtpoly.c,
+	src/rtprint.c, src/rtpsurface.c, src/rtspheroid.c, src/rtstroke.c,
+	src/rttin.c, src/rttree.c, src/rttree.h, src/rttriangle.c,
+	src/rtutil.c, src/stringbuffer.c, src/stringbuffer.h, src/varint.c: 
+	Style only commit: use 2-spaces instead of tabs, trim ending
+	newlines
+
+2016-05-03  Sandro Santilli <strk@keybit.net>
+
+	* HOWTO_RELEASE: Add upload destination
+
+2016-05-01  Sandro Santilli <strk@keybit.net>
+
+	* .gitlab-ci.yml: Have gitlab-ci install git2cl
+
+2016-05-01  Sandro Santilli <strk@keybit.net>
+
+	* Makefile.am: Include an auto-generated ChangeLog file in
+	distribution Closes #9
+
+2016-04-30  Sandro Santilli <strk@keybit.net>
+
+	* CREDITS: Add PSC info
+
+2016-04-30  Sandro Santilli <strk@keybit.net>
+
+	* CREDITS: Add Bas credits
+
+2016-04-30  Sandro Santilli <strk@keybit.net>
+
+	* README.md: Add link to development mailing list
+
+2016-04-26  Sandro Santilli <strk@keybit.net>
+
+	* README.md: Use markdown link for windows build reference
+
+2016-04-26  Sandro Santilli <strk@keybit.net>
+
+	* Makefile.am, README.md, doc/BUILDING-ON-WINDOWS.md: Add windows
+	build instructions
+
+2016-04-26  Sandro Santilli <strk@keybit.net>
+
+	* .gitlab-ci.yml: Install zip tool for dist
+
+2016-04-26  Sandro Santilli <strk@keybit.net>
+
+	* HOWTO_RELEASE: Tweak instruction to push annotated tag
+
+2016-04-26  Sandro Santilli <strk@keybit.net>
+
+	* HOWTO_RELEASE: Add HOWTO_RELEASE file This is not distributed as part of the tarball
+
+2016-04-26  Sandro Santilli <strk@keybit.net>
+
+	* .gitlab-ci.yml: Have gitlab-ci run distcheck The 'distcheck' rule will test for install/uninstall targets
+
+2016-04-26  Sandro Santilli <strk@keybit.net>
+
+	* README.md: Add license info
+
+2016-04-26  Sandro Santilli <strk@keybit.net>
+
+	* CREDITS, Makefile.am, g_serialized.txt => doc/g_serialized.txt: 
+	Add credits, move g_serialized under doc
+
+2016-04-26  Sandro Santilli <strk@keybit.net>
+
+	* configure.ac: Set version to 1.0.0-RC2
+
+2016-04-26  Sandro Santilli <strk@keybit.net>
+
+	* configure.ac: Drop trailing newlines, as per .editorconfig
+
+2016-04-26  Sandro Santilli <strk@keybit.net>
+
+	* Makefile.am: Distribute DATASTORES.md
+
+2016-04-25  Sandro Santilli <strk@keybit.net>
+
+	* README.md, doc/DATASTORES.md: Add list of known data stores
+
+2016-04-25  Sandro Santilli <strk@keybit.net>
+
+	* README.md: Reword about section
+
+2016-04-25  Sandro Santilli <strk@keybit.net>
+
+	* src/rtprint.c: Do not use dynamic arrays
+
+2016-04-25  Sandro Santilli <strk@keybit.net>
+
+	* README.md: Reword the About part
+
+2016-04-25  Sandro Santilli <strk@keybit.net>
+
+	* Makefile.am, README.md, README.topo: Merge the two readmes, add
+	info about building
+
+2016-04-25  Sandro Santilli <strk@keybit.net>
+
+	* src/Makefile.am: Remove unexistent file from noinst_HEADERS
+
+2016-04-25  Sandro Santilli <strk@keybit.net>
+
+	* makefile.vc, nmake.opt: Add build scripts for MSVC Files provided by Alessandro Furieri
+
+2016-04-25  Sandro Santilli <strk@keybit.net>
+
+	* src/Makefile.am, src/rtgeodetic_tree.c, src/rtgeodetic_tree.h: 
+	Drop unused geodetic tree files
+
+2016-04-25  Alessandro Furieri <a.furieri@lqt.it>
+
+	* .gitignore, Makefile, Makefile.am, Version.config, aclocal.m4,
+	autogen.sh, configure.ac, headers/Makefile.am, {src =>
+	headers}/librttopo.h, {src => headers}/librttopo_geom.h.in,
+	macros/intltool.m4, macros/lib-ld.m4, macros/lib-link.m4,
+	macros/lib-prefix.m4, macros/libtool.m4, macros/ltoptions.m4,
+	macros/ltsugar.m4, macros/ltversion.m4, macros/lt~obsolete.m4,
+	macros/po.m4, macros/progtest.m4, rttopo.pc.in, src/Makefile.am,
+	src/Makefile.in, src/librttopo_geom_internal.h,
+	src/rttopo_config.h.in: Switch to automake based builds
+
+2016-04-21  Sandro Santilli <strk@keybit.net>
+
+	* src/librttopo_geom.h.in: Update copyright info
+
+2016-04-21  Sandro Santilli <strk@keybit.net>
+
+	* src/librttopo_geom.h.in: Remove trailing spaces
+
+2016-04-21  Sandro Santilli <strk@keybit.net>
+
+	* src/rtgeom_topo.c: Update copyright notice
+
+2016-04-21  Sandro Santilli <strk@keybit.net>
+
+	* src/rtgeom_topo.c: Remove trailing spaces
+
+2016-04-21  Sandro Santilli <strk@keybit.net>
+
+	* .editorconfig: Add an EditorConfig configuration See http://editorconfig.org/
+
+2016-04-21  Sandro Santilli <strk@keybit.net>
+
+	* src/rtgeom_topo.c: Add last port info
+
+2016-04-21  Sandro Santilli <strk@keybit.net>
+
+	* src/rtgeom_topo.c: Fix debug print
+
+2016-04-21  Sandro Santilli <strk@keybit.net>
+
+	* src/rtgeom_topo.c: rtt_AddEdge*: avoid db access for edges known
+	to be dangling
+
+2016-04-20  Sandro Santilli <strk@keybit.net>
+
+	* src/rtgeom_topo.c: Fix bogus port of side-location-conflict check Rectifies 891d7bb0b5f25bf73ccd3a304febd96b59279527
+
+2016-04-20  Sandro Santilli <strk@keybit.net>
+
+	* src/rtgeom_topo.c: Improves snapping robustness See http://trac.osgeo.org/postgis/ticket/3402
+
+2016-04-20  Sandro Santilli <strk@keybit.net>
+
+	* src/rtgeom_topo.c: Fixes geometry-intersects-edge exception when
+	snapping twice to the same pointset.  See http://trac.osgeo.org/postgis/ticket/3412
+
+2016-04-19  Sandro Santilli <strk@keybit.net>
+
+	* README.md: Add a mention of the gilab.com mirror
+
+2016-04-19  Sandro Santilli <strk@keybit.net>
+
+	* README.md: Add link to osgeo/gogs as official code repo
+
+2016-04-19  Sandro Santilli <strk@keybit.net>
+
+	* configure.ac, src/Makefile.in, src/box2d.c, src/bytebuffer.c,
+	src/bytebuffer.h, src/g_box.c, src/g_serialized.c, src/g_util.c,
+	src/librttopo.h, src/librttopo_geom.h.in,
+	src/librttopo_geom_internal.h, src/librttopo_internal.h,
+	src/measures.c, src/measures.h, src/measures3d.c, src/measures3d.h,
+	src/ptarray.c, src/rtalgorithm.c, src/rtcircstring.c,
+	src/rtcollection.c, src/rtcompound.c, src/rtcurvepoly.c,
+	src/rtgeodetic.c, src/rtgeodetic.h, src/rtgeodetic_tree.c,
+	src/rtgeodetic_tree.h, src/rtgeom.c, src/rtgeom_api.c,
+	src/rtgeom_debug.c, src/rtgeom_geos.c, src/rtgeom_geos.h,
+	src/rtgeom_geos_clean.c, src/rtgeom_geos_node.c,
+	src/rtgeom_geos_split.c, src/rtgeom_log.h, src/rtgeom_topo.c,
+	src/rthomogenize.c, src/rtin_geojson.c, src/rtin_twkb.c,
+	src/rtin_wkb.c, src/rtiterator.c, src/rtline.c,
+	src/rtlinearreferencing.c, src/rtmcurve.c, src/rtmline.c,
+	src/rtmpoint.c, src/rtmpoly.c, src/rtmsurface.c,
+	src/rtout_encoded_polyline.c, src/rtout_geojson.c, src/rtout_gml.c,
+	src/rtout_kml.c, src/rtout_svg.c, src/rtout_twkb.c,
+	src/rtout_twkb.h, src/rtout_wkb.c, src/rtout_wkt.c,
+	src/rtout_x3d.c, src/rtpoint.c, src/rtpoly.c, src/rtprint.c,
+	src/rtpsurface.c, src/rtspheroid.c, src/rtstroke.c, src/rttin.c,
+	src/rttopo_config.h.in, src/rttree.c, src/rttree.h,
+	src/rttriangle.c, src/rtutil.c, src/stringbuffer.c,
+	src/stringbuffer.h, src/varint.c, src/varint.h: Update homepage to
+	use osgeo/gogs
+
+2016-04-19  Sandro Santilli <strk@keybit.net>
+
+	* src/box2d.c, src/rtgeodetic_tree.c, src/rtgeodetic_tree.h,
+	src/rtprint.c, src/rttopo_config.h.in, src/rttree.c, src/rttree.h,
+	src/rtutil.c: Add missing copyright notices
+
+2016-04-19  Sandro Santilli <strk@keybit.net>
+
+	* src/librttopo_geom.h.in, src/rtutil.c: Add rtgeom_finish function,
+	and improve dox for rtgeom_init
+
+2016-04-19  Sandro Santilli <strk@keybit.net>
+
+	* src/rtutil.c: Allow calling rtgeom_init with all null pointers
+
+2016-04-18  Sandro Santilli <strk@keybit.net>
+
+	* src/rtgeom_topo.c: Fix crash on face-collapsing edge change See https://trac.osgeo.org/postgis/ticket/3463
+
+2016-04-18  Sandro Santilli <strk@keybit.net>
+
+	* src/rtgeom_topo.c: Check for side-location conflicts when adding a
+	new edge It is possible to trigger such failure adding an edge to a corrupted
+	topology. Test added.  See https://trac.osgeo.org/postgis/ticket/3464
+
+2016-04-18  Sandro Santilli <strk@keybit.net>
+
+	* src/rtgeom_topo.c: PRId64 to RTTFMT_ELEMID
+
+2016-04-18  Sandro Santilli <strk@keybit.net>
+
+	* src/rtgeom_topo.c: Give more decimal digits in edge-motion
+	collision detection point
+
+2016-04-18  Sandro Santilli <strk@keybit.net>
+
+	* .gitignore, README.topo, configure.ac, src/Makefile.in,
+	src/box2d.c, src/bytebuffer.c, src/g_box.c, src/g_serialized.c,
+	src/g_util.c, src/{librtgeom_topo.h => librttopo.h},
+	src/{librtgeom.h.in => librttopo_geom.h.in},
+	src/{librtgeom_internal.h => librttopo_geom_internal.h},
+	src/{librtgeom_topo_internal.h => librttopo_internal.h},
+	src/measures.h, src/ptarray.c, src/rtalgorithm.c,
+	src/rtcircstring.c, src/rtcollection.c, src/rtcompound.c,
+	src/rtcurvepoly.c, src/rtgeodetic.c, src/rtgeodetic_tree.c,
+	src/rtgeom.c, src/rtgeom_api.c, src/rtgeom_debug.c,
+	src/rtgeom_geos.c, src/rtgeom_geos.h, src/rtgeom_geos_clean.c,
+	src/rtgeom_geos_node.c, src/rtgeom_geos_split.c, src/rtgeom_log.h,
+	src/rtgeom_topo.c, src/rthomogenize.c, src/rtin_geojson.c,
+	src/rtin_twkb.c, src/rtin_wkb.c, src/rtiterator.c, src/rtline.c,
+	src/rtlinearreferencing.c, src/rtmcurve.c, src/rtmline.c,
+	src/rtmpoint.c, src/rtmpoly.c, src/rtmsurface.c,
+	src/rtout_encoded_polyline.c, src/rtout_geojson.c, src/rtout_gml.c,
+	src/rtout_kml.c, src/rtout_svg.c, src/rtout_twkb.h,
+	src/rtout_wkb.c, src/rtout_wkt.c, src/rtout_x3d.c, src/rtpoint.c,
+	src/rtpoly.c, src/rtprint.c, src/rtpsurface.c, src/rtspheroid.c,
+	src/rtstroke.c, src/rttin.c, src/rttree.c, src/rttriangle.c,
+	src/rtutil.c, src/stringbuffer.c, src/stringbuffer.h, src/varint.c,
+	src/varint.h: Rename librtgeom to librttopo Renames:  librtgeom.h to librttopo_geom.h  librtgeom_internal.h to librttopo_geom_internal.h  librtgeom_topo*.h to librttopo*.h  librtgeom.{so,a} to librttopo.{so,a} See #1
+
+2016-04-18  Sandro Santilli <strk@keybit.net>
+
+	* configure.ac: Require GEOS-3.5.0 as the minimum version
+
+2016-04-18  Sandro Santilli <strk@keybit.net>
+
+	* .gitlab-ci.yml: Install geos-3.5.0
+
+2016-04-18  Sandro Santilli <strk@keybit.net>
+
+	* README.md: Update build badge
+
+2016-04-18  Sandro Santilli <strk@keybit.net>
+
+	* Makefile: Do not make "clean" and "uninstall" dependent on running
+	configure Fixes #2
+
+2016-04-18  Sandro Santilli <strk@keybit.net>
+
+	* src/Makefile.in: Include varint module in the build
+
+2016-04-18  Sandro Santilli <strk@keybit.net>
+
+	* configure.ac: Drop references to PostGIS/liblwgeom
+
+2015-12-15  Sandro Santilli <strk@keybit.net>
+
+	* Makefile: Add missing Makefile
+
+2015-12-15  Sandro Santilli <strk@keybit.net>
+
+	* .gitlab-ci.yml: See which version of GEOS are available
+
+2015-12-15  Sandro Santilli <strk@keybit.net>
+
+	* src/Makefile.in: Fix clean rule
+
+2015-12-15  Sandro Santilli <strk@keybit.net>
+
+	* src/librtgeom.h.in, src/rtutil.c: Remove the possibility to use a
+	pre-initialized GEOS context This is to allow for intercepting geos messages from the library,
+	which would otherwise require changing the passed context.
+
+2015-12-14  Sandro Santilli <strk@keybit.net>
+
+	* .gitignore: Ignore the right Makefile, not the root one
+
+2015-12-14  Sandro Santilli <strk@keybit.net>
+
+	* src/box2d.c, src/bytebuffer.c, src/bytebuffer.h, src/g_box.c,
+	src/g_serialized.c, src/g_util.c, src/librtgeom.h.in,
+	src/librtgeom_internal.h, src/librtgeom_topo.h,
+	src/librtgeom_topo_internal.h, src/measures.c, src/measures.h,
+	src/measures3d.c, src/measures3d.h, src/ptarray.c,
+	src/rtalgorithm.c, src/rtcircstring.c, src/rtcollection.c,
+	src/rtcompound.c, src/rtcurvepoly.c, src/rtgeodetic.c,
+	src/rtgeodetic.h, src/rtgeodetic_tree.c, src/rtgeodetic_tree.h,
+	src/rtgeom.c, src/rtgeom_api.c, src/rtgeom_debug.c,
+	src/rtgeom_geos.c, src/rtgeom_geos.h, src/rtgeom_geos_clean.c,
+	src/rtgeom_geos_node.c, src/rtgeom_geos_split.c, src/rtgeom_log.h,
+	src/rtgeom_topo.c, src/rthomogenize.c, src/rtin_geojson.c,
+	src/rtin_twkb.c, src/rtin_wkb.c, src/rtiterator.c, src/rtline.c,
+	src/rtlinearreferencing.c, src/rtmcurve.c, src/rtmline.c,
+	src/rtmpoint.c, src/rtmpoly.c, src/rtmsurface.c,
+	src/rtout_encoded_polyline.c, src/rtout_geojson.c, src/rtout_gml.c,
+	src/rtout_kml.c, src/rtout_svg.c, src/rtout_twkb.c,
+	src/rtout_twkb.h, src/rtout_wkb.c, src/rtout_wkt.c,
+	src/rtout_x3d.c, src/rtpoint.c, src/rtpoly.c, src/rtprint.c,
+	src/rtpsurface.c, src/rtspheroid.c, src/rtstroke.c, src/rttin.c,
+	src/rttopo_config.h.in, src/rttree.c, src/rttree.h,
+	src/rttriangle.c, src/rtutil.c, src/snprintf.c, src/stringbuffer.c,
+	src/stringbuffer.h, src/varint.c, src/varint.h: Update copyright
+	headers
+
+2015-12-14  Sandro Santilli <strk@keybit.net>
+
+	* COPYING: Add COPYING file
+
+2015-12-12  Sandro Santilli <strk@keybit.net>
+
+	* README.md: Add build status badge
+
+2015-12-12  Sandro Santilli <strk@keybit.net>
+
+	* TODO: Remove done item
+
+2015-12-12  Sandro Santilli <strk@keybit.net>
+
+	* src/librtgeom.h.in, src/librtgeom_internal.h, src/rtutil.c: Fix
+	re-entrancy of custom allocators and loggers
+
+2015-12-12  Sandro Santilli <strk@keybit.net>
+
+	* TODO: Updated
+
+2015-12-12  Sandro Santilli <strk@keybit.net>
+
+	* configure.ac, Makefile.in => src/Makefile.in, box2d.c =>
+	src/box2d.c, bytebuffer.c => src/bytebuffer.c, bytebuffer.h =>
+	src/bytebuffer.h, g_box.c => src/g_box.c, g_serialized.c =>
+	src/g_serialized.c, g_util.c => src/g_util.c, librtgeom.h.in =>
+	src/librtgeom.h.in, librtgeom_internal.h =>
+	src/librtgeom_internal.h, librtgeom_topo.h => src/librtgeom_topo.h,
+	librtgeom_topo_internal.h => src/librtgeom_topo_internal.h,
+	measures.c => src/measures.c, measures.h => src/measures.h,
+	measures3d.c => src/measures3d.c, measures3d.h => src/measures3d.h,
+	ptarray.c => src/ptarray.c, rtalgorithm.c => src/rtalgorithm.c,
+	rtcircstring.c => src/rtcircstring.c, rtcollection.c =>
+	src/rtcollection.c, rtcompound.c => src/rtcompound.c, rtcurvepoly.c
+	=> src/rtcurvepoly.c, rtgeodetic.c => src/rtgeodetic.c,
+	rtgeodetic.h => src/rtgeodetic.h, rtgeodetic_tree.c =>
+	src/rtgeodetic_tree.c, rtgeodetic_tree.h => src/rtgeodetic_tree.h,
+	rtgeom.c => src/rtgeom.c, rtgeom_api.c => src/rtgeom_api.c,
+	rtgeom_debug.c => src/rtgeom_debug.c, rtgeom_geos.c =>
+	src/rtgeom_geos.c, rtgeom_geos.h => src/rtgeom_geos.h,
+	rtgeom_geos_clean.c => src/rtgeom_geos_clean.c, rtgeom_geos_node.c
+	=> src/rtgeom_geos_node.c, rtgeom_geos_split.c =>
+	src/rtgeom_geos_split.c, rtgeom_log.h => src/rtgeom_log.h,
+	rtgeom_topo.c => src/rtgeom_topo.c, rthomogenize.c =>
+	src/rthomogenize.c, rtin_geojson.c => src/rtin_geojson.c,
+	rtin_twkb.c => src/rtin_twkb.c, rtin_wkb.c => src/rtin_wkb.c,
+	rtiterator.c => src/rtiterator.c, rtline.c => src/rtline.c,
+	rtlinearreferencing.c => src/rtlinearreferencing.c, rtmcurve.c =>
+	src/rtmcurve.c, rtmline.c => src/rtmline.c, rtmpoint.c =>
+	src/rtmpoint.c, rtmpoly.c => src/rtmpoly.c, rtmsurface.c =>
+	src/rtmsurface.c, rtout_encoded_polyline.c =>
+	src/rtout_encoded_polyline.c, rtout_geojson.c =>
+	src/rtout_geojson.c, rtout_gml.c => src/rtout_gml.c, rtout_kml.c =>
+	src/rtout_kml.c, rtout_svg.c => src/rtout_svg.c, rtout_twkb.c =>
+	src/rtout_twkb.c, rtout_twkb.h => src/rtout_twkb.h, rtout_wkb.c =>
+	src/rtout_wkb.c, rtout_wkt.c => src/rtout_wkt.c, rtout_x3d.c =>
+	src/rtout_x3d.c, rtpoint.c => src/rtpoint.c, rtpoly.c =>
+	src/rtpoly.c, rtprint.c => src/rtprint.c, rtpsurface.c =>
+	src/rtpsurface.c, rtspheroid.c => src/rtspheroid.c, rtstroke.c =>
+	src/rtstroke.c, rttin.c => src/rttin.c, rttopo_config.h.in =>
+	src/rttopo_config.h.in, rttree.c => src/rttree.c, rttree.h =>
+	src/rttree.h, rttriangle.c => src/rttriangle.c, rtutil.c =>
+	src/rtutil.c, snprintf.c => src/snprintf.c, stringbuffer.c =>
+	src/stringbuffer.c, stringbuffer.h => src/stringbuffer.h, varint.c
+	=> src/varint.c, varint.h => src/varint.h: Move sources under a src/
+	dir
+
+2015-12-12  Sandro Santilli <strk@keybit.net>
+
+	* librtgeom.h.in, librtgeom_internal.h, ptarray.c, rtgeom.c: Prefix
+	AFFINE
+
+2015-12-12  Sandro Santilli <strk@keybit.net>
+
+	* g_box.c, g_serialized.c, librtgeom.h.in, measures.c,
+	measures3d.c, ptarray.c, rtalgorithm.c, rtcircstring.c,
+	rtcompound.c, rtgeodetic.c, rtgeodetic_tree.c, rtgeom.c,
+	rtgeom_api.c, rtgeom_geos.c, rtgeom_geos_clean.c,
+	rtgeom_geos_split.c, rtgeom_topo.c, rtin_twkb.c, rtin_wkb.c,
+	rtiterator.c, rtline.c, rtlinearreferencing.c, rtmpoint.c,
+	rtout_encoded_polyline.c, rtout_geojson.c, rtout_gml.c,
+	rtout_kml.c, rtout_svg.c, rtout_twkb.c, rtout_wkb.c, rtout_wkt.c,
+	rtout_x3d.c, rtpoint.c, rtprint.c, rtpsurface.c, rtspheroid.c,
+	rtstroke.c, rttin.c, rttree.c, rttriangle.c: Prefix getPoint* with
+	rt_
+
+2015-12-11  Sandro Santilli <strk@keybit.net>
+
+	* Makefile.in, librtgeom.h.in, rtgeodetic.c, rtgeodetic.h,
+	rtgeodetic_tree.c, rtgeodetic_tree.h, rtspheroid.c: Revert "Remove
+	geodetic and spheroid functions" This reverts commit cb34f54ca9c15ad2d65eac67dfdd5e94eae475f3.  Conflicts:         Makefile.in Also adapted all signatures to re-entrancy mode.  Closes #1
+
+2015-12-11  Sandro Santilli <strk@keybit.net>
+
+	* TODO: Add more missing symbols from spatialite
+
+2015-12-11  Sandro Santilli <strk@keybit.net>
+
+	* TODO: Add list of function to expose to public API
+
+2015-12-11  Sandro Santilli <strk@keybit.net>
+
+	* macros/codeset.m4, macros/gettext.m4, macros/gtk-2.0.m4,
+	macros/iconv.m4, macros/intl.m4, macros/intldir.m4,
+	macros/intlmacosx.m4, macros/nls.m4: Remove some unused macros
+
+2015-12-11  Sandro Santilli <strk@keybit.net>
+
+	* Makefile.in, aclocal.m4, configure.ac, librtgeom_internal.h,
+	macros/ac_proj4_version.m4, rtgeom_transform.c: Drop PROJ4
+	dependency, and reprojection support
+
+2015-12-11  Sandro Santilli <strk@keybit.net>
+
+	* configure.ac: Relax GEOS requirement to accept 3.4.0 (mainly for
+	gitlab testing)
+
+2015-12-11  Sandro Santilli <strk@keybit.net>
+
+	* configure.ac, librtgeom.h.in, librtgeom_internal.h,
+	rtgeom_geos.h, rtgeom_geos_split.c: Ensure only the re-entrant API
+	is used Raises GEOS requirement to 3.5.0
+
+2015-12-11  Sandro Santilli <strk@keybit.net>
+
+	* .gitlab-ci.yml: Stop using lsb_release on gitlab-ci
+
+2015-12-11  Sandro Santilli <strk@keybit.net>
+
+	* librtgeom_internal.h, rtgeom_geos.c, rtgeom_geos.h,
+	rtgeom_geos_clean.c, rtgeom_geos_node.c, rtgeom_geos_split.c,
+	rtgeom_topo.c: Make handling of GEOS errors re-entrant
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* librtgeom_topo.h: Add info about how to create RTCTX
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* librtgeom.h.in, rtgeom_geos.c, rtgeom_geos.h,
+	rtgeom_geos_clean.c, rtgeom_geos_node.c, rtgeom_geos_split.c: Switch
+	to reentrant GEOS interface in rtgeom
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* librtgeom.h.in, rtgeom_api.c, rtutil.c: Add RTCTX initializing
+	functions
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* librtgeom_internal.h, librtgeom_topo_internal.h, rtgeom_geos.c,
+	rtgeom_geos.h, rtgeom_topo.c: Switch to reentrant GEOS interface in
+	rtgeom_topo
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* librtgeom_topo.h, rtgeom_topo.c: Take RTCTX at
+	rtt_CreateBackendIface time
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* box2d.c, bytebuffer.c, bytebuffer.h, g_box.c, g_serialized.c,
+	g_util.c, librtgeom.h.in, librtgeom_internal.h, librtgeom_topo.h,
+	measures.c, measures.h, measures3d.c, measures3d.h, ptarray.c,
+	rtalgorithm.c, rtcircstring.c, rtcollection.c, rtcompound.c,
+	rtcurvepoly.c, rtgeom.c, rtgeom_api.c, rtgeom_debug.c,
+	rtgeom_geos.c, rtgeom_geos.h, rtgeom_geos_clean.c,
+	rtgeom_geos_node.c, rtgeom_geos_split.c, rtgeom_log.h,
+	rtgeom_topo.c, rtgeom_transform.c, rthomogenize.c, rtin_geojson.c,
+	rtin_twkb.c, rtin_wkb.c, rtiterator.c, rtline.c,
+	rtlinearreferencing.c, rtmline.c, rtmpoint.c, rtmpoly.c,
+	rtout_encoded_polyline.c, rtout_geojson.c, rtout_gml.c,
+	rtout_kml.c, rtout_svg.c, rtout_twkb.c, rtout_twkb.h, rtout_wkb.c,
+	rtout_wkt.c, rtout_x3d.c, rtpoint.c, rtpoly.c, rtprint.c,
+	rtpsurface.c, rtstroke.c, rttin.c, rttree.c, rttree.h,
+	rttriangle.c, rtutil.c, stringbuffer.c, stringbuffer.h, varint.c,
+	varint.h: Made all RTCTX params const
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* rtgeom_log.h, rtgeom_topo.c, rtutil.c: Const correct
+	rtnotice/rtdebug
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* g_box.c: do not redefine isfinite
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* Makefile.in, librtgeom.h.in, rtgeom_geos.h,
+	rtgeom_geos_cluster.c, rtin_encoded_polyline.c, rtunionfind.c,
+	rtunionfind.h: Remove polyline encoding and clustering functions
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* box2d.c, bytebuffer.c, bytebuffer.h, g_box.c, g_serialized.c,
+	g_util.c, librtgeom.h.in, librtgeom_internal.h, librtgeom_topo.h,
+	librtgeom_topo_internal.h, measures.c, measures.h, measures3d.c,
+	measures3d.h, ptarray.c, rtalgorithm.c, rtcircstring.c,
+	rtcollection.c, rtcompound.c, rtcurvepoly.c, rtgeom.c,
+	rtgeom_api.c, rtgeom_debug.c, rtgeom_geos.c, rtgeom_geos.h,
+	rtgeom_geos_clean.c, rtgeom_geos_cluster.c, rtgeom_geos_node.c,
+	rtgeom_geos_split.c, rtgeom_log.h, rtgeom_topo.c,
+	rtgeom_transform.c, rthomogenize.c, rtin_encoded_polyline.c,
+	rtin_geojson.c, rtin_twkb.c, rtin_wkb.c, rtiterator.c, rtline.c,
+	rtlinearreferencing.c, rtmline.c, rtmpoint.c, rtmpoly.c,
+	rtout_encoded_polyline.c, rtout_geojson.c, rtout_gml.c,
+	rtout_kml.c, rtout_svg.c, rtout_twkb.c, rtout_twkb.h, rtout_wkb.c,
+	rtout_wkt.c, rtout_x3d.c, rtpoint.c, rtpoly.c, rtprint.c,
+	rtpsurface.c, rtstroke.c, rttin.c, rttree.c, rttree.h,
+	rttriangle.c, rtunionfind.c, rtunionfind.h, rtutil.c,
+	stringbuffer.c, stringbuffer.h, varint.c, varint.h: Add RTCTX
+	argument to all exposed functions
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* Makefile.in, effectivearea.c, effectivearea.h: Drop effective area
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* rtgeom_geos.c: Use custom geos error reporter
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* rtgeom_log.h, stringbuffer.h: Include internal header
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* Makefile.in, librtgeom.h.in, rtgeodetic.c, rtgeodetic.h,
+	rtgeodetic_tree.c, rtgeodetic_tree.h, rtspheroid.c: Remove geodetic
+	and spheroid functions
+
+2015-12-10  Sandro Santilli <strk@keybit.net>
+
+	* Makefile.in, librtgeom.h.in, rtin_wkt.c, rtin_wkt.h,
+	rtin_wkt_lex.l, rtin_wkt_parse.y: Remove WKT parser
+
+2015-12-09  Sandro Santilli <strk@keybit.net>
+
+	* librtgeom.h.in, librtgeom_internal.h: Add RTCTX typedef
+
+2015-12-09  Sandro Santilli <strk@keybit.net>
+
+	* Makefile.in: Fix librtgeom.h build rule
+
+2015-12-09  Sandro Santilli <strk@keybit.net>
+
+	* effectivearea.c, g_box.c, g_serialized.c, g_util.c,
+	librtgeom.h.in, ptarray.c, rtcircstring.c, rtcollection.c,
+	rtcompound.c, rtgeodetic.c, rtgeom.c, rtgeom_api.c, rtgeom_debug.c,
+	rtgeom_geos.c, rtgeom_geos_clean.c, rtgeom_geos_node.c,
+	rtgeom_geos_split.c, rthomogenize.c, rtin_geojson.c, rtin_wkt.c,
+	rtline.c, rtlinearreferencing.c, rtmline.c, rtout_geojson.c,
+	rtout_gml.c, rtout_kml.c, rtout_twkb.c, rtout_wkb.c, rtout_wkt.c,
+	rtout_x3d.c, rtpoint.c, rtpoly.c, rtpsurface.c, rtstroke.c,
+	rttin.c, rttriangle.c: Prefix TYPMOD and FLAG macros
+
+2015-12-09  Sandro Santilli <strk@keybit.net>
+
+	* effectivearea.c, effectivearea.h, g_box.c, g_serialized.c,
+	librtgeom.h.in, librtgeom_internal.h, measures.c, measures.h,
+	measures3d.c, measures3d.h, ptarray.c, rtalgorithm.c,
+	rtcircstring.c, rtcollection.c, rtcompound.c, rtgeodetic.c,
+	rtgeodetic.h, rtgeodetic_tree.c, rtgeodetic_tree.h, rtgeom.c,
+	rtgeom_api.c, rtgeom_geos.c, rtgeom_geos.h, rtgeom_geos_clean.c,
+	rtgeom_geos_split.c, rtgeom_topo.c, rtgeom_transform.c,
+	rtin_encoded_polyline.c, rtin_geojson.c, rtin_twkb.c, rtin_wkb.c,
+	rtin_wkt.c, rtin_wkt.h, rtin_wkt_parse.y, rtiterator.c, rtline.c,
+	rtlinearreferencing.c, rtmpoint.c, rtout_encoded_polyline.c,
+	rtout_geojson.c, rtout_gml.c, rtout_kml.c, rtout_svg.c,
+	rtout_twkb.c, rtout_wkb.c, rtout_wkt.c, rtout_x3d.c, rtpoint.c,
+	rtpoly.c, rtspheroid.c, rtstroke.c, rttree.c, rttree.h,
+	rttriangle.c: Prefix POINTARRAY
+
+2015-12-09  Sandro Santilli <strk@keybit.net>
+
+	* box2d.c, effectivearea.c, g_box.c, g_serialized.c,
+	librtgeom.h.in, librtgeom_internal.h, librtgeom_topo.h, measures.c,
+	measures.h, measures3d.c, measures3d.h, ptarray.c, rtalgorithm.c,
+	rtcircstring.c, rtcollection.c, rtcompound.c, rtgeodetic.c,
+	rtgeodetic.h, rtgeodetic_tree.c, rtgeodetic_tree.h, rtgeom.c,
+	rtgeom_api.c, rtgeom_geos.c, rtgeom_geos.h, rtgeom_geos_cluster.c,
+	rtgeom_geos_split.c, rtgeom_topo.c, rtgeom_transform.c,
+	rtin_encoded_polyline.c, rtin_geojson.c, rtin_twkb.c, rtin_wkb.c,
+	rtin_wkt.c, rtiterator.c, rtline.c, rtlinearreferencing.c,
+	rtmpoint.c, rtout_encoded_polyline.c, rtout_geojson.c, rtout_gml.c,
+	rtout_kml.c, rtout_svg.c, rtout_x3d.c, rtpoint.c, rtpoly.c,
+	rtprint.c, rtpsurface.c, rtspheroid.c, rtstroke.c, rttin.c,
+	rttree.c, rttree.h, rttriangle.c: Prefix GBOX and POINT*
+
+2015-12-09  Sandro Santilli <strk@keybit.net>
+
+	* librtgeom.h.in: Remove unused macros
+
+2015-12-09  Sandro Santilli <strk@keybit.net>
+
+	* librtgeom.h.in, librtgeom_internal.h, rtgeom.c, rthomogenize.c: 
+	Prefix NUMTYPES
+
+2015-12-09  Sandro Santilli <strk@keybit.net>
+
+	* bytebuffer.c, g_serialized.c, g_serialized.txt, librtgeom.h.in,
+	librtgeom_internal.h, rtgeom.c, rtgeom_topo.c, rtin_twkb.c,
+	rtin_wkb.c, rtin_wkt.c, rtin_wkt.h, rtin_wkt_lex.l,
+	rtin_wkt_parse.y, rtout_wkb.c, rtout_wkt.c: Prefix WKT/WKB macros
+	with "RT"
+
+2015-12-09  Sandro Santilli <strk@keybit.net>
+
+	* effectivearea.c, g_box.c, g_serialized.c, g_util.c,
+	librtgeom.h.in, librtgeom_internal.h, measures.c, measures3d.c,
+	rtalgorithm.c, rtcircstring.c, rtcollection.c, rtcompound.c,
+	rtcurvepoly.c, rtgeodetic.c, rtgeodetic_tree.c, rtgeom.c,
+	rtgeom_debug.c, rtgeom_geos.c, rtgeom_geos_clean.c,
+	rtgeom_geos_cluster.c, rtgeom_geos_node.c, rtgeom_geos_split.c,
+	rtgeom_topo.c, rtgeom_transform.c, rthomogenize.c, rtin_geojson.c,
+	rtin_twkb.c, rtin_wkb.c, rtin_wkt.c, rtin_wkt_parse.y,
+	rtiterator.c, rtline.c, rtlinearreferencing.c, rtmline.c,
+	rtmpoint.c, rtmpoly.c, rtout_encoded_polyline.c, rtout_geojson.c,
+	rtout_gml.c, rtout_kml.c, rtout_svg.c, rtout_twkb.c, rtout_twkb.h,
+	rtout_wkb.c, rtout_wkt.c, rtout_x3d.c, rtpoint.c, rtpoly.c,
+	rtpsurface.c, rtspheroid.c, rtstroke.c, rttin.c, rttriangle.c: 
+	Prefix geometry type macros with RT
+
+2015-12-09  Sandro Santilli <strk@keybit.net>
+
+	* Makefile.in, configure.ac, rtgeom_sfcgal.c, rtgeom_sfcgal.h: 
+	Remove SFCGAL support
+
+2015-12-01  Sandro Santilli <strk@keybit.net>
+
+	* Initial import
+

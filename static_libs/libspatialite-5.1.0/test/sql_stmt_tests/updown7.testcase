@@ -1,0 +1,7 @@
+ST_UpDownHeight - 2D Linestring geom
+:memory: #use in-memory database
+SELECT ST_UpDownHeight(GeomFromText('LINESTRING(10 10, 20 20, 30 30)', 4326));
+1 # rows (not including the header row)
+1 # columns
+ST_UpDownHeight(GeomFromText('LINESTRING(10 10, 20 20, 30 30)', 4326))
+0.0

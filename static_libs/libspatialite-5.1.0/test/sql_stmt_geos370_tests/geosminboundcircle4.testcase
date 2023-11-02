@@ -1,0 +1,7 @@
+GEOSMinimumBoundingCircle - TEXT Geometry
+:memory: #use in-memory database
+SELECT GEOSMinimumBoundingCircle('geom')
+1 # rows (not including the header row)
+1 # columns
+GEOSMinimumBoundingCircle('geom')
+(NULL)

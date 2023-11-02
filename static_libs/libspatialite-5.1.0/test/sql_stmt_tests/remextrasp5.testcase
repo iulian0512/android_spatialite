@@ -1,0 +1,7 @@
+RemoveExtraSpaces() - no extra spaces
+:memory: #use in-memory database
+SELECT RemoveExtraSpaces('this is a text string');
+1 # rows (not including the header row)
+1 # columns
+RemoveExtraSpaces('this is a text string')
+this is a text string

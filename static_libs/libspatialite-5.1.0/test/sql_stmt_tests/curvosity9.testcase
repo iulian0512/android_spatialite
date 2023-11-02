@@ -1,0 +1,7 @@
+ST_CurvosityIndex - double extra-points
+:memory: #use in-memory database
+SELECT ST_CurvosityIndex(GeomFromText('LINESTRING(0 0, 0 10, 10 10, 10 20, 0 20)', 4326), 1.5);
+1 # rows (not including the header row)
+1 # columns
+ST_CurvosityIndex(GeomFromText('LINESTRING(0 0, 0 10, 10 10, 10 20, 0 20)', 4326), 1.5)
+(NULL)

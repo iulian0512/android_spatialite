@@ -1,0 +1,7 @@
+ReducePrecision - INT Geometry
+:memory: #use in-memory database
+SELECT ReducePrecision(1, 0)
+1 # rows (not including the header row)
+1 # columns
+ReducePrecision(1, 0)
+(NULL)

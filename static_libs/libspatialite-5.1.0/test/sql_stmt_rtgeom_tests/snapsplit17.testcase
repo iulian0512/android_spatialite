@@ -1,0 +1,7 @@
+SnapAndSplit, POLYGON second geom
+:memory: #use in-memory database
+SELECT AsText(SnapAndSplit(GeomFromText('LINESTRING(0 0, 10 0, 10 10, 0 10, 0 0)', 4326), GeomFromText('POLYGON((5 0, 10 5, 5 10,  0 5, 5 0))', 4326), 0));
+1 # rows (not including the header row)
+1 # columns
+AsText(SnapAndSplit(GeomFromText('LINESTRING(0 0, 10 0, 10 10, 0 10, 0 0)', 4326), GeomFromText('POLYGON((5 0, 10 5, 5 10,  0 5, 5 0))', 4326), 0));
+(NULL)

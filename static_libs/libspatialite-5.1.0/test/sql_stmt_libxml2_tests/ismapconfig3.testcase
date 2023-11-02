@@ -1,0 +1,8 @@
+XB_IsMapConfig - DOUBLE XmlBLOB
+:memory: #use in-memory database
+SELECT XB_IsMapConfig(1.1);
+1 # rows (not including the header row)
+1 # columns
+XB_IsMapConfig(1.1)
+-1
+

@@ -1,0 +1,7 @@
+MinimumBoundingRadius- INVALID BLOB  Geometry
+:memory: #use in-memory database
+SELECT MinimumBoundingRadius(zeroblob(10))
+1 # rows (not including the header row)
+1 # columns
+MinimumBoundingRadius(zeroblob(10))
+(NULL)

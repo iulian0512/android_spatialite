@@ -1,0 +1,7 @@
+Zipfile_NumSHP - non-existing zipfile
+:memory: #use in-memory database
+SELECT Zipfile_NumSHP('dumb_test-zip');
+1 # rows (not including the header row)
+1 # columns
+Zipfile_NumSHP('dumb_test-zip')
+(NULL)

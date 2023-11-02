@@ -1,0 +1,7 @@
+Zipfile_NumDBF - DOUBLE zipfile
+:memory: #use in-memory database
+SELECT Zipfile_NumDBF(1.6);
+1 # rows (not including the header row)
+1 # columns
+Zipfile_NumDBF(1.6)
+(NULL)

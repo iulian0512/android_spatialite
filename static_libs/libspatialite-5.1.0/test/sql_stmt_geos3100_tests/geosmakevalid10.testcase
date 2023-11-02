@@ -1,0 +1,7 @@
+GeosMakeValid - NULL keep_collapsed
+:memory: #use in-memory database
+SELECT ST_AsText(GeosMakeValid(GeomFromText('POLYGON((0 0, 10 0, 0 10, 10 10, 0 0))'), NULL))
+1 # rows (not including the header row)
+1 # columns
+ST_AsText(GeosMakeValid(GeomFromText('POLYGON((0 0, 10 0, 0 10, 10 10, 0 0))'), NULL))
+(NULL)

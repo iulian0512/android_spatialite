@@ -1,0 +1,7 @@
+GEOSMaximumInscribedCircle - NULL Geometry
+:memory: #use in-memory database
+SELECT GEOSMaximumInscribedCircle(NULL, 0.0)
+1 # rows (not including the header row)
+1 # columns
+GEOSMaximumInscribedCircle(NULL, 0.0)
+(NULL)

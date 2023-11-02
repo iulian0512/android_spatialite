@@ -1,0 +1,7 @@
+ImportZipDBF - BLOB zipfile
+:memory: #use in-memory database
+SELECT ImportZipDBF(zeroblob(10), 'shapefile', 'table', 'UTF-8', 'id', 0, 'SAME');
+1 # rows (not including the header row)
+1 # columns
+ImportZipDBF(zeroblob(10), 'shapefile', 'table', 'UTF-8', 'id', 0, 'SAME')
+(NULL)

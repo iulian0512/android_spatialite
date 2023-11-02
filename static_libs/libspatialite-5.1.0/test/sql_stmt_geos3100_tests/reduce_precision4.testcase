@@ -1,0 +1,7 @@
+ReducePrecision - TEXT Geometry
+:memory: #use in-memory database
+SELECT ReducePrecision('geom', 0)
+1 # rows (not including the header row)
+1 # columns
+ReducePrecision('geom', 0)
+(NULL)

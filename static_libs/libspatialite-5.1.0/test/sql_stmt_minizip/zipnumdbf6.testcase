@@ -1,0 +1,7 @@
+Zipfile_NumDBF - valid zipfile
+:memory: #use in-memory database
+SELECT Zipfile_NumDBF('./elba.zip');
+1 # rows (not including the header row)
+1 # columns
+Zipfile_NumDBF('./elba.zip')
+2

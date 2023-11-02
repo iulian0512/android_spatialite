@@ -1,0 +1,7 @@
+GEOSMinimumClearanceLine- INT Geometry
+:memory: #use in-memory database
+SELECT GEOSMinimumClearanceLine(1)
+1 # rows (not including the header row)
+1 # columns
+GEOSMinimumClearanceLine(1)
+(NULL)

@@ -1,0 +1,7 @@
+ImportZipDBF - NULL colname case
+:memory: #use in-memory database
+SELECT ImportZipDBF('test.zip', 'shapefile', 'table', 'UTF-8', 'id', 0, NULL);
+1 # rows (not including the header row)
+1 # columns
+ImportZipDBF('test.zip', 'shapefile', 'table', 'UTF-8', 'id', 0, NULL)
+(NULL)

@@ -1,0 +1,7 @@
+GEOSMinimumClearanceLine- TEXT Geometry
+:memory: #use in-memory database
+SELECT GEOSMinimumClearanceLine('geom')
+1 # rows (not including the header row)
+1 # columns
+GEOSMinimumClearanceLine('geom')
+(NULL)

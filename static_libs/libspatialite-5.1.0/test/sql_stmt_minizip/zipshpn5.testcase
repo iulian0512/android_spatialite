@@ -1,0 +1,7 @@
+Zipfile_ShpN - NULL index
+:memory: #use in-memory database
+SELECT Zipfile_ShpN('./elba.zip', NULL);
+1 # rows (not including the header row)
+1 # columns
+Zipfile_ShpN('./elba.zip', NULL);
+(NULL)

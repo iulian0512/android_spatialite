@@ -1,0 +1,7 @@
+Rl2_MapConfigurationNameN - NULL index 
+:memory: #use in-memory database
+SELECT Rl2_MapConfigurationNameN(NULL);
+1 # rows (not including the header row)
+1 # columns
+Rl2_MapConfigurationNameN(NULL);
+(NULL)

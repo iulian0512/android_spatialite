@@ -1,0 +1,7 @@
+ST_LinestringMinSegmentLength - TEXT geom
+:memory: #use in-memory database
+SELECT ST_LinestringMinSegmentLength('geom');
+1 # rows (not including the header row)
+1 # columns
+ST_LinestringMinSegmentLength('geom')
+(NULL)

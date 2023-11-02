@@ -1,0 +1,8 @@
+XB_IsMapConfig - invalid XmlBLOB
+:memory: #use in-memory database
+SELECT XB_IsMapConfig(zeroblob(100));
+1 # rows (not including the header row)
+1 # columns
+XB_IsMapConfig(zeroblob(100))
+-1
+

@@ -1,0 +1,7 @@
+ST_GetPointIndex() - TEXT line
+:memory: #use in-memory database
+SELECT ST_GetPointIndex('line', MakePoint(1, 2))
+1 # rows (not including the header row)
+1 # columns
+ST_GetPointIndex('line', MakePoint(1, 2))
+(NULL)

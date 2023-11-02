@@ -1,0 +1,7 @@
+ImportZipSHP - NULL text_dates
+:memory: #use in-memory database
+SELECT ImportZipSHP('test.zip', 'shapefile', 'table', 'UTF-8', 4326, 'geom', 'id', 'POINT', 1, 1, 1, NULL);
+1 # rows (not including the header row)
+1 # columns
+ImportZipSHP('test.zip', 'shapefile', 'table', 'UTF-8', 4326, 'geom', 'id', 'POINT', 1, 1, 1, NULL)
+(NULL)

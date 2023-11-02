@@ -1,0 +1,8 @@
+UnRegisterMapConfiguration - BLOB config_id
+:memory: #use in-memory database
+SELECT RL2_UnRegisterMapConfiguration(zeroblob(100));
+1 # rows (not including the header row)
+1 # columns
+RL2_UnRegisterMapConfiguration(zeroblob(100))
+-1
+

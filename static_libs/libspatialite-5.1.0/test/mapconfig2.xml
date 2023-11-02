@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RL2MapConfig version="1.0" xmlns="http://www.gaia-gis.it/RL2MapConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gaia-gis.it/RL2MapConfig http://www.gaia-gis.it/RL2MapConfig_1_0.xsd" >
+	<Name>another-map</Name>
+	<Description>
+		<Title>this is an arbitraty title</Title>
+		<Abstract>yet another abstract</Abstract>
+	</Description>
+	<MapOptions>
+		<MultiThreading Enabled="true" MaxThreads="8" />
+		<MapCrs Crs="EPSG:3003" AutoTransformEnabled="true" />
+		<GeographicCoords DMS="false" />
+		<MapBackground Color="#ffffff" Transparent="true" />
+	</MapOptions>
+	<MapAttachedDatabases>
+		<MapAttachedDB DbPrefix="a" Path="/home/sandro/valdisieve.sqlite" />
+	</MapAttachedDatabases>
+	<MapLayer Type="wms" DbPrefix="a" Name="rt_topogr.topografica50k.rt" Visible="true">
+		<WmsLayerStyle>
+			<GetMap URL="http://www502.regione.toscana.it/wmsraster/com.rt.wms.RTmap/wms?map=wmstopogr&amp;map_resolution=91&amp;language=ita&amp;" />
+			<WmsProtocol Version="1.3.0" />
+			<ReferenceSystem Crs="EPSG:3003" />
+			<ImageFormat MimeType="image/png" Opaque="false" />
+		</WmsLayerStyle>
+	</MapLayer>
+	<MapLayer Type="vector" DbPrefix="a" Name="comuni" Visible="true">
+		<VectorLayerStyle>
+			<PolygonSymbolizer>
+				<Fill>
+					<SvgParameter name="fill">#1e90ff</SvgParameter>
+					<SvgParameter name="fill-opacity">0.20</SvgParameter>
+				</Fill>
+				<Stroke>
+					<SvgParameter name="stroke">#7cc254</SvgParameter>
+					<SvgParameter name="stroke-opacity">1.00</SvgParameter>
+					<SvgParameter name="stroke-width">1.00</SvgParameter>
+					<SvgParameter name="stroke-linejoin">round</SvgParameter>
+					<SvgParameter name="stroke-linecap">round</SvgParameter>
+				</Stroke>
+			</PolygonSymbolizer>
+		</VectorLayerStyle>
+	</MapLayer>
+</RL2MapConfig>

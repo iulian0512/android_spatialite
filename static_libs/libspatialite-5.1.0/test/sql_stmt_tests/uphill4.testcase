@@ -1,0 +1,7 @@
+ST_UphillHeight - invalid NULL geom
+:memory: #use in-memory database
+SELECT ST_UphillHeight(NULL);
+1 # rows (not including the header row)
+1 # columns
+ST_UphillHeight(NULL)
+(NULL)

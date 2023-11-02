@@ -1,0 +1,7 @@
+ST_LinestringAvgSegmentLength - TEXT geom
+:memory: #use in-memory database
+SELECT ST_LinestringAvgSegmentLength('geom');
+1 # rows (not including the header row)
+1 # columns
+ST_LinestringAvgSegmentLength('geom')
+(NULL)

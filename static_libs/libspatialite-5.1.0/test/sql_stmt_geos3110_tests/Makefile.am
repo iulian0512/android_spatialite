@@ -1,0 +1,30 @@
+EXTRA_DIST = hilbertcode1.testcase \
+	hilbertcode2.testcase \
+	hilbertcode3.testcase \
+	hilbertcode4.testcase \
+	hilbertcode5.testcase \
+	hilbertcode6.testcase \
+	hilbertcode7.testcase \
+	hilbertcode8.testcase \
+	hilbertcode9.testcase \
+	hilbertcode10.testcase \
+	hilbertcode11.testcase \
+	hilbertcode12.testcase \
+	hilbertcode13.testcase \
+	hilbertcode14.testcase \
+	hilbertcode15.testcase \
+	concavehull1.testcase \
+	concavehull2.testcase \
+	concavehull3.testcase \
+	concavehull4.testcase \
+	concavehull5.testcase \
+	concavehull6.testcase \
+	concavehull7.testcase \
+	concavehull8.testcase \
+	concavehull9.testcase \
+	concavehull10.testcase \
+	concavehull11.testcase \
+	concavehull12.testcase \
+	concavehull13.testcase \
+	concavehull14.testcase \
+	concavehull15.testcase

@@ -1,0 +1,7 @@
+ReCreateIsoMetaRefsTriggers - DOUBLE
+:memory: #use in-memory database
+SELECT ReCreateIsoMetaRefsTriggers(1.0);
+1 # rows (not including the header row)
+1 # columns
+ReCreateIsoMetaRefsTriggers(1.0)
+-1

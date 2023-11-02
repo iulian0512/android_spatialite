@@ -1,0 +1,7 @@
+GEOSLargestEmptyCircle - INVALID BLOB Geometry
+:memory: #use in-memory database
+SELECT GEOSLargestEmptyCircle(zeroblob(10), 0.0)
+1 # rows (not including the header row)
+1 # columns
+GEOSLargestEmptyCircle(zeroblob(10), 0.0)
+(NULL)
