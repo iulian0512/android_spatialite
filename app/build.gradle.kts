@@ -24,9 +24,10 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
+
     ndkVersion = "23.1.7779620"
     sourceSets {
         getByName("main") {
@@ -70,24 +71,25 @@ androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
 
 
-// Because the components are created only during the afterEvaluate phase, you must
-// configure your publications using the afterEvaluate lifecycle method.
-afterEvaluate {
-    publishing {
-        publications {
-            // Creates a Maven publication called "release".
-            create<MavenPublication>("release") {
-                // Applies the component for the release build variant.
-                from(components["release"])
 
-                // You can then customize attributes of the publication as shown below.
-                groupId = "org.spatialite"
-                version = "2.0.8"
-
-                // Additional configuration for the publication can go here.
-                // For example, you can customize artifactId, which defaults to project.name
-                // artifactId = "your-artifact-id"
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            // Instead of 'from(components["androidRelease"])', you manually add artifacts.
+            // For example, to add a specific AAR file:
+            artifact("$buildDir/outputs/aar/app-release.aar") {
+                // You can also specify the classifier and extension if needed.
+                builtBy("assembleRelease")
             }
+
+            // Set the groupId, artifactId, and version for the publication
+            groupId = "org.spatialite"
+            artifactId = "spatialite"
+            version = "2.0.8"
+
+            // Additional metadata configuration...
         }
     }
 }
+
+
