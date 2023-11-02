@@ -6,6 +6,7 @@ plugins {
 android {
     namespace = "org.spatialite"
     compileSdk = 33
+    group="org.spatialite"
 
     defaultConfig {
         minSdk = 21
@@ -41,8 +42,12 @@ android {
             version = "3.22.1"
             path = file("src/main/jni/CMakeLists.txt")
         }
+    }
 
-
+    publishing {
+        singleVariant("release") {
+            version = "2.0.8"
+        }
     }
 
 }
@@ -71,8 +76,21 @@ androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
 
 
-
 publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = "org.spatialite"
+            artifactId = "spatialite"
+            version = "2.0.8"
+
+            afterEvaluate {
+                from(components["release"])
+            }
+        }
+    }
+}
+
+/*publishing {
     publications {
         create<MavenPublication>("release") {
             // Instead of 'from(components["androidRelease"])', you manually add artifacts.
@@ -90,6 +108,6 @@ publishing {
             // Additional metadata configuration...
         }
     }
-}
+}*/
 
 
