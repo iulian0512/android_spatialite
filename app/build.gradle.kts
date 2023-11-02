@@ -90,24 +90,3 @@ publishing {
     }
 }
 
-/*publishing {
-    publications {
-        create<MavenPublication>("release") {
-            // Instead of 'from(components["androidRelease"])', you manually add artifacts.
-            // For example, to add a specific AAR file:
-            artifact("$buildDir/outputs/aar/app-release.aar") {
-                // You can also specify the classifier and extension if needed.
-                builtBy("assembleRelease")
-            }
-
-            // Set the groupId, artifactId, and version for the publication
-            groupId = "org.spatialite"
-            artifactId = "spatialite"
-            version = "2.0.8"
-
-            // Additional metadata configuration...
-        }
-    }
-}*/
-
-
