@@ -81,7 +81,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "org.spatialite"
             artifactId = "spatialite"
-            version = "2.0.8"
+            version = "2.0.9"
 
             afterEvaluate {
                 from(components["release"])
