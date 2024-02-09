@@ -36,6 +36,7 @@ import androidx.test.filters.Suppress;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
@@ -144,18 +145,27 @@ public class DatabaseLocaleTest {
     @Test
     public void testRemoveAccents() {
         // Insert a record with accented text
-        mDatabase.execSQL("INSERT INTO test (id,data) VALUES (141,'álphá béttá gámmá')");
+        mDatabase.execSQL("INSERT INTO test (id,data) VALUES (141,'álphá béttá gámmá'),(142,null)");
 
         // Query the database using your custom remove_accents function
-        Cursor cursor = mDatabase.rawQuery("SELECT remove_accents(data) FROM test WHERE id = 141", null);
+        Cursor cursor = mDatabase.rawQuery("SELECT id,remove_accents(data) FROM test", null);
 
         // Move to the first (and only) row in the result set
-        if (cursor != null && cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToNext()) {
+            int id=cursor.getInt(0);
             // Get the string from the query result
-            String data = cursor.getString(0);
+            String data = cursor.getString(1);
 
             // Compare the modified string to the expected string
-            assertEquals("alpha betta gamma", data);
+            switch (id)
+            {
+                case 141:
+                    assertEquals("alpha betta gamma", data);
+                    break;
+                case 142:
+                    assertNull(data);
+                    break;
+            }
 
             // Close the cursor
             cursor.close();
