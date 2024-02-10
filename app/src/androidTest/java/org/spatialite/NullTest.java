@@ -19,6 +19,10 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(AndroidJUnit4.class)
 public class NullTest {
 
+
+    static {
+        System.loadLibrary("android_spatialite");
+    }
     private SQLiteDatabase mDatabase;
     private File mDatabaseFile;
 

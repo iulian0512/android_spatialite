@@ -50,6 +50,10 @@ public class DatabaseErrorHandlerTest {
     private static final String DB_NAME = "database_test.db";
     private File dbDir;
 
+    static {
+        System.loadLibrary("android_spatialite");
+    }
+
     @Before
     protected void setUp() throws Exception {
         dbDir = ApplicationProvider.getApplicationContext().getDir(this.getClass().getName(), Context.MODE_PRIVATE);

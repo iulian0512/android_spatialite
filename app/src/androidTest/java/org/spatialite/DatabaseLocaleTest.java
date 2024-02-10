@@ -42,6 +42,11 @@ import static org.junit.Assert.assertTrue;
 @RunWith(AndroidJUnit4.class)
 public class DatabaseLocaleTest {
 
+    static {
+        System.loadLibrary("android_spatialite");
+    }
+
+
     private SQLiteDatabase mDatabase;
 
     private static final String[] STRINGS = {
@@ -151,7 +156,7 @@ public class DatabaseLocaleTest {
         Cursor cursor = mDatabase.rawQuery("SELECT id,remove_accents(data) FROM test", null);
 
         // Move to the first (and only) row in the result set
-        if (cursor != null && cursor.moveToNext()) {
+        if (cursor != null && cursor.moveToFirst()) {
             int id=cursor.getInt(0);
             // Get the string from the query result
             String data = cursor.getString(1);
@@ -168,7 +173,8 @@ public class DatabaseLocaleTest {
             }
 
             // Close the cursor
-            cursor.close();
+            if(!cursor.isClosed())
+                cursor.close();
         } else {
             throw new AssertionError("Cursor is null or empty.");
         }

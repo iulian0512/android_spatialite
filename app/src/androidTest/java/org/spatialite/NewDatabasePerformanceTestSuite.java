@@ -23,6 +23,9 @@ import org.junit.Ignore;
 
 public class NewDatabasePerformanceTestSuite extends TestSuite {
 
+    static {
+        System.loadLibrary("android_spatialite");
+    }
     public static TestSuite suite() {
         TestSuite suite =
           new TestSuite(NewDatabasePerformanceTestSuite.class.getName());

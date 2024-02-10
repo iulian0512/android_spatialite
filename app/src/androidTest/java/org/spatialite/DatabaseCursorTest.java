@@ -63,6 +63,10 @@ public class DatabaseCursorTest /*implements PerformanceTestCase*/ {
     private SQLiteDatabase mDatabase;
     private File mDatabaseFile;
 
+    static {
+        System.loadLibrary("android_spatialite");
+    }
+
     @Before
     public void setUp() throws Exception {
         File dbDir = ApplicationProvider.getApplicationContext().getDir("tests", Context.MODE_PRIVATE);

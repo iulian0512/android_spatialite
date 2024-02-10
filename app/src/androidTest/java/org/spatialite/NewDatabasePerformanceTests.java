@@ -38,6 +38,10 @@ public class NewDatabasePerformanceTests {
     // Edit this to change the test run times.  The original is 100.
     final static int kMultiplier = 1;
 
+    static {
+        System.loadLibrary("android_spatialite");
+    }
+
     public static class PerformanceBase extends TestCase /*implements PerformanceTestCase*/ {
         protected static final int CURRENT_DATABASE_VERSION = 42;
         protected SQLiteDatabase mDatabase;
