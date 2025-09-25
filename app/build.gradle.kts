@@ -1,3 +1,4 @@
+val libVersion = "2.0.10"
 plugins {
     id("com.android.library")
     id("maven-publish")
@@ -7,6 +8,7 @@ android {
     namespace = "org.spatialite"
     compileSdk = 33
     group="org.spatialite"
+
 
     defaultConfig {
         minSdk = 21
@@ -29,7 +31,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    ndkVersion = "23.1.7779620"
+    ndkVersion = "29.0.14033849"
     sourceSets {
         getByName("main") {
             jniLibs.srcDir("src/main/jniLibs")
@@ -46,7 +48,7 @@ android {
 
     publishing {
         singleVariant("release") {
-            version = "2.0.9"
+            version = libVersion
         }
     }
 
@@ -58,6 +60,7 @@ tasks.register<Exec>("buildStaticLibs") {
     environment("NDK_HOME", project.extensions.getByType<com.android.build.gradle.BaseExtension>().ndkDirectory)
     environment("PROJECT_ROOT", project.rootDir)
     enabled=false
+    //this is used locally on my machine to produce the intermediate binaries .a then using jitpack to pack them using src/main/jni/CMakeLists.txt
 }
 
 
@@ -81,7 +84,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "org.spatialite"
             artifactId = "spatialite"
-            version = "2.0.9"
+            version = libVersion
 
             afterEvaluate {
                 from(components["release"])

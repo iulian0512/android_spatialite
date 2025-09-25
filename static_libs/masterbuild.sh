@@ -7,7 +7,7 @@ source "$BUILD_UTILS_SH" || {
 }
 
 [ -z "$NDK_HOME" ] && exit_with_message "Error: NDK_HOME environment variable is not set."
-[ -z "$PROJECT_ROOT" ] && exit_with_message "Error: NDK_HOME environment variable is not set."
+[ -z "$PROJECT_ROOT" ] && exit_with_message "Error: PROJECT_ROOT environment variable is not set."
 
 #and toolchain file path
 export AND_TOOLCHAIN_FILE="$SCRIPT_DIR/andtoolchain.sh"

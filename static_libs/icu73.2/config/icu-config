@@ -202,15 +202,15 @@ platform="U_LINUX"
 #       *4*  compiler flags and misc. options
 #
 ##################################################################
-AR="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+AR="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
 # initial tab keeps it out of the shell version.
 ARFLAGS=" ${ARFLAGS}"
-CC="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang"
-CPP="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang -E"
+CC="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang"
+CPP="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang -E"
 CFLAGS=""
 CPPFLAGS="-I${prefix}/include"
 CXXFLAGS="-std=c++11"
-CXX="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang++"
+CXX="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang++"
 DEFAULT_MODE="common"
 DEFS="-DPACKAGE_NAME=\"ICU\" -DPACKAGE_TARNAME=\"International\ Components\ for\ Unicode\" -DPACKAGE_VERSION=\"73.2\" -DPACKAGE_STRING=\"ICU\ 73.2\" -DPACKAGE_BUGREPORT=\"http://icu-project.org/bugs\" -DPACKAGE_URL=\"http://icu-project.org\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DSIZEOF_VOID_P=8 -DHAVE_LIBM=1 -DHAVE_ELF_H=1 -DHAVE_GETTIMEOFDAY=1 -DHAVE_INTTYPES_H=1 -DHAVE_DIRENT_H=1 -DHAVE_WCHAR_H=1 -DSIZEOF_WCHAR_T=4 "
 # use a consistent INSTALL 
@@ -224,7 +224,7 @@ LIB_M=""
 LIB_VERSION="73.2"
 LIB_VERSION_MAJOR="73"
 MKINSTALLDIRS="${SHELL} ${pkgdatadir}/mkinstalldirs"
-RANLIB="/home/iulian/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib"
+RANLIB="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib"
 RMV="rm -rf"
 SHELL="/bin/bash"
 SHLIB_c="${CC} ${DEFS} ${CPPFLAGS} ${CFLAGS} ${LDFLAGS} -shared"

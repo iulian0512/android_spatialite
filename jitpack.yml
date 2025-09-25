@@ -1,3 +1,14 @@
 # configuration file for building snapshots and releases with jitpack.io
 jdk:
   - openjdk17
+before_install:
+  # Accept all Android licenses automatically
+  - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
+  # Install specific NDK version
+  - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;29.0.14033849" || yes | $ANDROID_HOME/tools/bin/sdkmanager "ndk;29.0.14033849" || true
+   # Create license directory and files directly (bypassing sdkmanager)
+  - mkdir -p $ANDROID_HOME/licenses
+  - echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_HOME/licenses/android-sdk-license
+  - echo "84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_HOME/licenses/android-sdk-preview-license
+  - echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_HOME/licenses/android-sdk-license
+  - echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" >> $ANDROID_HOME/licenses/android-sdk-license

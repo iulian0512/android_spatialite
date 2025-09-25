@@ -45,3 +45,6 @@ static_libs/**/*.la
 static_libs/**/*.o
 static_libs/**/*.Plo
 static_libs/**/*.db
+static_libs/**/*.ao
+static_libs/**/*.a
+static_libs/**/*Makefile
