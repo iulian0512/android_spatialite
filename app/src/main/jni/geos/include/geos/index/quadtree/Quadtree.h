@@ -61,7 +61,7 @@ namespace quadtree { // geos::index::quadtree
  * intersection, such as testing other kinds of spatial relationships.
  *
  * This implementation does not require specifying the extent of the inserted
- * items beforehand.  It will automatically expand to accomodate any extent
+ * items beforehand.  It will automatically expand to accommodate any extent
  * of dataset.
  *
  * This data structure is also known as an <i>MX-CIF quadtree</i>
@@ -187,6 +187,31 @@ public:
      */
     Quadtree(const Quadtree&) = delete;
     Quadtree& operator=(const Quadtree&) = delete;
+
+
+    // Move constructor
+    Quadtree(Quadtree&& other) noexcept :
+        newEnvelopes(std::move(other.newEnvelopes)),
+        root(other.root),
+        minExtent(other.minExtent)
+    {
+        // The contents of 'other' are moved to 'this'
+        // 'other' will be empty after the move
+    };
+
+    // Move assignment operator
+    Quadtree& operator=(Quadtree&& other) noexcept
+    {
+        if (this != &other) {
+            // Move the vector from 'other' to 'this'
+            // 'newEnvelopes.data' will be empty after this operation
+            newEnvelopes.clear();
+            newEnvelopes = std::move(other.newEnvelopes);
+            minExtent = other.minExtent;
+            root = other.root;
+        }
+        return *this;
+    };
 
 };
 

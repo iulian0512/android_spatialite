@@ -54,7 +54,8 @@ namespace geomgraph { // geos.geomgraph
  * with specific geometries.
  *
  */
-class GEOS_DLL Label {
+class GEOS_DLL Label final {
+    using Position = geos::geom::Position;
 
 public:
 

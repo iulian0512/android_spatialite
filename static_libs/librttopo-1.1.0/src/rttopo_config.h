@@ -140,7 +140,7 @@
 #define RTGEOM_DEBUG_LEVEL 0
 
 /* GEOS library version */
-#define RTGEOM_GEOS_VERSION 312
+#define RTGEOM_GEOS_VERSION 315
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1

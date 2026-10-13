@@ -61,22 +61,22 @@ extern "C" {
 #define GEOS_VERSION_MAJOR 3
 #endif
 #ifndef GEOS_VERSION_MINOR
-#define GEOS_VERSION_MINOR 12
+#define GEOS_VERSION_MINOR 15
 #endif
 #ifndef GEOS_VERSION_PATCH
 #define GEOS_VERSION_PATCH 0
 #endif
 #ifndef GEOS_VERSION
-#define GEOS_VERSION "3.12.0"
+#define GEOS_VERSION "3.15.0"
 #endif
 #ifndef GEOS_JTS_PORT
-#define GEOS_JTS_PORT "1.18.0"
+#define GEOS_JTS_PORT "1.20.0"
 #endif
 
 #define GEOS_CAPI_VERSION_MAJOR 1
-#define GEOS_CAPI_VERSION_MINOR 18
+#define GEOS_CAPI_VERSION_MINOR 21
 #define GEOS_CAPI_VERSION_PATCH 0
-#define GEOS_CAPI_VERSION "3.12.0-CAPI-1.18.0"
+#define GEOS_CAPI_VERSION "3.15.0-CAPI-1.21.0"
 
 #define GEOS_CAPI_FIRST_INTERFACE GEOS_CAPI_VERSION_MAJOR
 #define GEOS_CAPI_LAST_INTERFACE (GEOS_CAPI_VERSION_MAJOR+GEOS_CAPI_VERSION_MINOR)
@@ -102,7 +102,8 @@ typedef struct GEOSContextHandle_HS *GEOSContextHandle_t;
 *
 * \param fmt the message format template
 */
-typedef void (*GEOSMessageHandler)(const char *fmt, ...);
+typedef void (*GEOSMessageHandler)(GEOS_PRINTF_FORMAT const char *fmt, ...)
+    GEOS_PRINTF_FORMAT_ATTR(1, 2);
 
 /**
 * A GEOS message handler function.
@@ -115,6 +116,21 @@ typedef void (*GEOSMessageHandler)(const char *fmt, ...);
 * \see GEOSContext_setNoticeMessageHandler
 */
 typedef void (*GEOSMessageHandler_r)(const char *message, void *userdata);
+
+
+/**
+ * A GEOS progress callback function.
+ *
+ * Such function takes a progress ratio (0 to 1), and an optional message.
+ *
+ * \param progressRatio Progression ratio (between 0 and 1)
+ * \param message Information message (can be NULL)
+ * \param userdata the user data pointer that was passed to GEOS together with
+ * this callback.
+ */
+typedef void (GEOSProgressCallback)(double progressRatio,
+                                    const char* message, void* userdata);
+
 
 /*
 * When we're included by geos_c.cpp, these types are #defined to the
@@ -168,11 +184,38 @@ typedef struct GEOSSTRtree_t GEOSSTRtree;
 typedef struct GEOSBufParams_t GEOSBufferParams;
 
 /**
+* Parameter object for coverage cleaning options.
+* \see GEOSCoverageCleanParams_create()
+* \see GEOSCoverageCleanParams_destroy()
+*/
+typedef struct GEOSCoverageCleanParams_t GEOSCoverageCleanParams;
+
+/**
 * Parameter object for validity enforcement.
 * \see GEOSMakeValidParams_create()
 * \see GEOSMakeValidParams_destroy()
 */
 typedef struct GEOSMakeValidParams_t GEOSMakeValidParams;
+
+/**
+* Object containing information about cluster of geometries.
+* \see GEOSClusterInfo_destroy()
+*/
+typedef struct GEOSClusterInfo_t GEOSClusterInfo;
+
+/**
+* Parameter object for curve-to-line conversion
+* \see GEOSCurveToLineParams_create()
+* \see GEOSCurveToLineParams_destroy()
+*/
+typedef struct GEOSCurveToLineParams_t GEOSCurveToLineParams;
+
+/**
+* Parameter object for line-to-curve conversion
+* \see GEOSLineToCurveParams_create()
+* \see GEOSLineToCurveParams_destroy()
+*/
+typedef struct GEOSLineToCurveParams_t GEOSLineToCurveParams;
 
 #endif
 
@@ -210,7 +253,12 @@ enum GEOSGeomTypes {
     /** Multipolygon, a homogeneous collection of polygons */
     GEOS_MULTIPOLYGON,
     /** Geometry collection, a heterogeneous collection of geometry */
-    GEOS_GEOMETRYCOLLECTION
+    GEOS_GEOMETRYCOLLECTION,
+    GEOS_CIRCULARSTRING,
+    GEOS_COMPOUNDCURVE,
+    GEOS_CURVEPOLYGON,
+    GEOS_MULTICURVE,
+    GEOS_MULTISURFACE,
 };
 
 /**
@@ -240,6 +288,21 @@ enum GEOSWKBFlavors {
     GEOS_WKB_EXTENDED = 1,
     /** ISO */
     GEOS_WKB_ISO = 2
+};
+
+/**
+* Overlap repair strategies.
+* \see GEOSCoverageCleanParams_setOverlapMergeStrategy
+*/
+enum GEOSOverlapMerge {
+    /** Merge strategy that chooses polygon with longest common border */
+    GEOS_MERGE_LONGEST_BORDER = 0,
+    /** Merge strategy that chooses polygon with maximum area */
+    GEOS_MERGE_MAX_AREA       = 1,
+    /** Merge strategy that chooses polygon with minimum area */
+    GEOS_MERGE_MIN_AREA       = 2,
+    /** Merge strategy that chooses polygon with smallest input index */
+    GEOS_MERGE_MIN_INDEX      = 3
 };
 
 /**
@@ -278,7 +341,7 @@ typedef int (*GEOSDistanceCallback)(
 /**
 * Callback function for use in GEOSGeom_transformXY.
 * Allows custom function to be applied to x and y values for each coordinate
-* in a geometry.  Z values are unchanged by this function.
+* in a geometry.  Z and M values are unchanged by this function.
 * Extra data for the calculation can be passed via the userdata.
 *
 * \param x coordinate value to be updated
@@ -293,11 +356,30 @@ typedef int (*GEOSTransformXYCallback)(
     void* userdata);
 
 
-/* ========== Interruption ========== */
-
 /**
-* Callback function for use in interruption. The callback will be invoked _before_ checking for
-* interruption, so can be used to request it.
+* Callback function for use in GEOSGeom_transformXYZ.
+* Allows custom function to be applied to x, y and z values for each coordinate
+* in a geometry.  M values are unchanged by this function.
+* Extra data for the calculation can be passed via the userdata.
+*
+* \param x coordinate value to be updated
+* \param y coordinate value to be updated
+* \param z coordinate value to be updated
+* \param userdata extra data for the calculation
+*
+* \return 1 if calculation succeeded, 0 on failure
+*/
+typedef int (*GEOSTransformXYZCallback)(
+    double* x,
+    double* y,
+    double* z,
+    void* userdata);
+
+
+/* ========== Interruption ========== */
+/**
+* Callback function for use in interruption. The callback will be invoked at each
+* possible interruption point and can be used to request interruption.
 *
 * \see GEOS_interruptRegisterCallback
 * \see GEOS_interruptRequest
@@ -306,17 +388,49 @@ typedef int (*GEOSTransformXYCallback)(
 typedef void (GEOSInterruptCallback)(void);
 
 /**
-* Register a function to be called when processing is interrupted.
+* Callback function for use in interruption. The callback will be invoked at each
+* possible interruption point and can be used to request interruption by returning
+* a non-zero value.
+*
+* \see GEOSContext_setInterruptCallback_r
+* \since 3.14
+*/
+typedef int (GEOSContextInterruptCallback)(void*);
+
+/**
+* Register a function to be called when a possible interruption point is reached
+* on any thread. The function may be used to request interruption.
+*
 * \param cb Callback function to invoke
-* \return the previously configured callback
+* \return the previously registered callback, or NULL
 * \see GEOSInterruptCallback
+* \see GEOSContext_setInterruptCallback_r
 * \since 3.4
 */
 extern GEOSInterruptCallback GEOS_DLL *GEOS_interruptRegisterCallback(
     GEOSInterruptCallback* cb);
 
 /**
-* Request safe interruption of operations
+* Register a function to be called when a possible interruption point is reached
+* in code executed in the specified context. The function can interrupt the
+* thread if desired by returning True.
+*
+* \param extHandle the context returned by \ref GEOS_init_r.
+* \param cb Callback function to invoke
+* \param userData optional data to be pe provided as argument to callback
+* \return the previously registered callback, or NULL
+* \see GEOSContextInterruptCallback
+* \since 3.14
+*/
+extern GEOSContextInterruptCallback GEOS_DLL *GEOSContext_setInterruptCallback_r(
+        GEOSContextHandle_t extHandle,
+        GEOSContextInterruptCallback* cb,
+        void* userData);
+
+/**
+* Request safe interruption of operations. The next thread to check for an
+* interrupt will be interrupted. To request interruption of a specific thread,
+* instead call GEOS_interruptThread() from a callback executed by that thread.
 * \since 3.4
 */
 extern void GEOS_DLL GEOS_interruptRequest(void);
@@ -326,6 +440,23 @@ extern void GEOS_DLL GEOS_interruptRequest(void);
 * \since 3.4
 */
 extern void GEOS_DLL GEOS_interruptCancel(void);
+
+/* ========== Progress monitoring ========== */
+
+/**
+* Register a function to be called with progress updates
+*
+* \param extHandle the context returned by \ref GEOS_init_r.
+* \param cb Callback function to invoke
+* \param userData optional data to be pe provided as argument to callback
+* \return the previously registered callback, or NULL
+* \see GEOSProgressCallback
+* \since 3.15
+*/
+extern GEOSProgressCallback GEOS_DLL *GEOSContext_setProgressCallback_r(
+       GEOSContextHandle_t extHandle,
+       GEOSProgressCallback* cb,
+       void* userData);
 
 /* ========== Initialization and Cleanup ========== */
 
@@ -404,6 +535,38 @@ extern GEOSMessageHandler_r GEOS_DLL GEOSContext_setErrorMessageHandler_r(
     GEOSMessageHandler_r ef,
     void *userData);
 
+/**
+* Set parameters to use for converting input curves to lines.
+*
+* These parameters will be used with this context whenever a curved geometry is
+* provided to a function that only supports linear types. If `params` is NULL,
+* no automatic conversion will be performed.
+*
+* \param extHandle the GEOS context
+* \param params the curve conversion parameters
+*
+* \since 3.15
+*/
+extern void GEOS_DLL GEOSContext_setCurveToLineParams_r(
+    GEOSContextHandle_t extHandle,
+    const GEOSCurveToLineParams* params);
+
+/**
+* Set parameters to use for converting output lines to curves.
+*
+* These parameters will be used with this context whenever a curved geometry is
+* provided to a function that only supports linear types. If `params` is NULL,
+* no automatic conversion will be performed.
+*
+* \param extHandle the GEOS context
+* \param params the curve conversion parameters
+*
+* \since 3.15
+*/
+extern void GEOS_DLL GEOSContext_setLineToCurveParams_r(
+    GEOSContextHandle_t extHandle,
+    const GEOSLineToCurveParams* params);
+
 /* ========== Coordinate Sequence functions ========== */
 
 /** \see GEOSCoordSeq_create */
@@ -411,6 +574,13 @@ extern GEOSCoordSequence GEOS_DLL *GEOSCoordSeq_create_r(
     GEOSContextHandle_t handle,
     unsigned int size,
     unsigned int dims);
+
+/** \see GEOSCoordSeq_createWithDimensions */
+extern GEOSCoordSequence GEOS_DLL *GEOSCoordSeq_createWithDimensions_r(
+    GEOSContextHandle_t handle,
+    unsigned int size,
+    int hasZ,
+    int hasM);
 
 /** \see GEOSCoordSeq_copyFromBuffer */
 extern GEOSCoordSequence GEOS_DLL *GEOSCoordSeq_copyFromBuffer_r(
@@ -456,6 +626,16 @@ extern void GEOS_DLL GEOSCoordSeq_destroy_r(
     GEOSContextHandle_t handle,
     GEOSCoordSequence* s);
 
+/** \see GEOSCoordSeq_hasZ */
+extern char GEOS_DLL GEOSCoordSeq_hasZ_r(
+    GEOSContextHandle_t handle,
+    GEOSCoordSequence* s);
+
+/** \see GEOSCoordSeq_hasM */
+extern char GEOS_DLL GEOSCoordSeq_hasM_r(
+    GEOSContextHandle_t handle,
+    GEOSCoordSequence* s);
+
 /** \see GEOSCoordSeq_setX */
 extern int GEOS_DLL GEOSCoordSeq_setX_r(
     GEOSContextHandle_t handle,
@@ -470,6 +650,12 @@ extern int GEOS_DLL GEOSCoordSeq_setY_r(
 
 /** \see GEOSCoordSeq_setZ */
 extern int GEOS_DLL GEOSCoordSeq_setZ_r(
+    GEOSContextHandle_t handle,
+    GEOSCoordSequence* s, unsigned int idx,
+    double val);
+
+/** \see GEOSCoordSeq_setM */
+extern int GEOS_DLL GEOSCoordSeq_setM_r(
     GEOSContextHandle_t handle,
     GEOSCoordSequence* s, unsigned int idx,
     double val);
@@ -507,6 +693,12 @@ extern int GEOS_DLL GEOSCoordSeq_getY_r(
 
 /** \see GEOSCoordSeq_getZ */
 extern int GEOS_DLL GEOSCoordSeq_getZ_r(
+    GEOSContextHandle_t handle,
+    const GEOSCoordSequence* s,
+    unsigned int idx, double *val);
+
+/** \see GEOSCoordSeq_getM */
+extern int GEOS_DLL GEOSCoordSeq_getM_r(
     GEOSContextHandle_t handle,
     const GEOSCoordSequence* s,
     unsigned int idx, double *val);
@@ -757,6 +949,36 @@ extern GEOSGeometry GEOS_DLL *GEOSGeom_clone_r(
     GEOSContextHandle_t handle,
     const GEOSGeometry* g);
 
+/** \see GEOSGeom_createCircularString */
+extern GEOSGeometry GEOS_DLL *GEOSGeom_createCircularString_r(
+    GEOSContextHandle_t handle,
+    GEOSCoordSequence* s);
+
+/** \see GEOSGeom_createEmptyCircularString */
+extern GEOSGeometry GEOS_DLL *GEOSGeom_createEmptyCircularString_r(
+    GEOSContextHandle_t handle);
+
+/** \see GEOSGeom_createCompoundCurve */
+extern GEOSGeometry GEOS_DLL *GEOSGeom_createCompoundCurve_r(
+    GEOSContextHandle_t handle,
+    GEOSGeometry** curves,
+    unsigned int ncurves);
+
+/** \see GEOSGeom_createEmptyCompoundCurve */
+extern GEOSGeometry GEOS_DLL *GEOSGeom_createEmptyCompoundCurve_r(
+    GEOSContextHandle_t handle);
+
+/** \see GEOSGeom_createCurvePolygon */
+extern GEOSGeometry GEOS_DLL *GEOSGeom_createCurvePolygon_r(
+    GEOSContextHandle_t handle,
+    GEOSGeometry* shell,
+    GEOSGeometry** holes,
+    unsigned int nholes);
+
+/** \see GEOSGeom_createEmptyCurvePolygon */
+extern GEOSGeometry GEOS_DLL *GEOSGeom_createEmptyCurvePolygon_r(
+    GEOSContextHandle_t handle);
+
 /* ========= Memory management ========= */
 
 /** \see GEOSGeom_destroy */
@@ -787,6 +1009,58 @@ GEOSCoverageSimplifyVW_r(
     const GEOSGeometry* input,
     double tolerance,
     int preserveBoundary);
+
+/** \see GEOSCoverageEdges */
+extern GEOSGeometry GEOS_DLL *
+GEOSCoverageEdges_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* input,
+    int edgetype);
+
+/** \see GEOSCoverageCleanParams_create */
+extern GEOSCoverageCleanParams GEOS_DLL *
+GEOSCoverageCleanParams_create_r(
+    GEOSContextHandle_t extHandle);
+
+/** \see GEOSCoverageCleanParams_destroy */
+extern void GEOS_DLL
+GEOSCoverageCleanParams_destroy_r(
+    GEOSContextHandle_t extHandle,
+    GEOSCoverageCleanParams* params);
+
+/** \see GEOSCoverageCleanParams_setSnappingDistance */
+extern int GEOS_DLL
+GEOSCoverageCleanParams_setSnappingDistance_r(
+    GEOSContextHandle_t extHandle,
+    GEOSCoverageCleanParams* params,
+    double snappingDistance);
+
+/** \see GEOSCoverageCleanParams_setGapMaximumWidth */
+extern int GEOS_DLL
+GEOSCoverageCleanParams_setGapMaximumWidth_r(
+    GEOSContextHandle_t extHandle,
+    GEOSCoverageCleanParams* params,
+    double gapMaximumWidth);
+
+/** \see GEOSCoverageCleanParams_setOverlapMergeStrategy */
+extern int GEOS_DLL
+GEOSCoverageCleanParams_setOverlapMergeStrategy_r(
+    GEOSContextHandle_t extHandle,
+    GEOSCoverageCleanParams* params,
+    int overlapMergeStrategy);
+
+/** \see GEOSCoverageCleanWithParams */
+extern GEOSGeometry GEOS_DLL *
+GEOSCoverageCleanWithParams_r(
+    GEOSContextHandle_t extHandle,
+    const GEOSGeometry* input,
+    const GEOSCoverageCleanParams* params);
+
+/** \see GEOSCoverageClean */
+extern GEOSGeometry GEOS_DLL *
+GEOSCoverageClean_r(
+    GEOSContextHandle_t extHandle,
+    const GEOSGeometry* input);
 
 /* ========= Topology Operations ========= */
 
@@ -833,6 +1107,16 @@ extern GEOSGeometry GEOS_DLL *GEOSPolygonHullSimplify_r(
     const GEOSGeometry* g,
     unsigned int isOuter,
     double vertexNumFraction);
+
+/**
+* Controls the behavior of the GEOSPolygonHullSimplify parameter.
+*/
+enum GEOSPolygonHullParameterModes {
+    /** Fraction of input vertices retained */
+    GEOSHULL_PARAM_VERTEX_RATIO = 1,
+    /** Ratio of simplified hull area to input area */
+    GEOSHULL_PARAM_AREA_RATIO = 2
+};
 
 /** \see GEOSPolygonHullSimplifyMode */
 extern GEOSGeometry GEOS_DLL *GEOSPolygonHullSimplifyMode_r(
@@ -966,12 +1250,36 @@ extern GEOSGeometry GEOS_DLL *GEOSNode_r(
     GEOSContextHandle_t handle,
     const GEOSGeometry* g);
 
+/** \see GEOSSplit */
+extern GEOSGeometry GEOS_DLL *GEOSSplit_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* g,
+    const GEOSGeometry* edge);
+
 /** \see GEOSClipByRect */
 extern GEOSGeometry GEOS_DLL *GEOSClipByRect_r(
     GEOSContextHandle_t handle,
     const GEOSGeometry* g,
     double xmin, double ymin,
     double xmax, double ymax);
+
+/** \see GEOSSubdivideByGrid */
+extern GEOSGeometry GEOS_DLL *GEOSSubdivideByGrid_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* g,
+    double xmin, double ymin,
+    double xmax, double ymax,
+    unsigned nx, unsigned ny,
+    int includeExterior);
+
+/** \see GEOSGridIntersectionFractions */
+extern int GEOS_DLL GEOSGridIntersectionFractions_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* g,
+    double xmin, double ymin,
+    double xmax, double ymax,
+    unsigned nx, unsigned ny,
+    float* buf);
 
 /** \see GEOSPolygonize */
 extern GEOSGeometry GEOS_DLL *GEOSPolygonize_r(
@@ -1008,6 +1316,12 @@ extern GEOSGeometry GEOS_DLL *GEOSBuildArea_r(
 extern GEOSGeometry GEOS_DLL *GEOSLineMerge_r(
     GEOSContextHandle_t handle,
     const GEOSGeometry* g);
+
+/** \see GEOSMinimumSpanningTree */
+extern size_t GEOS_DLL *GEOSMinimumSpanningTree_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry * const geoms[],
+    unsigned int ngeoms);
 
 /** \see GEOSLineMergeDirected */
 extern GEOSGeometry GEOS_DLL *GEOSLineMergeDirected_r(
@@ -1066,6 +1380,17 @@ extern GEOSGeometry GEOS_DLL * GEOSDelaunayTriangulation_r(
 extern GEOSGeometry GEOS_DLL * GEOSConstrainedDelaunayTriangulation_r(
     GEOSContextHandle_t handle,
     const GEOSGeometry *g);
+
+/** Change behaviour of \ref GEOSVoronoiDiagram */
+enum GEOSVoronoiFlags
+{
+    /** Return only edges of the Voronoi cells, as a MultiLineString **/
+    GEOS_VORONOI_ONLY_EDGES = 1,
+    /** Preserve order of inputs, such that the nth cell in the result corresponds
+     *  to the nth vertex in the input. If this cannot be done, such as for inputs
+     *  that contain repeated points, \ref GEOSVoronoiDiagram will return NULL. **/
+    GEOS_VORONOI_PRESERVE_ORDER = 2
+};
 
 /** \see GEOSVoronoiDiagram */
 extern GEOSGeometry GEOS_DLL * GEOSVoronoiDiagram_r(
@@ -1245,6 +1570,19 @@ extern char GEOS_DLL GEOSPreparedWithin_r(
     const GEOSPreparedGeometry* pg1,
     const GEOSGeometry* g2);
 
+/** \see GEOSPreparedRelate */
+extern char GEOS_DLL * GEOSPreparedRelate_r(
+    GEOSContextHandle_t handle,
+    const GEOSPreparedGeometry* pg1,
+    const GEOSGeometry* g2);
+
+/** \see GEOSPreparedRelatePattern */
+extern char GEOS_DLL GEOSPreparedRelatePattern_r(
+    GEOSContextHandle_t handle,
+    const GEOSPreparedGeometry* pg1,
+    const GEOSGeometry* g2,
+    const char* im);
+
 /** \see GEOSPreparedNearestPoints */
 extern GEOSCoordSequence GEOS_DLL *GEOSPreparedNearestPoints_r(
     GEOSContextHandle_t handle,
@@ -1381,7 +1719,7 @@ extern char GEOS_DLL GEOSRelatePattern_r(
     GEOSContextHandle_t handle,
     const GEOSGeometry* g1,
     const GEOSGeometry* g2,
-    const char *pat);
+    const char *imPattern);
 
 /** \see GEOSRelate */
 extern char GEOS_DLL *GEOSRelate_r(
@@ -1392,8 +1730,8 @@ extern char GEOS_DLL *GEOSRelate_r(
 /** \see GEOSRelatePatternMatch */
 extern char GEOS_DLL GEOSRelatePatternMatch_r(
     GEOSContextHandle_t handle,
-    const char *mat,
-    const char *pat);
+    const char *intMatrix,
+    const char *imPattern);
 
 /** \see GEOSRelateBoundaryNodeRule */
 extern char GEOS_DLL *GEOSRelateBoundaryNodeRule_r(
@@ -1420,6 +1758,13 @@ extern char GEOS_DLL GEOSisValid_r(
 extern char GEOS_DLL *GEOSisValidReason_r(
     GEOSContextHandle_t handle,
     const GEOSGeometry* g);
+
+/** \see GEOSisSimpleDetail */
+extern char GEOS_DLL GEOSisSimpleDetail_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* g,
+    int findAllLocations,
+    GEOSGeometry** location);
 
 /** \see GEOSisValidDetail */
 extern char GEOS_DLL GEOSisValidDetail_r(
@@ -1530,6 +1875,16 @@ extern const GEOSGeometry GEOS_DLL *GEOSGetGeometryN_r(
     GEOSContextHandle_t handle,
     const GEOSGeometry* g, int n);
 
+/** \see GEOSGetNumCurves */
+extern int GEOS_DLL GEOSGetNumCurves_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* g);
+
+/** \see GEOSGetCurveN */
+extern const GEOSGeometry GEOS_DLL *GEOSGetCurveN_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* g, int n);
+
 /** \see GEOSNormalize */
 extern int GEOS_DLL GEOSNormalize_r(
     GEOSContextHandle_t handle,
@@ -1565,6 +1920,48 @@ extern GEOSGeometry GEOS_DLL *GEOSGeom_setPrecision_r(
 extern double GEOS_DLL GEOSGeom_getPrecision_r(
     GEOSContextHandle_t handle,
     const GEOSGeometry *g);
+
+/** \see GEOSCurveToLine */
+extern GEOSGeometry GEOS_DLL *GEOSCurveToLine_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* g,
+    const GEOSCurveToLineParams* params);
+
+/** \see GEOSCurveToLineParams_setMaxStepDegrees */
+extern int GEOS_DLL GEOSCurveToLineParams_setMaxStepDegrees_r(
+    GEOSContextHandle_t extHandle,
+    GEOSCurveToLineParams* params,
+    double tolerance);
+
+/** \see GEOSCurveToLineParams_setMaxDeviation */
+extern int GEOS_DLL GEOSCurveToLineParams_setMaxDeviation_r(
+    GEOSContextHandle_t extHandle,
+    GEOSCurveToLineParams* params,
+    double tolerance);
+
+/** \see GEOSLineToCurve */
+extern GEOSGeometry GEOS_DLL *GEOSLineToCurve_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* g,
+    const GEOSLineToCurveParams* params);
+
+/** \see GEOSLineToCurveParams_setRadiusTolerance */
+extern int GEOS_DLL GEOSLineToCurveParams_setRadiusTolerance_r(
+        GEOSContextHandle_t extHandle,
+        GEOSLineToCurveParams* params,
+        double tolerance);
+
+/** \see GEOSLineToCurveParams_setMaxStepDegrees */
+extern int GEOS_DLL GEOSLineToCurveParams_setMaxStepDegrees_r(
+        GEOSContextHandle_t extHandle,
+        GEOSLineToCurveParams* params,
+        double tolerance);
+
+/** \see GEOSLineToCurveParams_setMaxAngleDifferenceDegrees */
+extern int GEOS_DLL GEOSLineToCurveParams_setMaxAngleDifferenceDegrees_r(
+        GEOSContextHandle_t extHandle,
+        GEOSLineToCurveParams* params,
+        double tolerance);
 
 /** \see GEOSGetNumInteriorRings */
 extern int GEOS_DLL GEOSGetNumInteriorRings_r(
@@ -1721,12 +2118,30 @@ extern int GEOS_DLL GEOSHausdorffDistance_r(
     const GEOSGeometry *g2,
     double *dist);
 
+/** \see GEOSHausdorffDistanceWithPoints */
+extern int GEOS_DLL GEOSHausdorffDistanceWithPoints_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry *g1,
+    const GEOSGeometry *g2,
+    double *dist,
+    double *p1x, double *p1y,
+    double *p2x, double *p2y);
+
 /** \see GEOSHausdorffDistanceDensify */
 extern int GEOS_DLL GEOSHausdorffDistanceDensify_r(
     GEOSContextHandle_t handle,
     const GEOSGeometry *g1,
     const GEOSGeometry *g2,
     double densifyFrac, double *dist);
+
+/** \see GEOSHausdorffDistanceDensifyWithPoints */
+extern int GEOS_DLL GEOSHausdorffDistanceDensifyWithPoints_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry *g1,
+    const GEOSGeometry *g2,
+    double densifyFrac, double* dist,
+    double *p1x, double *p1y,
+    double *p2x, double *p2y);
 
 /** \see GEOSFrechetDistance */
 extern int GEOS_DLL GEOSFrechetDistance_r(
@@ -1771,6 +2186,57 @@ extern GEOSGeometry GEOS_DLL *GEOSGeom_transformXY_r(
     const GEOSGeometry* g,
     GEOSTransformXYCallback callback,
     void* userdata);
+
+/** \see GEOSGeom_transformXYZ */
+extern GEOSGeometry GEOS_DLL *GEOSGeom_transformXYZ_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* g,
+    GEOSTransformXYZCallback callback,
+    void* userdata);
+
+/** \see GEOSClusterDBSCAN */
+extern GEOSClusterInfo GEOS_DLL* GEOSClusterDBSCAN_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* g,
+    double eps,
+    unsigned minPoints);
+
+/** \see GEOSClusterGeometryDistance */
+extern GEOSClusterInfo GEOS_DLL* GEOSClusterGeometryDistance_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* g,
+    double d);
+
+/** \see GEOSClusterGeometryIntersects */
+extern GEOSClusterInfo GEOS_DLL* GEOSClusterGeometryIntersects_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* g);
+
+/** \see GEOSClusterEnvelopeDistance */
+extern GEOSClusterInfo GEOS_DLL* GEOSClusterEnvelopeDistance_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* g,
+    double d);
+
+/** \see GEOSClusterEnvelopeIntersects */
+extern GEOSClusterInfo GEOS_DLL* GEOSClusterEnvelopeIntersects_r(
+    GEOSContextHandle_t handle,
+    const GEOSGeometry* g);
+
+/** \see GEOSClusterInfo_getNumClusters */
+extern size_t GEOS_DLL GEOSClusterInfo_getNumClusters_r(GEOSContextHandle_t, const GEOSClusterInfo* clusters);
+
+/** \see GEOSClusterInfo_getClusterSize */
+extern size_t GEOS_DLL GEOSClusterInfo_getClusterSize_r(GEOSContextHandle_t, const GEOSClusterInfo* clusters, size_t i);
+
+/** \see GEOSClusterInfo_getClustersForInputs */
+extern size_t GEOS_DLL* GEOSClusterInfo_getClustersForInputs_r(GEOSContextHandle_t, const GEOSClusterInfo* clusters);
+
+/** \see GEOSClusterInfo_getInputsForClusterN */
+extern const size_t GEOS_DLL* GEOSClusterInfo_getInputsForClusterN_r(GEOSContextHandle_t, const GEOSClusterInfo* clusters, size_t i);
+
+/** \see GEOSClusterInfo_destroy */
+extern void GEOS_DLL GEOSClusterInfo_destroy_r(GEOSContextHandle_t, GEOSClusterInfo* info);
 
 /* ========= Algorithms ========= */
 
@@ -1852,6 +2318,7 @@ extern void GEOS_DLL GEOSWKTReader_setFixStructure_r(
     GEOSWKTReader *reader,
     char doFix);
 
+
 /* ========== WKT Writer ========== */
 
 /** \see GEOSWKTReader_create */
@@ -1897,6 +2364,21 @@ extern void GEOS_DLL GEOSWKTWriter_setOld3D_r(
     GEOSContextHandle_t handle,
     GEOSWKTWriter *writer,
     int useOld3D);
+
+/** Print the shortest representation of a double. Non-zero absolute values
+ * that are <1e-4 and >=1e+17 are formatted using scientific notation, and
+ * other values are formatted with positional notation with precision used for
+ * the max digits after decimal point.
+ * \param d The number to format.
+ * \param precision The desired precision.
+ * \param result The buffer to write the result to, with a suggested size 28.
+ * \return the length of the written string.
+ */
+extern int GEOS_DLL GEOS_printDouble(
+    double d,
+    unsigned int precision,
+    char *result
+);
 
 /* ========== WKB Reader ========== */
 
@@ -2030,6 +2512,17 @@ extern char GEOS_DLL *GEOSGeoJSONWriter_writeGeometry_r(
     const GEOSGeometry* g,
     int indent);
 
+/** \see GEOSGeoJSONWriter_setOutputDimension */
+extern void GEOS_DLL GEOSGeoJSONWriter_setOutputDimension_r(
+    GEOSContextHandle_t handle,
+    GEOSGeoJSONWriter *writer,
+    int dim);
+
+/** \see GEOSGeoJSONWriter_getOutputDimension */
+extern int  GEOS_DLL GEOSGeoJSONWriter_getOutputDimension_r(
+    GEOSContextHandle_t handle,
+    GEOSGeoJSONWriter *writer);
+
 /** \see GEOSFree */
 extern void GEOS_DLL GEOSFree_r(
     GEOSContextHandle_t handle,
@@ -2085,7 +2578,9 @@ extern void GEOS_DLL finishGEOS(void);
 * Free strings and byte buffers returned by functions such
 * as GEOSWKBWriter_write(),
 * GEOSWKBWriter_writeHEX() and GEOSWKTWriter_write(), etc.
-* \param buffer The memory to free
+* If passed a null pointer the function does nothing.
+
+* \param buffer The memory to free (may be null)
 * \since 3.1
 */
 extern void GEOS_DLL GEOSFree(void *buffer);
@@ -2107,6 +2602,16 @@ extern void GEOS_DLL GEOSFree(void *buffer);
 * \since 2.2
 */
 extern GEOSCoordSequence GEOS_DLL *GEOSCoordSeq_create(unsigned int size, unsigned int dims);
+
+/**
+* Create a coordinate sequence.
+* \param size number of coordinates in the sequence
+* \param hasZ whether the sequence should store Z values
+* \param hasM whether the sequence should store M values
+* \return the sequence or NULL on exception
+* \since 3.14
+*/
+extern GEOSCoordSequence GEOS_DLL *GEOSCoordSeq_createWithDimensions(unsigned int size, int hasZ, int hasM);
 
 /**
 * Create a coordinate sequence by copying from an interleaved buffer of doubles (e.g., XYXY or XYZXYZ)
@@ -2174,6 +2679,24 @@ extern GEOSCoordSequence GEOS_DLL *GEOSCoordSeq_clone(const GEOSCoordSequence* s
 extern void GEOS_DLL GEOSCoordSeq_destroy(GEOSCoordSequence* s);
 
 /**
+* Tests whether the input coordinate sequence has Z coordinates.
+* \param s the coordinate sequence to test
+* \return 1 on true, 0 on false, 2 on exception
+*
+* \since 3.14
+*/
+extern char GEOS_DLL GEOSCoordSeq_hasZ(GEOSCoordSequence* s);
+
+/**
+* Tests whether the input coordinate sequence has M coordinates.
+* \param s the coordinate sequence to test
+* \return 1 on true, 0 on false, 2 on exception
+*
+* \since 3.14
+*/
+extern char GEOS_DLL GEOSCoordSeq_hasM(GEOSCoordSequence* s);
+
+/**
 * Set X ordinate values in a coordinate sequence.
 * \param s the coordinate sequence
 * \param idx the index of the coordinate to alter, zero based
@@ -2203,6 +2726,18 @@ extern int GEOS_DLL GEOSCoordSeq_setY(GEOSCoordSequence* s,
 */
 extern int GEOS_DLL GEOSCoordSeq_setZ(GEOSCoordSequence* s,
     unsigned int idx, double val);
+
+/**
+* Set M ordinate values in a coordinate sequence.
+* \param s the coordinate sequence
+* \param idx the index of the coordinate to alter, zero based
+* \param val the value to set the ordinate to
+* \return 0 on exception
+* \since 3.14
+*/
+extern int GEOS_DLL GEOSCoordSeq_setM(GEOSCoordSequence* s,
+    unsigned int idx, double val);
+
 /**
 * Set X and Y ordinate values in a coordinate sequence simultaneously.
 * \param s the coordinate sequence
@@ -2261,6 +2796,7 @@ extern int GEOS_DLL GEOSCoordSeq_getX(const GEOSCoordSequence* s,
 */
 extern int GEOS_DLL GEOSCoordSeq_getY(const GEOSCoordSequence* s,
     unsigned int idx, double *val);
+
 /**
 * Read Z ordinate values from a coordinate sequence.
 * \param s the coordinate sequence
@@ -2271,6 +2807,18 @@ extern int GEOS_DLL GEOSCoordSeq_getY(const GEOSCoordSequence* s,
 */
 extern int GEOS_DLL GEOSCoordSeq_getZ(const GEOSCoordSequence* s,
     unsigned int idx, double *val);
+
+/**
+* Read M ordinate values from a coordinate sequence.
+* \param s the coordinate sequence
+* \param idx the index of the coordinate to alter, zero based
+* \param val pointer where ordinate value will be placed
+* \return 0 on exception
+* \since 3.14
+*/
+extern int GEOS_DLL GEOSCoordSeq_getM(const GEOSCoordSequence* s,
+    unsigned int idx, double *val);
+
 /**
 * Read X and Y ordinate values from a coordinate sequence.
 * \param s the coordinate sequence
@@ -2436,6 +2984,68 @@ extern GEOSGeometry GEOS_DLL *GEOSGeom_createPolygon(
     unsigned int nholes);
 
 /**
+* Creates a CircularString geometry.
+* \param s Input coordinate sequence, ownership passes to the geometry
+* \return A newly allocated CircularString geometry. NULL on exception.
+* Caller is responsible for freeing with GEOSGeom_destroy().
+* \since 3.13
+*/
+extern GEOSGeometry GEOS_DLL *GEOSGeom_createCircularString(GEOSCoordSequence* s);
+
+/**
+* Creates an empty CircularString geometry.
+* \return A newly allocated CircularString geometry. NULL on exception.
+* Caller is responsible for freeing with GEOSGeom_destroy().
+* \since 3.13
+*/
+extern GEOSGeometry GEOS_DLL *GEOSGeom_createEmptyCircularString(void);
+
+/**
+* Creates a CompoundCurve geometry.
+* \param curves A list of geometries that will form the CompoundCurve
+* \param ncurves The number of geometries in the curves list
+* \return A newly allocated CompoundCurve geometry. NULL on exception.
+* Caller is responsible for freeing with GEOSGeom_destroy().
+* \since 3.13
+*/
+extern GEOSGeometry GEOS_DLL *GEOSGeom_createCompoundCurve(GEOSGeometry** curves,
+                                                           unsigned int ncurves);
+
+/**
+* Creates an empty CompoundCurve geometry.
+* \return A newly allocated CompoundCurve geometry. NULL on exception.
+* Caller is responsible for freeing with GEOSGeom_destroy().
+* \since 3.13
+*/
+extern GEOSGeometry GEOS_DLL *GEOSGeom_createEmptyCompoundCurve(void);
+
+/**
+* Creates a CurvePolygon geometry from ring geometries.
+* \param shell A ring that is the exterior ring of the polygon.
+* \param holes An array of rings that are the holes.
+* \param nholes The number of rings in the holes array.
+* \return A newly allocated geometry. NULL on exception.
+* Caller is responsible for freeing with GEOSGeom_destroy().
+* \note The holes argument is an array of GEOSGeometry* objects.
+*       The caller **retains ownership** of the containing array,
+*       but the ownership of the pointed-to objects is transferred
+*       to the returned \ref GEOSGeometry.
+* \since 3.13
+*/
+extern GEOSGeometry GEOS_DLL *GEOSGeom_createCurvePolygon(
+    GEOSGeometry* shell,
+    GEOSGeometry** holes,
+    unsigned int nholes);
+
+/**
+* Creates an empty CurvePolygon geometry.
+* \return A newly allocated CurvePolygon geometry. NULL on exception.
+* Caller is responsible for freeing with GEOSGeom_destroy().
+* \since 3.13
+*/
+extern GEOSGeometry GEOS_DLL *GEOSGeom_createEmptyCurvePolygon(void);
+
+/**
 * Create a geometry collection.
 * \param type The geometry type, enumerated by \ref GEOSGeomTypes
 * \param geoms A list of geometries that will form the collection
@@ -2467,7 +3077,7 @@ extern GEOSGeometry GEOS_DLL *GEOSGeom_createCollection(
 *       with GEOSFree() and all the elements with GEOSGeom_destroy().
 *       If called with an empty collection, null will be returned
 *       and ngeoms set to zero.
-* \since 3.4
+* \since 3.12
 */
 extern GEOSGeometry GEOS_DLL ** GEOSGeom_releaseCollection(
     GEOSGeometry * collection,
@@ -2551,7 +3161,7 @@ extern int GEOS_DLL GEOSGetSRID(const GEOSGeometry* g);
 /**
 * Return the anonymous "user data" for this geometry.
 * User data must be managed by the caller, and is not freed when
-* the geometry is destoryed.
+* the geometry is destroyed.
 * \param g Input geometry
 * \return A void* to the user data, caller is responsible for
 *         casting to the appropriate type.
@@ -2565,6 +3175,8 @@ extern void GEOS_DLL *GEOSGeom_getUserData(const GEOSGeometry* g);
 * multi-geometry or collection or 1 for a simple geometry.
 * For nested collections, remember to check if returned
 * sub-geometries are **themselves** also collections.
+* Empty collection or multi-geometry types return 0,
+* and empty simple geometry types return 1.
 * \param g Input geometry
 * \return Number of direct children in this collection
 * \warning For GEOS < 3.2 this function may crash when fed simple geometries
@@ -2592,6 +3204,33 @@ extern const GEOSGeometry GEOS_DLL *GEOSGetGeometryN(
     int n);
 
 /**
+* Returns the number of simple curves in a CompoundCurve.
+* Returns 1 for a non-empty LineString/CircularString, and 0 
+* for other inputs.
+* \param g Input geometry
+* \return Number of child curves in this geometry
+* \since 3.15
+*/
+extern int GEOS_DLL GEOSGetNumCurves(const GEOSGeometry* g);
+
+/**
+* Returns the specified sub-curve of a geometry. For a simple curve type
+* (LineString/CircularString), returns a pointer to the input.
+* Returns NULL for non-curve types (dimension != 1).
+*
+* Returned object is a pointer to internal storage and must NOT be destroyed
+* directly.
+
+* \param g Input geometry
+* \param n Sub-curve index, zero-based
+* \return A const \ref GEOSGeometry, or NULL
+* \since 3.15
+*/
+extern const GEOSGeometry GEOS_DLL *GEOSGetCurveN(
+    const GEOSGeometry* g,
+    int n);
+
+/**
 * Read the currently set precision value from the
 * geometry and returns the grid size if it is a fixed
 * precision or 0.0 if it is full floating point precision.
@@ -2612,9 +3251,12 @@ extern double GEOS_DLL GEOSGeom_getPrecision(const GEOSGeometry *g);
 extern int GEOS_DLL GEOSGetNumInteriorRings(const GEOSGeometry* g);
 
 /**
-* Returns the number of points, for a LineString input, or
-* an exception otherwise.
-* \param g Input LineString geometry
+* Return the number of points in a linear geometry.
+*
+* CircularString inputs are supported since GEOS 3.14.
+* CompoundCurve inputs are supported since GEOS 3.15.
+*
+* \param g Input geometry, must be a LineString, CircularString, or CompoundCurve
 * \return Number of points, -1 on exception
 * \since 2.2
 */
@@ -2698,7 +3340,7 @@ extern int GEOS_DLL GEOSGetNumCoordinates(
 
 /**
 * Return the coordinate sequence underlying the
-* given geometry (Must be a LineString, LinearRing or Point).
+* given geometry (Must be a LineString, LinearRing, CircularString, or Point).
 * Do not directly free the coordinate sequence, it is owned by
 * the parent geometry.
 * \param g Input geometry
@@ -2711,9 +3353,9 @@ extern const GEOSCoordSequence GEOS_DLL *GEOSGeom_getCoordSeq(
 /**
 * Return the planar dimensionality of the geometry.
 *
-* - 0 for point, multipoint
-* - 1 for linestring, multilinestring
-* - 2 for polygon, multipolygon
+* - 0 for Point, MultiPoint
+* - 1 for LineString, MultiLineString, CircularString, CompoundCurve, MultiCurve
+* - 2 for Polygon, MultiPolygon, CurvePolygon, MultiSurface
 *
 * \see geos::geom::Dimension::DimensionType
 * \param g Input geometry
@@ -2727,7 +3369,8 @@ extern int GEOS_DLL GEOSGeom_getDimensions(
 * Return the cartesian dimension of the geometry.
 *
 * - 2 for XY data
-* - 3 for XYZ data
+* - 3 for XYZ or XYM data
+* - 4 for XYZM data
 *
 * \param g Input geometry
 * \return The dimension
@@ -2738,7 +3381,12 @@ extern int GEOS_DLL GEOSGeom_getCoordinateDimension(
     const GEOSGeometry* g);
 
 /**
-* Finds the minimum X value in the geometry.
+* Gets the minimum X value of the geometry's envelope.
+* For linear geometry types, this is the same as the minimum X
+* coordinate value.
+*
+* Curved geometry types are supported since GEOS 3.13.
+*
 * \param[in] g Input geometry
 * \param[out] value Pointer to place result
 * \return 0 on exception
@@ -2748,7 +3396,12 @@ extern int GEOS_DLL GEOSGeom_getCoordinateDimension(
 extern int GEOS_DLL GEOSGeom_getXMin(const GEOSGeometry* g, double* value);
 
 /**
-* Finds the minimum Y value in the geometry.
+* Gets the minimum Y value of the geometry's envelope.
+* For linear geometry types, this is the same as the minimum Y
+* coordinate value.
+*
+* Curved geometry types are supported since GEOS 3.13.
+*
 * \param[in] g Input geometry
 * \param[out] value Pointer to place result
 * \return 0 on exception
@@ -2758,7 +3411,12 @@ extern int GEOS_DLL GEOSGeom_getXMin(const GEOSGeometry* g, double* value);
 extern int GEOS_DLL GEOSGeom_getYMin(const GEOSGeometry* g, double* value);
 
 /**
-* Finds the maximum X value in the geometry.
+* Get the maximum X value of the geometry's envelope.
+* For linear geometry types, this is the same as the maximum X
+* coordinate value.
+*
+* Curved geometry types are supported since GEOS 3.13.
+*
 * \param[in] g Input geometry
 * \param[out] value Pointer to place result
 * \return 0 on exception
@@ -2768,7 +3426,12 @@ extern int GEOS_DLL GEOSGeom_getYMin(const GEOSGeometry* g, double* value);
 extern int GEOS_DLL GEOSGeom_getXMax(const GEOSGeometry* g, double* value);
 
 /**
-* Finds the maximum Y value in the geometry.
+* Gets the maximum Y value of the geometry's envelope.
+* For linear geometry types, this is the same as the maximum Y
+* coordinate value.
+*
+* Curved geometry types are supported since GEOS 3.13.
+*
 * \param[in] g Input geometry
 * \param[out] value Pointer to place result
 * \return 0 on exception
@@ -2778,8 +3441,12 @@ extern int GEOS_DLL GEOSGeom_getXMax(const GEOSGeometry* g, double* value);
 extern int GEOS_DLL GEOSGeom_getYMax(const GEOSGeometry* g, double* value);
 
 /**
-* Finds the extent (minimum and maximum X and Y value) of the geometry.
+* Finds the extent (minimum and maximum X and Y value) of the
+* geometry's envelope.
+*
 * Raises an exception for empty geometry input.
+*
+* Curved geometry types are supported since GEOS 3.13.
 *
 * \param[in] g Input geometry
 * \param[out] xmin Pointer to place result for minimum X value
@@ -2798,8 +3465,12 @@ extern int GEOS_DLL GEOSGeom_getExtent(
     double* ymax);
 
 /**
-* Return the N'th point of a LineString
-* \param g Input geometry, must be a LineString
+* Return the N'th point of a linear geometry.
+*
+* CircularString inputs are supported since GEOS 3.14.
+* CompoundCurve inputs are supported since GEOS 3.15.
+*
+* \param g Input geometry, must be a LineString, CircularString, or CompoundCurve
 * \param n Index of desired point (zero based)
 * \return A Point geometry.
 *         Caller must free with GEOSGeom_destroy()
@@ -2809,8 +3480,12 @@ extern int GEOS_DLL GEOSGeom_getExtent(
 extern GEOSGeometry GEOS_DLL *GEOSGeomGetPointN(const GEOSGeometry *g, int n);
 
 /**
-* Return the first point of a LineString
-* \param g Input geometry, must be a LineString
+* Return the first point of a linear geometry.
+*
+* CircularString inputs are supported since GEOS 3.14.
+* CompoundCurve inputs are supported since GEOS 3.15.
+*
+* \param g Input geometry, must be a LineString, CircularString, or CompoundCurve
 * \return A Point geometry.
 *         Caller must free with GEOSGeom_destroy()
 *         NULL on exception.
@@ -2819,15 +3494,18 @@ extern GEOSGeometry GEOS_DLL *GEOSGeomGetPointN(const GEOSGeometry *g, int n);
 extern GEOSGeometry GEOS_DLL *GEOSGeomGetStartPoint(const GEOSGeometry *g);
 
 /**
-* Return the last point of a LineString
-* \param g Input geometry, must be a LineString
+* Return the last point of a linear geometry.
+*
+* CircularString inputs are supported since GEOS 3.14.
+* CompoundCurve inputs are supported since GEOS 3.15.
+*
+* \param g Input geometry, must be a LineString, CircularString, or CompoundCurve
 * \return A Point geometry.
 *         Caller must free with GEOSGeom_destroy()
 *         NULL on exception.
 * \since 3.3
 */
 extern GEOSGeometry GEOS_DLL *GEOSGeomGetEndPoint(const GEOSGeometry *g);
-
 
 /**
 * Tests whether the input geometry is empty. If the geometry or any
@@ -2842,7 +3520,8 @@ extern char GEOS_DLL GEOSisEmpty(const GEOSGeometry* g);
 /**
 * Tests whether the input geometry is a ring. Rings are
 * linestrings, without self-intersections,
-* with start and end point being identical.
+* with start and end point having the same XY values.
+* Z and M values are not considered.
 * \param g The geometry to test
 * \return 1 on true, 0 on false, 2 on exception
 * \since 2.2
@@ -2868,8 +3547,14 @@ extern char GEOS_DLL GEOSHasM(const GEOSGeometry* g);
 
 /**
 * Tests whether the input geometry is closed.
-* A closed geometry is a linestring or multilinestring
-* with the start and end points being the same.
+* A closed geometry is either:
+* - a non-empty LineString, CircularString, or CompoundCurve whose
+*   start and end points having the same XY values; or
+* - a non-empty MultiLineString or MultiCurve whose elements are
+*   all closed.
+*
+* Z and M values are not considered.
+*
 * \param g The geometry to test
 * \return 1 on true, 0 on false, 2 on exception
 * \since 3.3
@@ -2913,7 +3598,11 @@ extern void GEOS_DLL GEOSGeom_setUserData(GEOSGeometry* g, void* userData);
 * - Rings start with their smallest coordinate
 *   (using XY ordering)
 * - Polygon shell rings are oriented CW, and holes CCW
-* - Collection elements are sorted by their first coordinate
+* - Collection elements are sorted by their geometry type and first coordinate
+*
+* Coordinate Z and M values are not modified during normalization.
+*
+* Curved geometry types are supported since GEOS 3.15.
 *
 * Use before calling \ref GEOSEqualsExact to avoid false "not equal" results.
 * \param g Input geometry
@@ -2925,11 +3614,13 @@ extern int GEOS_DLL GEOSNormalize(GEOSGeometry* g);
 /**
 * Enforce a ring orientation on all polygonal elements in the input geometry.
 * Non-polygonal geometries will not be modified.
+* Coordinate Z and M values are not modified.
 *
 * \param g Input geometry
 * \param exteriorCW if 1, exterior rings will be clockwise and interior rings
 *                         will be counter-clockwise
 * \return 0 on success or -1 on exception
+* \since 3.12
 */
 extern int GEOS_DLL GEOSOrientPolygons(GEOSGeometry* g,
                                        int exteriorCW);
@@ -2946,11 +3637,42 @@ and geometric quality.
 /**
 * Tests whether the input geometry is "simple". Mostly relevant for
 * linestrings. A "simple" linestring has no self-intersections.
+* Z and M values are not considered.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g The geometry to test
 * \return 1 on true, 0 on false, 2 on exception
 * \since 2.2
 */
 extern char GEOS_DLL GEOSisSimple(const GEOSGeometry* g);
+
+/**
+* In one step, calculate and return whether a geometry is simple
+* and one more more points at which the geometry self-intersects
+* at interior points.
+* Caller has the responsibility to destroy 'location' with
+* GEOSGeom_destroy()
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
+* \param g The geometry to test
+* \param findAllLocations Whether to return all self-intersection locations, or just one
+* \param locations A pointer in which the location GEOSGeometry will be placed
+* \return 1 when simple, 0 when non-simple, 2 on exception
+*
+* \since 3.14
+*/
+extern char GEOS_DLL GEOSisSimpleDetail(
+    const GEOSGeometry* g,
+    int findAllLocations,
+    GEOSGeometry** locations);
 
 /**
 * Check the validity of the provided geometry.
@@ -2959,6 +3681,13 @@ extern char GEOS_DLL GEOSisSimple(const GEOSGeometry* g);
 * - Polygon rings must be non-self-intersecting, and interior rings
 *   contained within exterior rings.
 * - Multi-polygon components may not touch or overlap.
+*
+* Z and M values are not considered.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
 *
 * \param g The geometry to test
 * \return 1 on true, 0 on false, 2 on exception
@@ -2970,6 +3699,12 @@ extern char GEOS_DLL GEOSisValid(const GEOSGeometry* g);
 /**
 * Return the human readable reason a geometry is invalid,
 * "Valid Geometry" string otherwise, or NULL on exception.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g The geometry to test
 * \return A string with the reason, NULL on exception.
 *         Caller must GEOSFree() their result.
@@ -2984,6 +3719,12 @@ extern char GEOS_DLL *GEOSisValidReason(const GEOSGeometry *g);
 * rules are broken.
 * Caller has the responsibility to destroy 'reason' with GEOSFree()
 * and 'location' with GEOSGeom_destroy()
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g The geometry to test
 * \param flags A value from the \ref GEOSValidFlags enum
 * \param reason A pointer in which the reason string will be places
@@ -3000,6 +3741,16 @@ extern char GEOS_DLL GEOSisValidDetail(
 
 /**
 * Repair an invalid geometry, returning a valid output.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
+*
 * \param g The geometry to repair
 * \return The repaired geometry. Caller must free with GEOSGeom_destroy().
 *
@@ -3011,6 +3762,16 @@ extern GEOSGeometry GEOS_DLL *GEOSMakeValid(
 /**
 * Repair an invalid geometry, returning a valid output, using the
 * indicated GEOSMakeValidMethods algorithm and options.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
+*
 * \param g is the geometry to test.
 * \param makeValidParams is a GEOSMakeValidParams with the desired parameters set on it.
 * \return A repaired geometry. Caller must free with GEOSGeom_destroy().
@@ -3081,6 +3842,11 @@ extern int GEOS_DLL GEOSMakeValidParams_setKeepCollapsed(
 * If the minimum clearance cannot be defined for a geometry (such as with a single point, or a multipoint
 * whose points are identical, a value of Infinity will be calculated.
 *
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g the input geometry
 * \param d a double to which the result can be stored
 * \return 0 if no exception occurred.
@@ -3092,8 +3858,13 @@ extern int GEOS_DLL GEOSMakeValidParams_setKeepCollapsed(
 extern int GEOS_DLL GEOSMinimumClearance(const GEOSGeometry* g, double* d);
 
 /**
-* Returns a LineString whose endpoints define the minimum clearance of a geometry.
+* Returns a 2D LineString whose endpoints define the minimum clearance of a geometry.
 * If the geometry has no minimum clearance, an empty LineString will be returned.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
 *
 * \param g the input geometry
 * \return a linestring geometry, or NULL if an exception occurred.
@@ -3112,6 +3883,9 @@ extern GEOSGeometry GEOS_DLL *GEOSMinimumClearanceLine(const GEOSGeometry* g);
 * Removing repeated points with a non-zero tolerance may
 * result in an invalid geometry being returned. Be sure
 * to check and repair validity.
+*
+* Z and M coordinate values are preserved but are not considered when
+* determining if a point is repeated.
 *
 * \return A geometry with all points within the tolerance of each other removed.
 * \param g The geometry to filter
@@ -3135,6 +3909,11 @@ extern GEOSGeometry GEOS_DLL *GEOSRemoveRepeatedPoints(
 
 /**
 * Calculate the area of a geometry.
+*
+* Curved geometry types are supported since GEOS 3.13.
+*
+* Area is calculated in the XY plane; Z and M values are ignored.
+*
 * \param[in] g Input geometry
 * \param[out] area Pointer to be filled in with area result
 * \return 1 on success, 0 on exception.
@@ -3146,6 +3925,10 @@ extern int GEOS_DLL GEOSArea(
 
 /**
 * Calculate the length of a geometry.
+*
+* Curved geometry types are supported since GEOS 3.13.
+*
+* Length is calculated in the XY plane; Z and M values are ignored.
 * \param[in] g Input geometry
 * \param[out] length Pointer to be filled in with length result
 * \return 1 on success, 0 on exception.
@@ -3156,8 +3939,13 @@ extern int GEOS_DLL GEOSLength(
     double *length);
 
 /**
-* Calculate the length of a LineString.
-* Only works for LineString inputs, returns exception otherwise.
+* Calculate the length of a LineString, CircularString, or CompoundCurve.
+*
+* Returns an exception if a different geometry type is provided.
+* Length is calculated in the XY plane; Z and M values are ignored.
+*
+* CircularString and CompoundCurve arguments are supported since
+* GEOS 3.15.
 *
 * \param[in] g Input geometry
 * \param[out] length Pointer to be filled in with length result
@@ -3179,9 +3967,17 @@ extern int GEOS_DLL GEOSGeomGetLength(
 
 /**
 * Calculate the distance between two geometries.
+* Distance is calculated in the XY plane; Z and M values are ignored.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param[in] g1 Input geometry
 * \param[in] g2 Input geometry
-* \param[out] dist Pointer to be filled in with distance result
+* \param[out] dist Pointer to be filled in with distance result. Positive
+*                  infinity is returned if one of the geometry is empty.
 * \return 1 on success, 0 on exception.
 * \since 2.2
 */
@@ -3193,6 +3989,13 @@ extern int GEOS_DLL GEOSDistance(
 /**
 * Test whether the distance between two geometries is
 * within the given dist.
+* Distance is calculated in the XY plane; Z and M values are ignored.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g1 Input geometry
 * \param g2 Input geometry
 * \param dist The max distance
@@ -3210,6 +4013,12 @@ extern char GEOS_DLL GEOSDistanceWithin(
 * indexed facet distance, which first indexes the geometries
 * internally, then calculates the distance. Useful when one
 * or both geometries is very large.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param[in] g1 Input geometry
 * \param[in] g2 Input geometry
 * \param[out] dist Pointer to be filled in with distance result
@@ -3226,6 +4035,12 @@ extern int GEOS_DLL GEOSDistanceIndexed(
 /**
 * The closest points of the two geometries.
 * The first point comes from g1 geometry and the second point comes from g2.
+* Returned points will not have Z or M values.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
 *
 * \param[in] g1 Input geometry
 * \param[in] g2 Input geometry
@@ -3242,6 +4057,12 @@ extern GEOSCoordSequence GEOS_DLL *GEOSNearestPoints(
 * Calculate the Hausdorff distance between two geometries.
 * [Hausdorff distance](https://en.wikipedia.org/wiki/Hausdorff_distance)
 * is the largest distance between two geometries.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param[in] g1 Input geometry
 * \param[in] g2 Input geometry
 * \param[out] dist Pointer to be filled in with distance result
@@ -3254,11 +4075,47 @@ extern int GEOS_DLL GEOSHausdorffDistance(
     const GEOSGeometry *g2,
     double *dist);
 
+
+/**
+* Calculate the Hausdorff distance between two geometries and return
+* the coordinates of the points that determine the distance.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
+* \param[in] g1 Input geometry
+* \param[in] g2 Input geometry
+* \param[out] dist Pointer to be filled in with distance result
+* \param[out] p1x X coordinate of point on g1
+* \param[out] p1y Y coordinate of point on g1
+* \param[out] p2x X coordinate of point on g2
+* \param[out] p2y Y coordinate of point on g2
+* \return 1 on success, 0 on exception.
+* \see geos::algorithm::distance::DiscreteHausdorffDistance
+* \since 3.15
+*/
+extern int GEOS_DLL GEOSHausdorffDistanceWithPoints(
+    const GEOSGeometry *g1,
+    const GEOSGeometry *g2,
+    double *dist,
+    double *p1x, double *p1y,
+    double *p2x, double *p2y);
+
+
+
 /**
 * Calculate a more precise Hausdorff distance between two geometries,
 * by densifying the inputs before computation.
 * [Hausdorff distance](https://en.wikipedia.org/wiki/Hausdorff_distance)
 * is the largest distance between two geometries.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param[in] g1 Input geometry
 * \param[in] g2 Input geometry
 * \param[in] densifyFrac The largest % of the overall line length that
@@ -3275,10 +4132,49 @@ extern int GEOS_DLL GEOSHausdorffDistanceDensify(
     double *dist);
 
 /**
+* Calculate a more precise Hausdorff distance between two geometries,
+* by densifying the inputs before computation and return the points
+* that determine the distance.
+* [Hausdorff distance](https://en.wikipedia.org/wiki/Hausdorff_distance)
+* is the largest distance between two geometries.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
+* \param[in] g1 Input geometry
+* \param[in] g2 Input geometry
+* \param[in] densifyFrac The largest % of the overall line length that
+* any given two point segment should be.
+* \param[out] dist Pointer to be filled in with distance result
+* \param[out] p1x X coordinate of point on g1
+* \param[out] p1y Y coordinate of point on g1
+* \param[out] p2x X coordinate of point on g2
+* \param[out] p2y Y coordinate of point on g2
+* \return 1 on success, 0 on exception.
+* \see goes::algorithm::distance::DiscreteHausdorffDistance
+* \since 3.15
+*/
+extern int GEOS_DLL GEOSHausdorffDistanceDensifyWithPoints(
+    const GEOSGeometry *g1,
+    const GEOSGeometry *g2,
+    double densifyFrac,
+    double *dist,
+    double* p1x, double* p1y,
+    double* p2x, double* p2y);
+
+/**
 * Calculate the
 * [Frechet distance](https://en.wikipedia.org/wiki/Fr%C3%A9chet_distance)
 * between two geometries,
 * a similarity measure for linear features.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param[in] g1 Input geometry
 * \param[in] g2 Input geometry
 * \param[out] dist Pointer to be filled in with distance result
@@ -3298,6 +4194,12 @@ extern int GEOS_DLL GEOSFrechetDistance(
 * between two geometries,
 * a similarity measure for linear features.
 * The inputs can be densified to provide a more accurate result.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param[in] g1 Input geometry
 * \param[in] g2 Input geometry
 * \param[in] densifyFrac The largest % of the overall line length that
@@ -3325,6 +4227,12 @@ extern int GEOS_DLL GEOSFrechetDistanceDensify(
 
 /**
 * Distance of point projected onto line from the start of the line.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param line linear target of projection
 * \param point point to be projected onto 'g'
 * \return distance along line that point projects to, -1 on exception
@@ -3336,10 +4244,18 @@ extern double GEOS_DLL GEOSProject(const GEOSGeometry* line,
                                    const GEOSGeometry* point);
 
 /**
-* Measuring from start of line, return point that is distance
-* the start. Line parameter must be a LineString.
-* The returned point is not guaranteed to intersect the line due to limitations
-* of floating point calculations.
+* Return the point that is the specified 2D distance along a LineString from the start.
+*
+* If applicable, the Z value of the returned point will be interpolated from the input line.
+* Since GEOS 3.15, the M value will also be interpolated.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
+* If the (converted) input is not a LineString, NULL will be returned.
+*
 * \param line linear target of projection
 * \param d distance from start of line to created point
 * \return The point \ref GEOSGeometry that is distance from the start of line.
@@ -3353,6 +4269,12 @@ extern GEOSGeometry GEOS_DLL *GEOSInterpolate(const GEOSGeometry* line,
 * Project point to line and calculate the **proportion** of
 * the line the point is from the start. For example, a point that
 * projects to the middle of a line would be return 0.5.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param line linear target of projection
 * \param point the point to project
 * \return The proportion of the overall line length that the projected
@@ -3363,8 +4285,19 @@ extern double GEOS_DLL GEOSProjectNormalized(const GEOSGeometry* line,
                                              const GEOSGeometry* point);
 
 /**
-* Measuring from start of line, return point that is a proportion
-* the start. Line parameter must be a LineString.
+* Measuring from start of a LineString, return the point at the specified
+* fraction of the total length.
+*
+* If applicable, the Z value of the returned point will be interpolated from the input line.
+* Since GEOS 3.15, the M value will also be interpolated.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
+* If the (converted) input is not a LineString, NULL will be returned.
+*
 * \param line linear target of projection
 * \param proportion The proportion from the start of line to created point
 * \return The point \ref GEOSGeometry that is distance from the start of line.
@@ -3387,6 +4320,16 @@ extern GEOSGeometry GEOS_DLL *GEOSInterpolateNormalized(
 /**
 * Returns the intersection of two geometries: the set of points
 * that fall within **both** geometries.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
+*
 * \param g1 one of the geometries
 * \param g2 the other geometry
 * \return A newly allocated geometry of the intersection. NULL on exception.
@@ -3415,6 +4358,16 @@ extern GEOSGeometry GEOS_DLL *GEOSIntersectionPrec(const GEOSGeometry* g1, const
 /**
 * Returns the difference of two geometries A and B: the set of points
 * that fall within A but **not** within B.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
+*
 * \param ga the base geometry
 * \param gb the geometry to subtract from it
 * \return A newly allocated geometry of the difference. NULL on exception.
@@ -3450,6 +4403,16 @@ extern GEOSGeometry GEOS_DLL *GEOSDifferencePrec(
 * Returns the symmetric difference of two geometries A and B: the set of points
 * that fall in A but **not** within B and the set of points that fall in B but
 * **not** in A.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
+*
 * \param ga geometry A
 * \param gb geometry B
 * \return A newly allocated geometry of the symmetric difference. NULL on exception.
@@ -3485,6 +4448,16 @@ extern GEOSGeometry GEOS_DLL *GEOSSymDifferencePrec(
 /**
 * Returns the union of two geometries A and B: the set of points
 * that fall in A **or** within B.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
+*
 * \param ga geometry A
 * \param gb geometry B
 * \return A newly allocated geometry of the union. NULL on exception.
@@ -3520,6 +4493,16 @@ extern GEOSGeometry GEOS_DLL *GEOSUnionPrec(
 * Returns the union of all components of a single geometry. Usually
 * used to convert a collection into the smallest set of polygons
 * that cover the same area.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
+*
 * \param g The input geometry
 * \return A newly allocated geometry of the union. NULL on exception.
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -3552,6 +4535,16 @@ extern GEOSGeometry GEOS_DLL *GEOSUnaryUnionPrec(
 * Optimized union algorithm for inputs that can be divided into subsets
 * that do not intersect. If there is only one such subset, performance
 * can be expected to be worse than GEOSUnionaryUnion.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
+*
 * \param g The input geometry
 * \return A newly allocated geometry of the union, or NULL on exception.
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -3564,6 +4557,16 @@ extern GEOSGeometry GEOS_DLL *GEOSDisjointSubsetUnion(const GEOSGeometry *g);
 * Intersection optimized for a rectangular clipping polygon.
 * Supposed to be faster than using GEOSIntersection(). Not
 * guaranteed to return valid results.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
+*
 * \param g The input geometry to be clipped
 * \param xmin Left bound of clipping rectangle
 * \param ymin Lower bound of clipping rectangle
@@ -3581,6 +4584,75 @@ extern GEOSGeometry GEOS_DLL *GEOSClipByRect(
     double xmax, double ymax);
 
 /**
+* Compute the intersection of a geometry with each polygon in
+* a rectangular grid.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
+*
+* \param g The input geometry to be clipped
+* \param xmin Left bound of grd
+* \param ymin Lower bound of grid
+* \param xmax Right bound of grid
+* \param ymax Upper bound of grid
+* \param nx number of columns in grid
+* \param ny number of rows in grid
+* \param includeExterior whether to include portions of the
+         input geometry that do not intersect the grid in
+         the returned result.
+* \return A geometry collection whose components represent the
+*         intersection with each cell in the grid.
+* Caller is responsible for freeing with GEOSGeom_destroy().
+*
+* This algorithm operates in 2D only; Z and M values in the input will be dropped.
+
+* \see GEOSGetGridIntersectionFractions
+*
+* \since 3.15.0
+*/
+extern GEOSGeometry GEOS_DLL *GEOSSubdivideByGrid(
+    const GEOSGeometry* g,
+    double xmin, double ymin,
+    double xmax, double ymax,
+    unsigned nx, unsigned ny,
+    int includeExterior);
+
+/**
+* Determine the fraction of each cell in a rectangular grid
+* that is covered by a polygon.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
+* \param g The input geometry
+* \param xmin Left bound of grd
+* \param ymin Lower bound of grid
+* \param xmax Right bound of grid
+* \param ymax Upper bound of grid
+* \param nx number of columns in grid
+* \param ny number of rows in grid
+* \param buf a buffer of size nx*ny to which the grid cell
+*        coverage fractions will be written in row-major order
+* \return 1 if the operation was successful, 0 on exception
+*
+* \since 3.14.0
+*/
+extern int GEOS_DLL GEOSGridIntersectionFractions(
+    const GEOSGeometry* g,
+    double xmin, double ymin,
+    double xmax, double ymax,
+    unsigned nx, unsigned ny,
+    float* buf);
+
+/**
 * Find paths shared between the two given lineal geometries.
 *
 * Returns a GeometryCollection having two elements:
@@ -3589,6 +4661,11 @@ extern GEOSGeometry GEOS_DLL *GEOSClipByRect(
 *   having the _same_ direction on both inputs
 * - second element is a MultiLineString containing shared paths
 *   having the _opposite_ direction on the two inputs
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
 *
 * \param g1 An input geometry
 * \param g2 An input geometry
@@ -3601,6 +4678,141 @@ extern GEOSGeometry GEOS_DLL *GEOSClipByRect(
 extern GEOSGeometry GEOS_DLL *GEOSSharedPaths(
     const GEOSGeometry* g1,
     const GEOSGeometry* g2);
+///@}
+
+/* ========== Clustering functions ========== */
+/** @name Clustering
+*/
+
+
+
+
+static const size_t GEOS_CLUSTER_NONE = (size_t) -1;
+
+///@{
+/**
+* @brief GEOSClusterDBSCAN
+*
+* Cluster geometries using the DBSCAN algorithm
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
+* @param g a collection of geometries to be clustered
+* @param eps distance parameter for clustering
+* @param minPoints density parameter for clustering
+* @return cluster information object
+*/
+extern GEOSClusterInfo GEOS_DLL* GEOSClusterDBSCAN(const GEOSGeometry* g, double eps, unsigned minPoints);
+
+/**
+* @brief GEOSClusterGeometryDistance
+*
+* Cluster geometries according to a distance threshold
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
+* @param g a collection of geometries to be clustered
+* @param d minimum distance between geometries in the same cluster
+* @return cluster information object
+*/
+extern GEOSClusterInfo GEOS_DLL* GEOSClusterGeometryDistance(const GEOSGeometry* g, double d);
+
+/**
+* @brief GEOSClusterGeometryIntersects
+*
+* Cluster geometries that intersect
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
+* @param g a collection of geometries to be clustered
+* @return cluster information object
+*/
+extern GEOSClusterInfo GEOS_DLL* GEOSClusterGeometryIntersects(const GEOSGeometry* g);
+
+/**
+ * @brief GEOSClusterEnvelopeDistance
+ *
+ * Cluster geometries according to an envelope distance threshold
+ *
+ * This function supports curved geometry types.
+ *
+ * @param g a collection of geometries to be clustered
+ * @param d minimum envelope distance between geometries in the same cluster
+ * @return cluster information object
+ */
+extern GEOSClusterInfo GEOS_DLL* GEOSClusterEnvelopeDistance(const GEOSGeometry* g, double d);
+
+/**
+ * @brief GEOSClusterEnvelopeIntersects
+ *
+ * Cluster geometries whose envelopes intersect
+ *
+ * This function supports curved geometry types.
+ *
+ * @param g
+ * @return cluster information object
+ */
+extern GEOSClusterInfo GEOS_DLL* GEOSClusterEnvelopeIntersects(const GEOSGeometry* g);
+
+/**
+ * @brief GEOSClusterInfo_getNumClusters
+ *
+ * Get the number of clusters identified by a clustering operation
+ *
+ * @param clusters cluster information object
+ * @return number of clusters identified
+ */
+extern size_t GEOS_DLL GEOSClusterInfo_getNumClusters(const GEOSClusterInfo* clusters);
+
+/**
+ * @brief GEOSClusterInfo_getSize
+ *
+ * Get the number of elements in the ith cluster (0-indexed)
+ *
+ * @param clusters cluster information object
+ * @param i cluster for which a size will be returned
+ * @return number of elements in the cluster
+ */
+extern size_t GEOS_DLL GEOSClusterInfo_getClusterSize(const GEOSClusterInfo* clusters, size_t i );
+
+/**
+ * @brief GEOSClusterInfo_getClustersForInputs
+ *
+ * Get the cluster index associated with each input to the clustering operation.
+ * Inputs that do are not associated with any cluster will have an index of GEOS_CLUSTER_NONE.
+ *
+ * @param clusters cluster information object
+ * @return an array of cluster indices, to be freed by the caller.
+ */
+extern size_t GEOS_DLL* GEOSClusterInfo_getClustersForInputs(const GEOSClusterInfo* clusters);
+
+/**
+ * @brief GEOSClusterInfo_getInputsForClusterN
+ * @param clusters cluster information object
+ * @param i index of the cluster for which indices should be retrieved
+ * @return a pointer to an array of cluster indices. Size of the array is indicated by
+ *         GEOSClusterInfo_getNumElements. The array is owner by the cluster information
+ *         object and should not be modified or freed by the caller.
+ */
+extern const size_t GEOS_DLL* GEOSClusterInfo_getInputsForClusterN(const GEOSClusterInfo* clusters, size_t i);
+
+/**
+ * @brief GEOSClusterInfo_destroy
+ *
+ * Destroy a cluster information object.
+ *
+ * @param clusters cluster information object
+ */
+extern void GEOS_DLL GEOSClusterInfo_destroy(GEOSClusterInfo* clusters);
 
 ///@}
 
@@ -3612,6 +4824,13 @@ extern GEOSGeometry GEOS_DLL *GEOSSharedPaths(
 
 /**
 * Buffer a geometry.
+* The coordinates of the constructed geometry will not have Z or M values.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g The input geometry to be buffered.
 * \param width The distance by which to expand the geometry (or contract)
 *        if the value is negative.
@@ -3709,6 +4928,12 @@ extern int GEOS_DLL GEOSBufferParams_setSingleSided(
 
 /**
 * Generates a buffer using the special parameters in the GEOSBufferParams
+* 
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g The geometry to buffer
 * \param p The parameters to apply to the buffer process
 * \param width The buffer distance
@@ -3724,6 +4949,13 @@ extern GEOSGeometry GEOS_DLL *GEOSBufferWithParams(
 
 /**
 * Generate a buffer using the provided style parameters.
+* The coordinates of the constructed geometry will not have Z or M values.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g The geometry to buffer
 * \param width Width of the buffer
 * \param quadsegs Number of segments per quadrant
@@ -3745,7 +4977,13 @@ extern GEOSGeometry GEOS_DLL *GEOSBufferWithStyle(
 
 /**
 * Generates offset curve line(s) for a geometry.
-* Handles all geometry types as input.
+* Handles all non-curved geometry types as input.
+* The coordinates of the constructed geometry will not have Z or M values.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
 *
 * - For a LineString the result is a LineString.
 * - For a Point the result is an empty LineString.
@@ -3783,6 +5021,16 @@ extern GEOSGeometry GEOS_DLL *GEOSOffsetCurve(const GEOSGeometry* g,
 * noded and do not overlap. It may generate an error (return NULL)
 * for inputs that do not satisfy this constraint, however this is not
 * guaranteed.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
+*
 * \param g The input geometry
 * \return A geometry that covers all the points of the input geometry.
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -3796,6 +5044,11 @@ extern GEOSGeometry GEOS_DLL *GEOSCoverageUnion(const GEOSGeometry *g);
 * Analyze a coverage (represented as a collection of polygonal geometry
 * with exactly matching edge geometry) to find places where the
 * assumption of exactly matching edges is not met.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
 *
 * \param input The polygonal coverage to access,
 *        stored in a geometry collection. All members must be POLYGON
@@ -3833,6 +5086,15 @@ extern int GEOS_DLL GEOSCoverageIsValid(
 * it will still be simplified, but invalid topology such as crossing
 * edges will still be invalid.
 *
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
+*
 * \param input The polygonal coverage to access,
 *        stored in a geometry collection. All members must be POLYGON
 *        or MULTIPOLYGON.
@@ -3850,7 +5112,168 @@ extern GEOSGeometry GEOS_DLL * GEOSCoverageSimplifyVW(
     double tolerance,
     int preserveBoundary);
 
+/**
+ * Returns a MultiLineString representing the unique edges of a polygonal coverage.
+ *
+ * \param input a GeometryCollection or MultiPolygon representing the coverage.
+ * \param edgetype selection type: 0 = ALL, 1 = EXTERIOR (non-shared), 2 = INTERIOR (shared).
+ * \return a MultiLineString of unique edges, or NULL on error.
+ *
+ * \since 3.15
+ */
+extern GEOSGeometry GEOS_DLL *GEOSCoverageEdges(const GEOSGeometry *input, int edgetype);
+
+/**
+ * Create a default GEOSCoverageCleanParams object for controlling* the way invalid polygon interactions are repaired by \ref GEOSCoverageCleanWithParams.
+* \return A newly allocated GEOSCoverageCleanParams. NULL on exception.
+* Caller is responsible for freeing with GEOSCoverageCleanParams_destroy().
+*
+* \since 3.14
+*/
+extern GEOSCoverageCleanParams GEOS_DLL *
+GEOSCoverageCleanParams_create(void);
+
+/**
+* Destroy a GEOSCoverageCleanParams and free all associated memory.
+* \param params The object to destroy.
+*
+* \since 3.14
+*/
+extern void GEOS_DLL
+GEOSCoverageCleanParams_destroy(
+    GEOSCoverageCleanParams* params);
+
+/**
+* Set the snapping distance to use when cleaning a coverage.
+*
+* Snapping to nearby vertices and line segment snapping
+* is used to improve noding robustness
+* and eliminate small errors in an efficient way.
+*
+* By default this uses a very small snapping distance
+* based on the extent of the input data.
+*
+* Specifying a larger snapping distance can reduce the number of overlaps and
+* gaps that need to be merged, and reduce the risk of spikes formed by merging
+* gaps. However, a large snapping distance can also introduce undesirable
+* data alteration.
+*
+* A distance of zero prevents snapping from being used.
+*
+* \see geos::coverage::CoverageCleaner::setSnappingDistance
+* \param params The GEOSCoverageCleanParams to operate on
+* \param snappingDistance Set to 0.0 for no snapping.
+* \return 0 on exception, 1 on success.
+*
+* \since 3.14
+*/
+extern int GEOS_DLL
+GEOSCoverageCleanParams_setSnappingDistance(
+    GEOSCoverageCleanParams *params,
+    double snappingDistance);
+
+/**
+* Set the maximum width of gaps to merge when cleaning a coverage.
+*
+* Gaps wider than the given distance are merged with the adjacent polygon
+* having the longest shared border with the gap. (The overlap merge strategy
+* is not used.)
+*
+* Gaps are defined as enclosed empty areas with width less than a distance tolerance.
+* Empty holes in input polygons are treated as gaps, and may be filled in.
+* Gaps which are not fully enclosed ("inlets") are not removed.
+*
+* Width is computed as the diameter of the Maximum Inscribed Circle of the gap polygon.
+* A width of zero prevents gaps from being merged.
+*
+* \see geos::coverage::CoverageCleaner::setGapMaximumWidth
+* \param params The GEOSCoverageCleanParams to operate on
+* \param gapMaximumWidth Set to 0.0 for no gap merging.
+* \return 0 on exception, 1 on success.
+*
+* \since 3.14
+*/
+extern int GEOS_DLL
+GEOSCoverageCleanParams_setGapMaximumWidth(
+    GEOSCoverageCleanParams* params,
+    double gapMaximumWidth);
+
+/**
+* Sets the overlap merge strategy to use, using one from \ref GEOSOverlapMerge.
+*
+* Overlaps are merged with an adjacent polygon chosen according to a specified
+* merge strategy. The supported strategies are:
+*
+* - **Longest Border**: (default) merge with the polygon with longest shared
+*   border (GEOS_MERGE_LONGEST_BORDER.)
+* - **Maximum/Minimum Area**: merge with the polygon with largest or smallest
+*   area (GEOS_MERGE_MAX_AREA, GEOS_MERGE_MIN_AREA.)
+* - **Minimum Index**: merge with the polygon with the lowest index in the
+*   input array (GEOS_MERGE_MIN_INDEX.). This allows sorting the input
+*   according to some criteria to provide a priority for merging gaps.
+*
+* The default is GEOS_MERGE_LONGEST_BORDER.
+*
+* \see geos::coverage::CoverageCleaner::setOverlapMergeStrategy
+* \param params The GEOSCoverageCleanParams to operate on
+* \param overlapMergeStrategy One of \ref GEOSOverlapMerge strategies
+* \return 0 on exception, 1 on success.
+*
+* \since 3.14
+*/
+extern int GEOS_DLL
+GEOSCoverageCleanParams_setOverlapMergeStrategy(
+    GEOSCoverageCleanParams* params,
+    int overlapMergeStrategy);
+
+/**
+* Clean a coverage.
+*
+* Operates on a list of polygonal geometry with "exactly matching"
+* edge geometry. Removes any overlaps and fixes cases where the geometry
+* does not in fact exactly match.
+*
+* The input is a collection of polygons, and the output is a collection
+* with the same number of cleaned polygons, in the same order as
+* the input. Polygons that have collapsed during cleaning will be returned
+* as empties.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
+*
+* \param input The dirty polygonal coverage,
+*        stored in a geometry collection. All members must be POLYGON
+*        or MULTIPOLYGON.
+* \param params A GEOSCoverageCleanParams to control the options
+*        used in cleaning the coverage.
+* \return A collection containing the cleaned geometries, or null
+*         on error. Where cleaning has resulted in polygon collapse,
+*         an EMPTY geometry will be returned as part of the collection.
+*
+* \since 3.14
+*/
+extern GEOSGeometry GEOS_DLL *
+GEOSCoverageCleanWithParams(
+    const GEOSGeometry* input,
+    const GEOSCoverageCleanParams* params
+);
+
+/** \see GEOSCoverageCleanWithParams */
+extern GEOSGeometry GEOS_DLL *
+GEOSCoverageClean(
+    const GEOSGeometry* input);
+
+
+
+
 ///@}
+
 
 /* ========== Construction Operations ========== */
 /** @name Geometric Constructions
@@ -3859,8 +5282,13 @@ extern GEOSGeometry GEOS_DLL * GEOSCoverageSimplifyVW(
 ///@{
 
 /**
-* Returns minimum rectangular polygon or point that contains the geometry,
+* Returns minimum 2D rectangular polygon or point that contains the geometry,
 * or an empty point for empty inputs.
+*
+* Z and M values in the input coordinates are ignored.
+*
+* Cuved geometry types are supported as of GEOS 3.13.
+*
 * \param g The geometry to calculate an envelope for
 * \return A newly allocated polygonal envelope or point. NULL on exception.
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -3876,6 +5304,10 @@ extern GEOSGeometry GEOS_DLL *GEOSEnvelope(const GEOSGeometry* g);
 * - the boundary of a linestring is the end points
 * - the boundary of a point is the point
 *
+* Z and M values in the input coordinates are preserved.
+*
+* Curved geometry types are supported as of GEOS 3.15.
+*
 * \param g The input geometry
 * \return A newly allocated geometry of the boundary. NULL on exception.
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -3884,8 +5316,17 @@ extern GEOSGeometry GEOS_DLL *GEOSEnvelope(const GEOSGeometry* g);
 extern GEOSGeometry GEOS_DLL *GEOSBoundary(const GEOSGeometry* g);
 
 /**
-* Returns convex hull of a geometry. The smallest convex Geometry
+* Returns the convex hull of a geometry. The smallest convex Geometry
 * that contains all the points in the input Geometry
+*
+* Z values in the input coordinates will be preserved.
+* M values in the input coordinates will not be preserved.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g The input geometry
 * \return A newly allocated geometry of the convex hull. NULL on exception.
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -3902,6 +5343,9 @@ extern GEOSGeometry GEOS_DLL *GEOSConvexHull(const GEOSGeometry* g);
 * Frequently used to convert a multi-point into a polygonal area.
 * that contains all the points in the input Geometry.
 *
+* Z values in the input coordinates will be preserved.
+* M values in the input coordinates will not be preserved.
+*
 * A set of points has a sequence of hulls of increasing concaveness,
 * determined by a numeric target parameter.
 * The concave hull is constructed by removing the longest outer edges
@@ -3909,6 +5353,11 @@ extern GEOSGeometry GEOS_DLL *GEOSConvexHull(const GEOSGeometry* g);
 * until the target criterion parameter is reached.
 * This can be expressed as a ratio between the lengths of the longest and shortest edges.
 * 1 produces the convex hull; 0 produces a hull with maximum concaveness
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
 *
 * \param g The input geometry
 * \param ratio The edge length ratio value, between 0 and 1.
@@ -3937,12 +5386,20 @@ extern GEOSGeometry GEOS_DLL *GEOSConcaveHull(
 * Frequently used to convert a multi-point into a polygonal area.
 * that contains all the points in the input Geometry.
 *
+* Z values in the input coordinates will be preserved.
+* M values in the input coordinates will not be preserved.
+*
 * A set of points has a sequence of hulls of increasing concaveness,
 * determined by a numeric target parameter.
 * The concave hull is constructed by removing the longest outer edges
 * of the Delaunay Triangulation of the space between the polygons,
-* until the specified maximm edge length is reached.
-* A large value produces the convex hull, 0 produces the hull of maximim concaveness.
+* until the specified maximum edge length is reached.
+* A large value produces the convex hull, 0 produces the hull of maximum concaveness.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
 *
 * \param g The input geometry
 * \param length The maximum edge length (0 or greater)
@@ -3982,6 +5439,11 @@ extern GEOSGeometry GEOS_DLL *GEOSConcaveHullByLength(
 * The input polygons *must* be a *valid* MultiPolygon
 * (i.e. they must be non-overlapping).
 *
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g the valid MultiPolygon geometry to process
 * \param lengthRatio specifies the Maximum Edge Length as a
 *        fraction of the difference between the longest and
@@ -3989,8 +5451,8 @@ extern GEOSGeometry GEOS_DLL *GEOSConcaveHullByLength(
 *        This normalizes the Maximum Edge Length to be scale-free.
 *        A value of 1 produces the convex hull; a value of 0 produces
 *        the original polygons.
+* \param isTight does the hull follow the outer boundaries of the input polygons?
 * \param isHolesAllowed is the concave hull allowed to contain holes?
-* \param isTight does the hull follow the outer boundaries of the input polygons.
 * \return A newly allocated geometry of the concave hull. NULL on exception.
 *
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -4016,6 +5478,15 @@ extern GEOSGeometry GEOS_DLL *GEOSConcaveHullOfPolygons(
 * An outer hull is computed if the parameter is positive,
 * an inner hull is computed if it is negative.
 *
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
+*
 * \param g the polygonal geometry to process
 * \param isOuter indicates whether to compute an outer or inner hull (1 for outer hull, 0 for inner)
 * \param vertexNumFraction the target fraction of the count of input vertices to retain in result
@@ -4033,22 +5504,21 @@ extern GEOSGeometry GEOS_DLL *GEOSPolygonHullSimplify(
 
 
 /**
-* Controls the behavior of the GEOSPolygonHullSimplify parameter.
-*/
-enum GEOSPolygonHullParameterModes {
-    /** Fraction of input vertices retained */
-    GEOSHULL_PARAM_VERTEX_RATIO = 1,
-    /** Ratio of simplified hull area to input area */
-    GEOSHULL_PARAM_AREA_RATIO = 2
-};
-
-/**
 * Computes a topology-preserving simplified hull of a polygonal geometry,
 * with hull shape determined by the parameter, controlled by a parameter
 * mode, which is one defined in \ref GEOSPolygonHullParameterModes.
 * Larger values compute less concave results and a value of 0
 * produces the original geometry.
 * Either outer or inner hulls can be computed.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+* This function outputs linear geometry types only. If line-to-curve
+* conversion parameters are registered with the context, and a 
+* curved input was provided, outputs will be automatically 
+* converted to curved types.
 *
 * \param g the polygonal geometry to process
 * \param isOuter indicates whether to compute an outer or inner hull (1 for outer hull, 0 for inner)
@@ -4076,6 +5546,12 @@ extern GEOSGeometry GEOS_DLL *GEOSPolygonHullSimplifyMode(
 * the input is degenerate (a line or point) a linestring or point
 * is returned. The minimum rotated rectangle can be used as an
 * extremely generalized representation for the given geometry.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g The input geometry
 * \return A newly allocated geometry of the rotated envelope. NULL on exception.
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -4100,6 +5576,12 @@ extern GEOSGeometry GEOS_DLL *GEOSMinimumRotatedRectangle(const GEOSGeometry* g)
 * way by using spatial indexes.
 * Returns a two-point linestring, with one point at the center of the inscribed circle and the other
 * on the boundary of the inscribed circle.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g Input geometry
 * \param tolerance Stop the algorithm when the search area is smaller than this tolerance
 * \return A newly allocated geometry of the MIC. NULL on exception.
@@ -4116,8 +5598,7 @@ extern GEOSGeometry GEOS_DLL *GEOSMaximumInscribedCircle(
 * Constructs the "largest empty circle" (LEC) for a set of obstacle geometries
 * and within a polygonal boundary,
 * with accuracy to to a specified distance tolerance.
-* The obstacles are point and line geometries.
-* Polygonal obstacles are treated as linear features.
+* The obstacles may be any collection of points, lines and polygons.
 * The LEC is the largest circle whose interior does not intersect with any obstacle.
 * and which has its **center** inside the given boundary.
 * If no boundary is provided, the
@@ -4126,15 +5607,26 @@ extern GEOSGeometry GEOS_DLL *GEOSMaximumInscribedCircle(
 * the obstacles (up to the given distance tolerance).
 * The LEC is determined by the center point and a point indicating the circle radius
 * (which will lie on an obstacle).
+*
+* To compute an LEC which lies **wholly** within a polygonal boundary,
+* include the boundary of the polygon(s) as a linear obstacle.
+*
 * The implementation uses a successive-approximation technique over a grid of square cells covering the obstacles and boundary.
 * The grid is refined using a branch-and-bound algorithm.  Point containment and distance are computed in a performant
 * way by using spatial indexes.
+*
 * Returns the LEC radius as a two-point linestring, with the start point at the center of the inscribed circle and the end
 * on the boundary of the circle.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param obstacles The geometries that the LEC must not cross
 * \param boundary The area to contain the LEC center (may be null or empty)
 * \param tolerance Stop the algorithm when the search area is smaller than this tolerance
-* \return A newly allocated geometry of the LEC radius. NULL on exception.
+* \return A newly allocated geometry of the LEC radius line. NULL on exception.
 * Caller is responsible for freeing with GEOSGeom_destroy().
 * \see geos::algorithm::construct::LargestEmptyCircle
 *
@@ -4151,6 +5643,12 @@ extern GEOSGeometry GEOS_DLL *GEOSLargestEmptyCircle(
 * contains the geometry, where a band is a strip of the plane defined
 * by two parallel lines. This can be thought of as the smallest hole that the geometry
 * can be moved through, with a single rotation.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g The input geometry
 * \return A newly allocated geometry of the LEC. NULL on exception.
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -4162,7 +5660,13 @@ extern GEOSGeometry GEOS_DLL *GEOSMinimumWidth(const GEOSGeometry* g);
 
 
 /**
-* Returns a point that is inside the boundary of a polygonal geometry.
+* Returns a 2D point that is inside the boundary of a polygonal geometry.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g The input geometry
 * \return A point that is inside the input
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -4173,7 +5677,13 @@ extern GEOSGeometry GEOS_DLL *GEOSMinimumWidth(const GEOSGeometry* g);
 extern GEOSGeometry GEOS_DLL *GEOSPointOnSurface(const GEOSGeometry* g);
 
 /**
-* Returns a point at the center of mass of the input.
+* Returns a 2D point at the center of mass of the input.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g The input geometry
 * \return A point at the center of mass of the input
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -4184,8 +5694,14 @@ extern GEOSGeometry GEOS_DLL *GEOSPointOnSurface(const GEOSGeometry* g);
 extern GEOSGeometry GEOS_DLL *GEOSGetCentroid(const GEOSGeometry* g);
 
 /**
-* Returns a geometry which represents the "minimum bounding circle",
+* Returns a 2D geometry which represents the "minimum bounding circle",
 * the smallest circle that contains the input.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param[in] g The input geometry
 * \param[out] radius Pointer will be filled with output radius.
 * \param[out] center Pointer will be filled with output circle center. Caller must free.
@@ -4202,6 +5718,12 @@ extern GEOSGeometry GEOS_DLL *GEOSMinimumBoundingCircle(
 
 /**
 * Return a Delaunay triangulation of the vertices of the given geometry.
+*
+* Z values from the input points will be propagated to the generated polygons.
+* M values from the input points will be ignored.
+*
+* Curved geometries are supported since GEOS 3.15. For curved geometries,
+* the control point and endpoints of each arc will be used as input vertices.
 *
 * \param g the input geometry whose vertices will be used as "sites"
 * \param tolerance optional snapping tolerance to use for improved robustness
@@ -4223,6 +5745,14 @@ extern GEOSGeometry GEOS_DLL * GEOSDelaunayTriangulation(
 * given polygon(s).
 * For non-polygonal inputs, returns an empty geometry collection.
 *
+* Z values from the input points will be propagated to the generated polygons.
+* M values from the input points will be ignored.
+*
+* This function does not support curved types directly. If curve-to-line
+* conversion parameters are registered with the context, curved
+* inputs will be automatically converted to lines. Otherwise, the
+* operation will fail.
+*
 * \param g the input geometry whose rings will be used as input
 * \return A newly allocated geometry. NULL on exception.
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -4232,19 +5762,12 @@ extern GEOSGeometry GEOS_DLL * GEOSDelaunayTriangulation(
 extern GEOSGeometry GEOS_DLL * GEOSConstrainedDelaunayTriangulation(
     const GEOSGeometry *g);
 
-/** Change behaviour of \ref GEOSVoronoiDiagram */
-enum GEOSVoronoiFlags
-{
-    /** Return only edges of the Voronoi cells, as a MultiLineString **/
-    GEOS_VORONOI_ONLY_EDGES = 1,
-    /** Preserve order of inputs, such that the nth cell in the result corresponds
-     *  to the nth vertex in the input. If this cannot be done, such as for inputs
-     *  that contain repeated points, \ref GEOSVoronoiDiagram will return NULL. **/
-    GEOS_VORONOI_PRESERVE_ORDER = 2
-};
-
 /**
-* Returns the Voronoi polygons or edges of the vertices of the given geometry.
+* Returns the 2D Voronoi polygons or edges computed from the vertices
+* of the given geometry.
+*
+* Curved geometries are supported since GEOS 3.15. For curved geometries,
+* the control point and endpoints of each arc will be used as input vertices.
 *
 * \param g the input geometry whose vertices will be used as sites.
 * \param tolerance snapping tolerance to use for improved robustness. A
@@ -4280,6 +5803,12 @@ extern GEOSGeometry GEOS_DLL * GEOSVoronoiDiagram(
 /**
 * For linear inputs, returns a new geometry in which no lines cross
 * each other, and all touching occurs at end points.
+*
+* Z and M values of input coordinates will be preserved.
+* Z and M values at constructed points will be interpolated.
+*
+* Curved geometry types are supported since GEOS 3.15.
+*
 * \param g The input geometry
 * \return The noded geometry or NULL on exception
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -4289,12 +5818,33 @@ extern GEOSGeometry GEOS_DLL * GEOSVoronoiDiagram(
 */
 extern GEOSGeometry GEOS_DLL *GEOSNode(const GEOSGeometry* g);
 
+
+/** Split a linear or polygonal input 
+* 
+* Linear inputs can be split with points, lines, and/or polygons.
+* Polygons can be split with lines and/or polygons.
+*
+* The returned geometry will be a GeometryCollection containing the
+* split elements.
+*
+* \param g The geometry to split
+* \param edge the geometry containing splitting edges/points
+* \return the split geometry or NULL on exception.
+*  Caller is responsible for freeing with GEOSGeom_destroy().
+*
+* \since 3.15
+*/
+extern GEOSGeometry GEOS_DLL *GEOSSplit(const GEOSGeometry* g, const GEOSGeometry* edge);
+
 /**
 * Polygonizes a set of Geometries which contain linework that
 * represents the edges of a planar graph.
 *
-* All types of Geometry are accepted as input; the constituent
+* All non-curved types of Geometry are accepted as input; the constituent
 * linework is extracted as the edges to be polygonized.
+*
+* Z and M values from the input linework will be preserved.
+* Curved geometries are supported since GEOS 3.15.
 *
 * The edges must be correctly noded; that is, they must only meet
 * at their endpoints and not overlap anywhere. If your edges are not
@@ -4323,7 +5873,7 @@ extern GEOSGeometry GEOS_DLL *GEOSNode(const GEOSGeometry* g);
 * that the input lines form a valid polygonal geometry (which may
 * include holes or nested polygons).
 *
-* \param geoms Array of linear geometries to polygons. Caller retains ownersihp of both array container and objects.
+* \param geoms Array of linear geometries to polygonize. Caller retains ownership of both array container and objects.
 * \param ngeoms Size of the geoms array.
 * \return The polygonal output geometry.
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -4336,11 +5886,14 @@ extern GEOSGeometry GEOS_DLL *GEOSPolygonize(
     unsigned int ngeoms);
 
 /**
-* Has the same polygonizing behavior as GEOSPolygonize(), 
+* Has the same polygonizing behavior as GEOSPolygonize(),
 * but returns a result which is a valid polygonal geometry.
-* The result will not contain any edge-adjacent elements. 
+* The result will not contain any edge-adjacent elements.
 *
-* \param geoms Array of linear geometries to polygons. Caller retains ownersihp of both array container and objects.
+* Z and M values from the input linework will be preserved.
+* Curved geometries are supported since GEOS 3.15.
+*
+* \param geoms Array of linear geometries to polygonize. Caller retains ownership of both array container and objects.
 * \param ngeoms Size of the geoms array.
 * \return The polygonal output geometry.
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -4358,7 +5911,10 @@ extern GEOSGeometry GEOS_DLL *GEOSPolygonize_valid(
 * "cut edges", the linear features that are connected at both ends,
 * do *not* participate in the final polygon.
 *
-* \param geoms Array of linear geometries to polygons. Caller retains ownersihp of both array container and objects.
+* Z and M values from the input linework will be preserved.
+* Curved geometries are supported since GEOS 3.15.
+*
+* \param geoms Array of linear geometries to polygonize. Caller retains ownership of both array container and objects.
 * \param ngeoms Size of the geoms array.
 * \return The "cut edges"
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -4372,7 +5928,10 @@ extern GEOSGeometry GEOS_DLL *GEOSPolygonizer_getCutEdges(
 
 /**
 * Perform the polygonization as GEOSPolygonize() and return the
-* polygonal result as well as all extra ouputs.
+* polygonal result as well as all extra outputs.
+*
+* Z and M values from the input linework will be preserved.
+* Curved geometries are supported since GEOS 3.15.
 *
 * \param[in] input A single geometry with all the input lines to polygonize.
 * \param[out] cuts Pointer to hold "cut edges", connected on both ends but not part of output. Caller must free.
@@ -4415,8 +5974,14 @@ extern GEOSGeometry GEOS_DLL *GEOSBuildArea(const GEOSGeometry* g);
 * Densifies a geometry using a given distance tolerance.
 * Additional vertices will be added to every line segment
 * that is greater this tolerance; these vertices will
-* evenly subdivide that segment.
+* evenly subdivide that segment. Z and M values of added
+* vertices will be interpolated.
 * Only linear components of input geometry are densified.
+* 
+* Curved geometries are not supported, unless curve-to-line parameters are
+* registered with the context handle. Output geometries will not contain
+* curves.
+*
 * \param g The geometry to densify
 * \param tolerance the distance tolerance to densify
 * \return The densified geometry, or NULL on exception.
@@ -4429,10 +5994,18 @@ extern GEOSGeometry GEOS_DLL *GEOSDensify(
     double tolerance);
 
 /**
-* Sews together a set of fully noded LineStrings
-* removing any cardinality 2 nodes in the linework.
+* Merges a set of LineStrings,
+* joining them at nodes which have cardinality 2.
+* Lines may have their direction reversed.
+*
+* Z and M values from the input will be preserved. If the Z and M
+* values differ at the points where two lines are joined, the values
+* from one of the points will be selected.
+*
+* Curved geometry types are supported since GEOS 3.15.
+*
 * \param g The input linework
-* \return The merged linework
+* \return The merged linework.
 * Caller is responsible for freeing with GEOSGeom_destroy().
 * \see geos::operation::linemerge::LineMerger
 * \since 2.2
@@ -4440,11 +6013,36 @@ extern GEOSGeometry GEOS_DLL *GEOSDensify(
 extern GEOSGeometry GEOS_DLL *GEOSLineMerge(const GEOSGeometry* g);
 
 /**
-* Sews together a set of fully noded LineStrings
-* removing any cardinality 2 nodes in the linework
-* only if possible without changing order of points.
+ * Computes the Minimum Spanning Tree of the given Curves.
+ *
+ * The input is an array of Curves (LineString, CircularString, CompoundCurve)
+ * which form the edges of a graph.
+ * The nodes of the graph are the endpoints of the Curves.
+ * Coincident endpoints are treated as the same node.
+ *
+ * \param geoms Input array of Curves. Non-Curve geometries are ignored.
+ * \param ngeoms Number of geometries in the input array.
+ * \return An array of size_t of size ngeoms. 0 if the edge is not in the MST.
+ *         Values > 0 indicate the component ID of the subtree the edge belongs to.
+ *         The caller is responsible for freeing the returned array using GEOSFree().
+ *         Returns NULL if ngeoms is 0 or on error.
+ * \since 3.15.0
+ */
+extern size_t GEOS_DLL *GEOSMinimumSpanningTree(const GEOSGeometry * const geoms[], unsigned int ngeoms);
+
+/**
+ * Merges a set of LineStrings,* joining them at nodes which have cardinality 2.
+* and where the lines have the same direction.
+* This means that lines do not have their direction reversed.
+*
+* Z and M values from the input will be preserved. If the Z and M
+* values differ at the points where two lines are joined, the values
+* from one of the points will be selected.
+*
+* Curved geometry types are supported since GEOS 3.15.
+*
 * \param g The input linework
-* \return The merged linework
+* \return The merged linework.
 * Caller is responsible for freeing with GEOSGeom_destroy().
 * \see geos::operation::linemerge::LineMerger
 *
@@ -4455,6 +6053,10 @@ extern GEOSGeometry GEOS_DLL *GEOSLineMergeDirected(const GEOSGeometry* g);
 /**
  *  Computes the line which is the section of the input LineString starting and
  *  ending at the given length fractions.
+ *
+ *  Z values will be interpolated from the input.
+ *  M values from the input will be ignored.
+ *
  *  \param g The input LineString
  *  \param start_fraction start fraction (0-1) along the length of g
  *  \param end_fraction end fraction (0-1) along the length of g
@@ -4471,7 +6073,11 @@ extern GEOSGeometry GEOS_DLL *GEOSLineSubstring(
 /**
 * For geometries with coordinate sequences, reverses the order
 * of the sequences. Converts CCW rings to CW. Reverses direction
-* of LineStrings.
+* of LineStrings. Z and M values of the input coordinates are
+* preserved.
+*
+* Curved geometry types are supported since GEOS 3.13.
+*
 * \param g The input geometry
 * \return The reversed geometry
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -4486,6 +6092,7 @@ extern GEOSGeometry GEOS_DLL *GEOSReverse(const GEOSGeometry* g);
 * to the coordinate sequences of the input geometry.
 * Removes "unnecessary" vertices, vertices
 * that are co-linear within the tolerance distance.
+* Z and M values on the retained coordinates will be preserved.
 * \param g The input geometry
 * \param tolerance The tolerance to apply. Larger tolerance leads to simpler output.
 * \return The simplified geometry
@@ -4506,6 +6113,8 @@ extern GEOSGeometry GEOS_DLL *GEOSSimplify(
 * that are co-linear within the tolerance distance.
 * Returns a valid output geometry, checking for collapses, ring-intersections, etc
 * and attempting to avoid. More computationally expensive than GEOSSimplify()
+* Z values on the retained coordinates will be preserved.
+* M values will not be preserved.
 * \param g The input geometry
 * \param tolerance The tolerance to apply. Larger tolerance leads to simpler output.
 * \return The simplified geometry
@@ -4522,6 +6131,12 @@ extern GEOSGeometry GEOS_DLL *GEOSTopologyPreserveSimplify(
 * Return all distinct vertices of input geometry as a MultiPoint.
 * Note that only 2 dimensions of the vertices are considered when
 * testing for equality.
+*
+* Z values on the retained coordinates will be preserved.
+* M values will not be preserved.
+*
+* Curved geometry types are supported since GEOS 3.13.
+*
 * \param g The input geometry
 * \return The distinct points
 * Caller is responsible for freeing with GEOSGeom_destroy().
@@ -4534,10 +6149,13 @@ extern GEOSGeometry GEOS_DLL *GEOSGeom_extractUniquePoints(
 /**
 * Calculate the
 * [Hilbert code](https://en.wikipedia.org/wiki/Hilbert_curve)
-* of the centroid of a geometry relative to an extent.
+* of the center of a geometry's bounding box relative to a larger extent.
 * This allows sorting geometries in a deterministic way, such that similar Hilbert codes are
 * likely to be near each other in two-dimensional space.
 * The caller must ensure that the geometry is contained within the extent.
+*
+* Curved geometries are supported since GEOS 3.13.
+*
 * \param[in] geom Input geometry, must be non-empty
 * \param[in] extent Extent within which to calculate the Hilbert code for geom
 * \param[in] level The level of precision of the Hilbert curve, up to 16
@@ -4556,7 +6174,10 @@ extern int GEOS_DLL GEOSHilbertCode(
 /**
 * Apply XY coordinate transform callback to all coordinates in a copy of
 * input geometry.  If the callback returns an error, returned geometry will be
-* NULL.  Z values, if present, are not modified by this function.
+* NULL.  Z and M values, if present, are not modified by this function.
+*
+* Curved geometry types are supported since GEOS 3.13.
+*
 * \param[in] g Input geometry
 * \param[in] callback a function to be executed for each coordinate in the
                 geometry.  The callback takes 3 parameters: x and y coordinate
@@ -4570,6 +6191,28 @@ extern int GEOS_DLL GEOSHilbertCode(
 extern GEOSGeometry GEOS_DLL *GEOSGeom_transformXY(
     const GEOSGeometry* g,
     GEOSTransformXYCallback callback,
+    void* userdata);
+
+/**
+* Apply XYZ coordinate transform callback to all coordinates in a copy of
+* input geometry.  If the callback returns an error, returned geometry will be
+* NULL.  M values, if present, are not modified by this function.
+*
+* Curved geometry types are supported since GEOS 3.13.
+*
+* \param[in] g Input geometry
+* \param[in] callback a function to be executed for each coordinate in the
+                geometry.  The callback takes 4 parameters: x, y and z coordinate
+                values to be updated and a void userdata pointer.
+* \param userdata an optional pointer to pe passed to 'callback' as an argument
+* \return a copy of the input geometry with transformed coordinates.
+* Caller must free with GEOSGeom_destroy().
+*
+* \since 3.13
+*/
+extern GEOSGeometry GEOS_DLL *GEOSGeom_transformXYZ(
+    const GEOSGeometry* g,
+    GEOSTransformXYZCallback callback,
     void* userdata);
 
 /**
@@ -4588,7 +6231,7 @@ extern GEOSGeometry GEOS_DLL *GEOSGeom_transformXY(
 * \param input An input geometry
 * \param snap_target A geometry to snap the input to
 * \param tolerance Snapping tolerance
-* \return The snapped verion of the input. NULL on exception.
+* \return The snapped version of the input. NULL on exception.
 * Caller is responsible for freeing with GEOSGeom_destroy().
 *
 * \since 3.3
@@ -4617,6 +6260,9 @@ extern GEOSGeometry GEOS_DLL *GEOSSnap(
 * So the combination GEOS_PREC_NO_TOPO || GEOS_PREC_KEEP_COLLAPSED
 * has the same semantics as GEOS_PREC_NO_TOPO
 *
+* Z and M values in the input are preserved.
+* Curved geometries are supported since GEOS 3.15 if GEOS_PREC_NO_TOPO is used.
+*
 * \param g Input geometry
 * \param gridSize cell size of grid to round coordinates to,
 *        or 0 for FLOATING precision
@@ -4635,13 +6281,131 @@ extern GEOSGeometry GEOS_DLL *GEOSGeom_setPrecision(
 ///@}
 
 /* ============================================================== */
+
+/** @name Line/Curve conversion
+* Functions for converting between curved and linear geometry types.
+*/
+///@{
+
+/** Approximate all circular arcs in a geometry using line segments.
+*   If the input has no circular arcs, a copy will be returned.
+*   \param g the geometry to convert
+*   \param params parameters to use in the linearization.
+*   \return The linearized geometry.
+*           Caller must free with GEOSGeom_destroy()
+*           NULL on exception
+*
+*   \since 3.15
+*/ 
+extern GEOSGeometry GEOS_DLL *GEOSCurveToLine(
+    const GEOSGeometry* g,
+    const GEOSCurveToLineParams* params);
+
+extern GEOSCurveToLineParams GEOS_DLL *GEOSCurveToLineParams_create();
+
+extern void GEOS_DLL GEOSCurveToLineParams_destroy(GEOSCurveToLineParams* params);
+
+/** Set the maximum step (in degrees) between subsequent points.
+*
+*   \param params parameters to use in the conversion.
+*   \param tolerance the maximum step size
+*   \return 1 if the operation succeeded, 0 otherwise
+*
+*   \since 3.15
+*/ 
+extern int GEOS_DLL GEOSCurveToLineParams_setMaxStepDegrees(
+    GEOSCurveToLineParams* params,
+    double tolerance);
+
+/** Set the maximum deviation between an arc and its linear approximate.
+*
+*   \param params parameters to use in the conversion.
+*   \param tolerance the maximum deviation
+*   \return 1 if the operation succeeded, 0 otherwise
+*
+*   \since 3.15
+*/ 
+extern int GEOS_DLL GEOSCurveToLineParams_setMaxDeviation(
+    GEOSCurveToLineParams* params,
+    double tolerance);
+
+/** Replace line segments in the geometry with circular arcs, where possible.
+*
+*   \param g the geometry to convert
+*   \param params parameters to use in the conversion.
+*   \return The converted geometry.
+*           Caller must free with GEOSGeom_destroy()
+*           NULL on exception
+*
+*   \since 3.15
+*/ 
+extern GEOSGeometry GEOS_DLL *GEOSLineToCurve(
+    const GEOSGeometry* g,
+    const GEOSLineToCurveParams* params);
+
+extern GEOSLineToCurveParams GEOS_DLL *GEOSLineToCurveParams_create();
+
+extern void GEOS_DLL GEOSLineToCurveParams_destroy(GEOSLineToCurveParams* params);
+
+/** Set the radius tolerance used in line-to-curve conversion.
+*
+*   A vertex may be considered to continue a circular arc if its distance to the
+*   previously-computed circle center is within the specified fraction of the
+*   circle radius.
+* 
+*   \param params the parameters object
+*   \param tolerance the tolerance value
+*   \return 1 on success, 0 on failure
+*   \since 3.15
+*/
+extern int GEOS_DLL GEOSLineToCurveParams_setRadiusTolerance(
+        GEOSLineToCurveParams* params,
+        double tolerance);
+
+/** Set the maximum angle spacing used in line-to-curve conversion.
+*
+*   A point may be considered to continue a circular arc if the angle between
+*   the point and the final point in the arc is less than the specified
+*   tolerance. Because of round-off errors, this value should be slightly
+*   greater than the one used in \ref GEOSCurveToLineParams_setMaxStepDegrees.
+* 
+*   \param params the parameters object
+*   \param tolerance the tolerance value
+*   \return 1 on success, 0 on failure
+*   \since 3.15
+*/
+extern int GEOS_DLL GEOSLineToCurveParams_setMaxStepDegrees(
+        GEOSLineToCurveParams* params,
+        double tolerance);
+
+/** Set the maximum angle difference used in line-to-curve conversion
+*
+*   A point may be considered to continue a circular arc if the angle between
+*   the point and the final point in the arc is within the specified
+*   tolerance of the angle calculated when the final point in the arc was
+*   added. This tolerance can be used to ensure that the step spacing is
+*   regular, which is an indication of a line that was generated by 
+*   linearizing a curve.
+* 
+*   \param params the parameters object
+*   \param tolerance the tolerance value
+*   \return 1 on success, 0 on failure
+*   \since 3.15
+*/
+extern int GEOS_DLL GEOSLineToCurveParams_setMaxAngleDifferenceDegrees(
+        GEOSLineToCurveParams* params,
+        double tolerance);
+
+///@}
+
+/* ============================================================== */
 /** @name Spatial Predicates
 * Functions computing binary spatial predicates using the DE-9IM topology model.
 */
 ///@{
 
 /**
-* True if no point of either geometry touchess or is within the other.
+* Tests if two geometries have no point in common.
 * \param g1 Input geometry
 * \param g2 Input geometry
 * \returns 1 on true, 0 on false, 2 on exception
@@ -4651,8 +6415,8 @@ extern GEOSGeometry GEOS_DLL *GEOSGeom_setPrecision(
 extern char GEOS_DLL GEOSDisjoint(const GEOSGeometry* g1, const GEOSGeometry* g2);
 
 /**
-* True if geometries share boundaries at one or more points, but do
-* not have interior overlaps.
+* Tests if two geometries share boundaries at one or more points, but do
+* not have interior points in common.
 * \param g1 Input geometry
 * \param g2 Input geometry
 * \returns 1 on true, 0 on false, 2 on exception
@@ -4662,7 +6426,7 @@ extern char GEOS_DLL GEOSDisjoint(const GEOSGeometry* g1, const GEOSGeometry* g2
 extern char GEOS_DLL GEOSTouches(const GEOSGeometry* g1, const GEOSGeometry* g2);
 
 /**
-* True if geometries are not disjoint.
+* Tests if two geometries intersect.
 * \param g1 Input geometry
 * \param g2 Input geometry
 * \returns 1 on true, 0 on false, 2 on exception
@@ -4672,7 +6436,7 @@ extern char GEOS_DLL GEOSTouches(const GEOSGeometry* g1, const GEOSGeometry* g2)
 extern char GEOS_DLL GEOSIntersects(const GEOSGeometry* g1, const GEOSGeometry* g2);
 
 /**
-* True if geometries interiors interact but their boundaries do not.
+* Tests if two geometries interiors intersect but their boundaries do not.
 * Most useful for finding line crosses cases.
 * \param g1 Input geometry
 * \param g2 Input geometry
@@ -4683,8 +6447,8 @@ extern char GEOS_DLL GEOSIntersects(const GEOSGeometry* g1, const GEOSGeometry* 
 extern char GEOS_DLL GEOSCrosses(const GEOSGeometry* g1, const GEOSGeometry* g2);
 
 /**
-* True if geometry g1 is completely within g2, and not
-* touching the boundary of g2.
+* Tests if geometry g1 is completely within g2,
+* but not wholly contained in the boundary of g2.
 * \param g1 Input geometry
 * \param g2 Input geometry
 * \returns 1 on true, 0 on false, 2 on exception
@@ -4694,7 +6458,8 @@ extern char GEOS_DLL GEOSCrosses(const GEOSGeometry* g1, const GEOSGeometry* g2)
 extern char GEOS_DLL GEOSWithin(const GEOSGeometry* g1, const GEOSGeometry* g2);
 
 /**
-* True if geometry g2 is completely within g1.
+* Tests if geometry g2 is completely within g1,
+* but not wholly contained in the boundary of g1.
 * \param g1 Input geometry
 * \param g2 Input geometry
 * \returns 1 on true, 0 on false, 2 on exception
@@ -4704,7 +6469,7 @@ extern char GEOS_DLL GEOSWithin(const GEOSGeometry* g1, const GEOSGeometry* g2);
 extern char GEOS_DLL GEOSContains(const GEOSGeometry* g1, const GEOSGeometry* g2);
 
 /**
-* True if geometries share interiors but are neither
+* Tests if two geometries share interiors but are neither
 * within nor contained.
 * \param g1 Input geometry
 * \param g2 Input geometry
@@ -4715,7 +6480,7 @@ extern char GEOS_DLL GEOSContains(const GEOSGeometry* g1, const GEOSGeometry* g2
 extern char GEOS_DLL GEOSOverlaps(const GEOSGeometry* g1, const GEOSGeometry* g2);
 
 /**
-* True if geometries cover the same space on the plane.
+* Tests if two geometries contain the same set of points in the plane.
 * \param g1 Input geometry
 * \param g2 Input geometry
 * \returns 1 on true, 0 on false, 2 on exception
@@ -4725,8 +6490,8 @@ extern char GEOS_DLL GEOSOverlaps(const GEOSGeometry* g1, const GEOSGeometry* g2
 extern char GEOS_DLL GEOSEquals(const GEOSGeometry* g1, const GEOSGeometry* g2);
 
 /**
-* True if geometry g1 is completely within g2, including possibly
-* touching the boundary of g2.
+* Tests if geometry g1 covers g2, which is the case
+* if every point of g2 lies in g1.
 * \param g1 Input geometry
 * \param g2 Input geometry
 * \returns 1 on true, 0 on false, 2 on exception
@@ -4737,8 +6502,8 @@ extern char GEOS_DLL GEOSEquals(const GEOSGeometry* g1, const GEOSGeometry* g2);
 extern char GEOS_DLL GEOSCovers(const GEOSGeometry* g1, const GEOSGeometry* g2);
 
 /**
-* True if geometry g2 is completely within g1, including possibly
-* touching the boundary of g1.
+* Tests if geometry g1 is covered by g2,
+* which is the case if every point of g1 lies in g2.
 * \param g1 Input geometry
 * \param g2 Input geometry
 * \returns 1 on true, 0 on false, 2 on exception
@@ -4749,7 +6514,7 @@ extern char GEOS_DLL GEOSCovers(const GEOSGeometry* g1, const GEOSGeometry* g2);
 extern char GEOS_DLL GEOSCoveredBy(const GEOSGeometry* g1, const GEOSGeometry* g2);
 
 /**
-* Determine pointwise equivalence of two geometries, by
+* Determine pointwise equality of two geometries, by
 * checking that they have identical structure
 * and that each vertex of g2 is
 * within the distance tolerance of the corresponding vertex in g1.
@@ -4758,6 +6523,9 @@ extern char GEOS_DLL GEOSCoveredBy(const GEOSGeometry* g1, const GEOSGeometry* g
 * Unlike GEOSEquals(), geometries that are topologically equivalent but have different
 * representations (e.g., LINESTRING (0 0, 1 1) and MULTILINESTRING ((0 0, 1 1)) ) are not
 * considered equal by GEOSEqualsExact().
+*
+* Curved geometry types are supported since GEOS 3.13.
+*
 * \param g1 Input geometry
 * \param g2 Input geometry
 * \param tolerance Tolerance to determine vertex equality
@@ -4771,11 +6539,13 @@ extern char GEOS_DLL GEOSEqualsExact(
     double tolerance);
 
 /**
- * Determine pointwise equivalence of two geometries by checking
- * that the structure, ordering, and values of all vertices are
- * identical in all dimensions. NaN values are considered to be
- * equal to other NaN values.
- *
+* Determine pointwise equality of two geometries by checking
+* that the structure, ordering, and values of all vertices are
+* identical in all dimensions. NaN values are considered to be
+* equal to other NaN values.
+*
+* Curved geometry types are supported since GEOS 3.13.
+*
 * \param g1 Input geometry
 * \param g2 Input geometry
 * \returns 1 on true, 0 on false, 2 on exception
@@ -4787,25 +6557,28 @@ extern char GEOS_DLL GEOSEqualsIdentical(
         const GEOSGeometry* g2);
 
 /**
-* Calculate the DE9IM pattern for this geometry pair
-* and compare against the provided pattern to check for
-* consistency. If the result and pattern are consistent
-* return true. The pattern may include glob "*" characters
-* for portions that are allowed to match any value.
+* Calculate the [DE9IM](https://en.wikipedia.org/wiki/DE-9IM) string for a geometry pair
+* and compare against a DE9IM pattern.
+* Returns true if the computed matrix matches the pattern.
+* The pattern is a 9-character string
+* containing symbols in the set "012TF*".
+* "012F" match the corresponding dimension symbol;
+* "T" matches any non-empty dimension; "*" matches any dimension.
 * \see geos::geom::Geometry::relate
 * \param g1 First geometry in pair
 * \param g2 Second geometry in pair
-* \param pat DE9IM pattern to check
+* \param imPattern DE9IM pattern to match
 * \return 1 on true, 0 on false, 2 on exception
 * \since 2.2
 */
 extern char GEOS_DLL GEOSRelatePattern(
     const GEOSGeometry* g1,
     const GEOSGeometry* g2,
-    const char *pat);
+    const char *imPattern);
 
 /**
-* Calculate and return the DE9IM pattern for this geometry pair.
+* Calculate the [DE9IM](https://en.wikipedia.org/wiki/DE-9IM) string for this geometry pair.
+* The result is a 9-character string containing dimension symbols in the set "012F".
 * \see geos::geom::Geometry::relate
 * \param g1 First geometry in pair
 * \param g2 Second geometry in pair
@@ -4818,21 +6591,21 @@ extern char GEOS_DLL *GEOSRelate(
     const GEOSGeometry* g2);
 
 /**
-* Compare two DE9IM patterns and return true if they
+* Compare a [DE9IM](https://en.wikipedia.org/wiki/DE-9IM) string to a pattern and return true if they
 * are consistent.
-* \param mat Complete DE9IM string (does not have "*")
-* \param pat Pattern to match to (may contain "*")
+* \param intMatrix DE9IM string (contains symbols "012F")
+* \param imPattern Pattern to match to (may also contain symbols "T" and "*")
 * \return 1 on true, 0 on false, 2 on exception
 *
 * \since 3.3
 */
 extern char GEOS_DLL GEOSRelatePatternMatch(
-    const char *mat,
-    const char *pat);
+    const char *intMatrix,
+    const char *imPattern);
 
 /**
-* Calculate and return the DE9IM pattern for this geometry pair.
-* Apply the supplied \ref GEOSRelateBoundaryNodeRules.
+* Calculate the [DE9IM](https://en.wikipedia.org/wiki/DE-9IM) string for this geometry pair,
+* using the supplied \ref GEOSRelateBoundaryNodeRules.
 * \see geos::geom::Geometry::relate
 * \see geos::algorithm::BoundaryNodeRule
 * \param g1 First geometry in pair
@@ -5062,6 +6835,44 @@ extern char GEOS_DLL GEOSPreparedWithin(
     const GEOSGeometry* g2);
 
 /**
+* Use a \ref GEOSPreparedGeometry do a high-performance
+* calculation of the [DE9IM](https://en.wikipedia.org/wiki/DE-9IM) relationship between the
+* prepared and provided geometry.
+* \param pg1 The prepared geometry
+* \param g2 The geometry to test
+* \returns The DE9IM string
+* \see GEOSPrepare
+* \see GEOSRelate
+* \see GEOSPreparedRelatePattern
+*
+* \since 3.13
+*/
+extern char GEOS_DLL * GEOSPreparedRelate(
+    const GEOSPreparedGeometry* pg1,
+    const GEOSGeometry* g2);
+
+/**
+* Use a \ref GEOSPreparedGeometry do a high-performance
+* calculation of the [DE9IM](https://en.wikipedia.org/wiki/DE-9IM) relationship between the
+* prepared and provided geometry, and compare the
+* relationship to the provided DE9IM pattern.
+* Returns true if the patterns are consistent and false otherwise.
+* \param pg1 The prepared geometry
+* \param g2 The geometry to test
+* \param imPattern The DE9IM pattern to test
+* \returns 1 on true, 0 on false, 2 on exception
+* \see GEOSPrepare
+* \see GEOSRelatePattern
+* \see GEOSPreparedRelate
+*
+* \since 3.13
+*/
+extern char GEOS_DLL GEOSPreparedRelatePattern(
+    const GEOSPreparedGeometry* pg1,
+    const GEOSGeometry* g2,
+    const char* imPattern);
+
+/**
 * Use a \ref GEOSPreparedGeometry do a high performance
 * calculation to find the nearest points between the
 * prepared and provided geometry.
@@ -5141,9 +6952,10 @@ extern GEOSSTRtree GEOS_DLL *GEOSSTRtree_create(size_t nodeCapacity);
 * Construct an STRtree from items that have been inserted. Once constructed,
 * no more items may be inserted into the tree. Functions that require a
 * constructed tree will build it automatically, so there is no need to call
-* `GEOSSTRtree_build` unless it is desired to explicity construct the tree
+* `GEOSSTRtree_build` unless it is desired to explicitly construct the tree
 * in a certain section of code or using a certain thread.
 *
+* \param tree the \ref GEOSSTRtree to apply the build to
 * \return 1 on success, 0 on error
 *
 * \since 3.12
@@ -5271,6 +7083,8 @@ extern char GEOS_DLL GEOSSTRtree_remove(
 * Only the tree is freed. The geometries and items fed into
 * GEOSSTRtree_insert() are not owned by the tree, and are
 * still left to the caller to manage.
+*
+* \param tree the \ref GEOSSTRtree to destroy
 *
 * \since 3.2
 */
@@ -5410,7 +7224,10 @@ extern char GEOS_DLL *GEOSWKTWriter_write(
 /**
 * Sets the number trimming option on a \ref GEOSWKTWriter.
 * With trim set to 1, the writer will strip trailing 0's from
-* the output coordinates. With 0, all coordinates will be
+* the output coordinates. With 1 (trimming enabled), big and small
+* absolute coordinates will use scientific notation, otherwise
+* positional notation is used; see \ref GEOS_printDouble for details.
+* With 0 (trimming disabled), all coordinates will be
 * padded with 0's out to the rounding precision.
 * Default since GEOS 3.12 is with trim set to 1 for 'on'.
 * \param writer A \ref GEOSWKTWriter.
@@ -5739,6 +7556,27 @@ extern char GEOS_DLL *GEOSGeoJSONWriter_writeGeometry(
     const GEOSGeometry* g,
     int indent);
 
+/**
+* Set the output dimensionality of the writer. Either
+* 2 or 3 dimensions.
+* \param writer A \ref GEOSGeoJSONWriter.
+* \param dim The dimensionality desired.
+*
+* \since 3.14
+*/
+extern void GEOS_DLL GEOSGeoJSONWriter_setOutputDimension(
+    GEOSGeoJSONWriter *writer,
+    int dim);
+
+/**
+* Reads the current output dimension from a \ref GEOSGeoJSONWriter.
+* \param writer A \ref GEOSGeoJSONWriter.
+* \return The current dimension.
+*
+* \since 3.14
+*/
+extern int  GEOS_DLL GEOSGeoJSONWriter_getOutputDimension(GEOSGeoJSONWriter *writer);
+
 ///@}
 
 #endif /* #ifndef GEOS_USE_ONLY_R_API */
@@ -5898,7 +7736,7 @@ extern GEOSGeometry GEOS_DLL *GEOSGeomFromWKB_buf(const unsigned char *wkb, size
 extern unsigned char GEOS_DLL *GEOSGeomToWKB_buf(const GEOSGeometry* g, size_t *size);
 
 /**
-* \deprecated use \ref GEOSWKBReader and GEOSWKBWriter_readHEX()
+* \deprecated use \ref GEOSWKBReader and GEOSWKBReader_readHEX()
 */
 extern GEOSGeometry GEOS_DLL *GEOSGeomFromHEX_buf(const unsigned char *hex, size_t size);
 

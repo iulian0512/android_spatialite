@@ -49,7 +49,7 @@ namespace geom { // geos::geom
  * stores 2D Coordinates and accesses using the Coordinate type. Sequences used by these parts
  * of the code must be created with constructors without `hasz` and `hasm` arguments.
  *
- * If a high-dimension Coordinate coordinate is read from a low-dimension CoordinateSequence,
+ * If a high-dimension coordinate is read from a low-dimension CoordinateSequence,
  * the higher dimensions will be populated with incorrect values or a segfault may occur.
  *
  */
@@ -197,20 +197,6 @@ public:
         return m_vect.empty();
     }
 
-    /// Returns <code>true</code> if there is 1 coordinate and if it is null.
-    bool isNullPoint() const {
-        if (size() != 1) {
-            return false;
-        }
-        switch(getCoordinateType()) {
-            case CoordinateType::XY: return getAt<CoordinateXY>(0).isNull();
-            case CoordinateType::XYZ: return getAt<Coordinate>(0).isNull();
-            case CoordinateType::XYZM: return getAt<CoordinateXYZM>(0).isNull();
-            case CoordinateType::XYM: return getAt<CoordinateXYM>(0).isNull();
-            default: return false;
-        }
-    }
-
     /** \brief
     * Tests whether an a {@link CoordinateSequence} forms a ring,
     * by checking length and closure. Self-intersection is not checked.
@@ -234,6 +220,13 @@ public:
     bool hasM() const {
         return m_hasm;
     }
+
+    /**
+     * Set the dimensions of the CoordinateSequence.
+     * May cause a reallocation, invalidating any references to coordinates
+     * within this sequence.
+     */
+    void setZM(bool hasZ, bool hasM);
 
     /// Returns true if contains any two consecutive points
     bool hasRepeatedPoints() const;
@@ -351,6 +344,80 @@ public:
         return m_vect[index * stride() + 1];
     }
 
+    /**
+     * Returns ordinate Z of the specified coordinate.
+     *
+     * @param index
+     * @return the value of the Z ordinate in the index'th coordinate, or NaN if the
+     *         CoordinateSequence does not store Z values
+     */
+    double getZ(std::size_t index) const
+    {
+        return getOrdinate(index, Z);
+    }
+
+    /**
+     * Returns ordinate M of the specified coordinate.
+     *
+     * @param index
+     * @return the value of the M ordinate in the index'th coordinate, or NaN if the
+     *         CoordinateSequence does not store M values
+     */
+    double getM(std::size_t index) const
+    {
+        return getOrdinate(index, M);
+    }
+
+    /**
+     * Set the X value of the specified coordinate.
+     *
+     * @param index
+     * @param x the new X value
+     */
+    void setX(std::size_t index, double x)
+    {
+        m_vect[index * stride()] = x;
+    }
+
+    /**
+     * Set the Y value of the specified coordinate.
+     *
+     * @param index
+     * @param y the new Y value
+     */
+    void setY(std::size_t index, double y)
+    {
+        m_vect[index * stride() + 1] = y;
+    }
+
+    /**
+     * Set the Z value of the specified coordinate.
+     *
+     * Has no effect if the CoordinateSequence does not store Z values.
+     *
+     * @param index
+     * @param z the new Z value
+     */
+    void setZ(std::size_t index, double z)
+    {
+        if (hasZ())
+            setOrdinate(index, Z, z);
+    }
+
+    /**
+     * Set the M value of the specified coordinate.
+     *
+     * Has no effect if the CoordinateSequence does not store M values.
+     *
+     * @param index
+     * @param m the new M value
+     */
+    void setM(std::size_t index, double m)
+    {
+        if (hasM())
+            setOrdinate(index, M, m);
+    }
+
     /// Return last Coordinate in the sequence
     template<typename T=Coordinate>
     const T& back() const
@@ -413,6 +480,9 @@ public:
 
     /// Substitute Coordinate list with a copy of the given vector
     void setPoints(const std::vector<Coordinate>& v);
+
+    /// Substitute Coordinate list with a copy of the given vector
+    void setPoints(const std::vector<CoordinateXY>& v);
 
     /// @}
     /// \defgroup add Adding methods
@@ -516,8 +586,10 @@ public:
 
     void add(const CoordinateSequence& cl, bool allowRepeated, bool forwardDirection);
 
+    /// Add the portion of a CoordinateSequence between the specified indices (inclusive)
     void add(const CoordinateSequence& cs, std::size_t from, std::size_t to);
 
+    /// Add the portion of a CoordinateSequence between the specified indices (inclusive)
     void add(const CoordinateSequence& cs, std::size_t from, std::size_t to, bool allowRepeated);
 
     template<typename T, typename... Args>
@@ -559,8 +631,13 @@ public:
     /// Get a string representation of CoordinateSequence
     std::string toString() const;
 
-    /// Returns lower-left Coordinate in list
+    /// Returns lower-left Coordinate in list, or nullptr if the
+    /// sequence is empty
     const CoordinateXY* minCoordinate() const;
+
+    /// Returns the index of the minCoordinate, or the maximum value of
+    /// size_t if the sequence is empty
+    std::size_t minCoordinateIndex() const;
 
     /** \brief
      *  Returns either the given CoordinateSequence if its length
@@ -593,6 +670,8 @@ public:
 
     /// Scroll given CoordinateSequence so to start with given Coordinate.
     static void scroll(CoordinateSequence* cl, const CoordinateXY* firstCoordinate);
+    void scroll(const CoordinateXY* firstCoordinate);
+    void scroll(std::size_t firstCoordinateIndex);
 
     /** \brief
      * Determines which orientation of the {@link Coordinate} array
@@ -618,6 +697,8 @@ public:
 
     void sort();
 
+    /// Swap the coordinates at two indices.
+    void swap(std::size_t i, std::size_t j);
 
     /**
      * Expands the given Envelope to include the coordinates in the
@@ -635,10 +716,30 @@ public:
     template<typename Filter>
     void apply_rw(const Filter* filter) {
         switch(getCoordinateType()) {
-            case CoordinateType::XY:    for (auto& c : items<CoordinateXY>())   { filter->filter_rw(&c); } break;
-            case CoordinateType::XYZ:   for (auto& c : items<Coordinate>())     { filter->filter_rw(&c); } break;
-            case CoordinateType::XYM:   for (auto& c : items<CoordinateXYM>())  { filter->filter_rw(&c); } break;
-            case CoordinateType::XYZM:  for (auto& c : items<CoordinateXYZM>()) { filter->filter_rw(&c); } break;
+            case CoordinateType::XY:
+                for (auto& c : items<CoordinateXY>()) {
+                    if (filter->isDone()) break;
+                    filter->filter_rw(&c);
+                }
+                break;
+            case CoordinateType::XYZ:
+                for (auto& c : items<Coordinate>()) {
+                    if (filter->isDone()) break;
+                    filter->filter_rw(&c);
+                }
+                break;
+            case CoordinateType::XYM:
+                for (auto& c : items<CoordinateXYM>()) {
+                    if (filter->isDone()) break;
+                    filter->filter_rw(&c);
+                }
+                break;
+            case CoordinateType::XYZM:
+                for (auto& c : items<CoordinateXYZM>()) {
+                    if (filter->isDone()) break;
+                    filter->filter_rw(&c);
+                }
+                break;
         }
         m_hasdim = m_hasz = false; // re-check (see http://trac.osgeo.org/geos/ticket/435)
     }
@@ -646,10 +747,40 @@ public:
     template<typename Filter>
     void apply_ro(Filter* filter) const {
         switch(getCoordinateType()) {
-            case CoordinateType::XY:    for (const auto& c : items<CoordinateXY>())   { filter->filter_ro(&c); } break;
-            case CoordinateType::XYZ:   for (const auto& c : items<Coordinate>())     { filter->filter_ro(&c); } break;
-            case CoordinateType::XYM:   for (const auto& c : items<CoordinateXYM>())  { filter->filter_ro(&c); } break;
-            case CoordinateType::XYZM:  for (const auto& c : items<CoordinateXYZM>()) { filter->filter_ro(&c); } break;
+            case CoordinateType::XY:
+                for (const auto& c : items<CoordinateXY>()) {
+                    if (filter->isDone()) break;
+                    filter->filter_ro(&c);
+                }
+                break;
+            case CoordinateType::XYZ:
+                for (const auto& c : items<Coordinate>()) {
+                    if (filter->isDone()) break;
+                    filter->filter_ro(&c);
+                }
+                break;
+            case CoordinateType::XYM:
+                for (const auto& c : items<CoordinateXYM>()) {
+                    if (filter->isDone()) break;
+                    filter->filter_ro(&c);
+                }
+                break;
+            case CoordinateType::XYZM:
+                for (const auto& c : items<CoordinateXYZM>()) {
+                    if (filter->isDone()) break;
+                    filter->filter_ro(&c);
+                }
+                break;
+        }
+    }
+
+    template<typename F>
+    auto applyAt(size_t i, F&& fun) const {
+        switch(getCoordinateType()) {
+            case CoordinateType::XYZ:   return fun(getAt<Coordinate>(i));
+            case CoordinateType::XYM:   return fun(getAt<CoordinateXYM>(i));
+            case CoordinateType::XYZM:  return fun(getAt<CoordinateXYZM>(i));
+            default:                    return fun(getAt<CoordinateXY>(i));
         }
     }
 
@@ -668,6 +799,16 @@ public:
     {
         for (std::size_t i = 0; i < size(); i++) {
             fun(getAt<T>(i));
+        }
+    }
+
+    template<typename F>
+    void forEachSegment(F&& fun) const {
+        switch(getCoordinateType()) {
+            case CoordinateType::XY:    forEachSegmentImpl<CoordinateXY, F>(std::move(fun)); break;
+            case CoordinateType::XYZ:   forEachSegmentImpl<Coordinate, F>(std::move(fun)); break;
+            case CoordinateType::XYM:   forEachSegmentImpl<CoordinateXYM, F>(std::move(fun)); break;
+            case CoordinateType::XYZM:  forEachSegmentImpl<CoordinateXYZM, F>(std::move(fun)); break;
         }
     }
 
@@ -756,6 +897,24 @@ private:
     void setAtImpl(const T2& c, std::size_t pos) {
         auto& orig = getAt<T1>(pos);
         orig = c;
+    }
+
+    template<typename CoordType, typename F>
+    void forEachSegmentImpl(F&& fun) const {
+        auto p0it = items<CoordType>().cbegin();
+        const auto end = items<CoordType>().end();
+
+        if (p0it == end) {
+            return;
+        }
+
+        auto p1it = std::next(p0it);
+
+        while (p1it != end) {
+            fun(*p0it, *p1it);
+            ++p0it;
+            ++p1it;
+        }
     }
 
     void make_space(std::size_t pos, std::size_t n) {

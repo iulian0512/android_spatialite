@@ -20,10 +20,8 @@
 #pragma once
 
 #include <geos/geom/prep/PreparedGeometry.h> // for inheritance
-//#include <geos/algorithm/PointLocator.h>
-//#include <geos/geom/util/ComponentCoordinateExtracter.h>
 #include <geos/geom/Coordinate.h>
-//#include <geos/geom/Location.h>
+#include <geos/operation/relateng/RelateNG.h>
 
 #include <vector>
 #include <string>
@@ -56,9 +54,20 @@ namespace prep { // geos::geom::prep
  *
  */
 class BasicPreparedGeometry: public PreparedGeometry {
+    using RelateNG = geos::operation::relateng::RelateNG;
+
 private:
     const geom::Geometry* baseGeom;
     std::vector<const CoordinateXY*> representativePts;
+    mutable std::unique_ptr<RelateNG> relate_ng;
+
+    RelateNG& getRelateNG() const
+    {
+        if (relate_ng == nullptr)
+            relate_ng = RelateNG::prepare(baseGeom);
+
+        return *relate_ng;
+    }
 
 protected:
     /**
@@ -122,6 +131,11 @@ public:
     /**
      * Default implementation.
      */
+    bool within(const geom::Geometry* g) const override;
+
+    /**
+     * Default implementation.
+     */
     bool contains(const geom::Geometry* g) const override;
 
     /**
@@ -168,7 +182,12 @@ public:
     /**
      * Default implementation.
      */
-    bool within(const geom::Geometry* g) const override;
+    std::unique_ptr<IntersectionMatrix> relate(const geom::Geometry* g) const override;
+
+    /**
+     * Default implementation.
+     */
+    bool relate(const geom::Geometry* g, const std::string& pat) const override;
 
     /**
      * Default implementation.

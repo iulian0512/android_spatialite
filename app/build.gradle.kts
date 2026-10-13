@@ -1,4 +1,4 @@
-val libVersion = "2.0.10"
+val libVersion = "2.0.11"
 plugins {
     id("com.android.library")
     id("maven-publish")

@@ -48,7 +48,8 @@ class Coordinate;
  * It is often used to represent the bounding box of a Geometry,
  * e.g. the minimum and maximum x and y values of the Coordinates.
  *
- * Note that Envelopes support infinite or half-infinite regions, by using
+ * Envelopes allow null values, which are represented with NaN values for ordinates.
+ * Envelopes support infinite or half-infinite regions, by using
  * the values of `Double_POSITIVE_INFINITY` and `Double_NEGATIVE_INFINITY`.
  *
  * When Envelope objects are created or initialized, the supplies extent
@@ -292,6 +293,18 @@ public:
     }
 
     /** \brief
+     * Gets the perimeter of this envelope.
+     *
+     * @return the perimeter of the envelope
+     * @return 0.0 if the envelope is null
+     */
+    double
+    getPerimeter() const
+    {
+        return 2*getWidth() + 2*getHeight();
+    }
+
+    /** \brief
      * Returns true if this Envelope covers a finite region
      */
     bool
@@ -301,8 +314,8 @@ public:
     }
 
     /** \brief
-     * Returns the Envelope maximum y-value. `min y > max y` indicates
-     * that this is a null Envelope.
+     * Returns the Envelope maximum y-value. 
+     * Null envelopes do not have maximum values.
      */
     double getMaxY() const
     {
@@ -311,8 +324,8 @@ public:
     };
 
     /** \brief
-     * Returns the Envelope maximum x-value. `min x > max x` indicates
-     * that this is a null Envelope.
+     * Returns the Envelope maximum x-value. 
+     * Null envelopes do not have maximum values.
      */
     double getMaxX() const
     {
@@ -321,8 +334,8 @@ public:
     };
 
     /** \brief
-     * Returns the Envelope minimum y-value. `min y > max y` indicates
-     * that this is a null Envelope.
+     * Returns the Envelope minimum y-value. 
+     * Null envelopes do not have maximum values.
      */
     double getMinY() const
     {
@@ -331,8 +344,8 @@ public:
     };
 
     /** \brief
-     * Returns the Envelope minimum x-value. `min x > max x` indicates
-     * that this is a null Envelope.
+     * Returns the Envelope minimum x-value. 
+     * Null envelopes do not have maximum values.
      */
     double getMinX() const
     {
@@ -371,9 +384,19 @@ public:
      * @param result the envelope representing the intersection of
      *               the envelopes (this will be the null envelope
      *               if either argument is null, or they do not intersect)
-     * @return false if not intersection is found
+     * @return false if no intersection is found
      */
     bool intersection(const Envelope& env, Envelope& result) const;
+
+    /** \brief
+     * Computes the intersection of two [Envelopes](@ref Envelope).
+     *
+     * @param env the envelope to intersect with
+     * @return     the envelope representing the intersection of
+     *             the envelopes (this will be the null envelope
+     *             if either argument is null, or they do not intersect)
+     */
+    Envelope intersection(const Envelope& env) const;
 
     /** \brief
      * Translates this envelope by given amounts in the X and Y direction.
@@ -540,6 +563,32 @@ public:
     }
 
     /** \brief
+     * Check if the point p lies in the interior of this Envelope.
+     *
+     * @param p the Coordinate to be tested
+     * @return true if the point lies in the interior
+     */
+    bool
+    containsProperly(const CoordinateXY& p) const
+    {
+        return std::isless(p.x, maxx) && std::isgreater(p.x, minx) &&
+                std::isless(p.y, maxy) && std::isgreater(p.y,  miny);
+    }
+
+    /** \brief
+     * Tests if an envelope is properly contained in this one.
+     * The envelope is properly contained if it is contained 
+     * by this one but not equal to it.
+     * 
+     * @param other the envelope to test
+     * @return true if the envelope is properly contained
+     */
+    bool containsProperly(const Envelope& other) const {
+        if (equals(&other)) return false;
+        return covers(other);
+    }
+
+    /** \brief
      * Check if the point p intersects (lies inside) the region of this Envelope.
      *
      * @param other the Coordinate to be tested
@@ -589,7 +638,7 @@ public:
     * Tests if the region defined by other
     * is disjoint from the region of this Envelope
     *
-    * @param other  the Envelope being checked for disjointness
+    * @param other  the Envelope being checked for disjointedness
     * @return true if the Envelopes are disjoint
     */
     bool disjoint(const Envelope& other) const

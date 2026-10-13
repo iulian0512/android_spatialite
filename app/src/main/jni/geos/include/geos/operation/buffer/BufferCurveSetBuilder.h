@@ -70,6 +70,8 @@ namespace buffer { // geos.operation.buffer
  *
  */
 class GEOS_DLL BufferCurveSetBuilder {
+    using CoordinateSequence = geos::geom::CoordinateSequence;
+    using Envelope = geos::geom::Envelope;
 
 private:
 
@@ -102,7 +104,7 @@ private:
      *
      * @param coord is raw offset curve, ownership transferred here
      */
-    void addCurve(geom::CoordinateSequence* coord, geom::Location leftLoc,
+    void addCurve(std::unique_ptr<geom::CoordinateSequence> coord, geom::Location leftLoc,
                   geom::Location rightLoc);
 
     void add(const geom::Geometry& g);
@@ -118,7 +120,7 @@ private:
 
     void addPolygon(const geom::Polygon* p);
 
-    void addRingBothSides(const geom::CoordinateSequence* coord, double p_distance);
+    void addLinearRingSides(const geom::CoordinateSequence* coord, double p_distance);
 
     /**
      * Add an offset curve for a polygon ring.
@@ -138,9 +140,13 @@ private:
      * @param cwRightLoc the location on the R side of the ring
      *                   (if it is CW)
      */
-    void addRingSide(const geom::CoordinateSequence* coord,
+    void addPolygonRingSide(const geom::CoordinateSequence* coord,
                      double offsetDistance, int side, geom::Location cwLeftLoc,
                      geom::Location cwRightLoc);
+
+    void addRingSide(const geom::CoordinateSequence* coord,
+                     double offsetDistance, int side, geom::Location leftLoc,
+                     geom::Location rightLoc);
 
     /**
      * Tests whether the offset curve for a ring is fully inverted.
@@ -169,14 +175,19 @@ private:
         const geom::CoordinateSequence* curvePts);
 
     /**
-     * Computes the maximum distance out of a set of points to a linestring.
-     *
-     * @param pts the points
-     * @param line the linestring vertices
-     * @return the maximum distance
+     * Tests if there are points on the raw offset curve which may
+     * lie on the final buffer curve
+     * (i.e. they are (approximately) at the buffer distance from the input ring). 
+     * For efficiency this only tests a limited set of points on the curve.
+     * 
+     * @param inputRing
+     * @param distance
+     * @param curveRing
+     * @return true if the curve contains points lying at the required buffer distance
      */
-    static double maxDistance(
-        const geom::CoordinateSequence*  pts, const geom::CoordinateSequence*  line);
+    static bool hasPointOnBuffer(
+        const CoordinateSequence* inputRing, double dist,
+        const CoordinateSequence* curveRing);
 
     /**
      * The ringCoord is assumed to contain no repeated points.
@@ -187,7 +198,10 @@ private:
      * @param bufferDistance
      * @return
      */
-    bool isErodedCompletely(const geom::LinearRing* ringCoord,
+    bool isRingFullyEroded(const geom::LinearRing* ring, bool isHole,
+                            double bufferDistance);
+
+    bool isRingFullyEroded(const CoordinateSequence* ringCoord, const Envelope* env, bool isHole,
                             double bufferDistance);
 
     /**
@@ -265,7 +279,7 @@ public:
     /// @param leftLoc left location
     /// @param rightLoc right location
     ///
-    void addCurves(const std::vector<geom::CoordinateSequence*>& lineList,
+    void addCurves(std::vector<std::unique_ptr<geom::CoordinateSequence>>& lineList,
                    geom::Location leftLoc, geom::Location rightLoc);
 
     /**

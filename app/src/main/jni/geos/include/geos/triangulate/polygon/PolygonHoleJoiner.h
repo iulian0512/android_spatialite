@@ -31,18 +31,11 @@ namespace geom {
 class Envelope;
 class Geometry;
 class LinearRing;
+class Polygon;
 }
 namespace noding {
 }
 }
-
-using geos::geom::Coordinate;
-using geos::geom::CoordinateSequence;
-using geos::geom::Polygon;
-using geos::geom::LinearRing;
-using geos::noding::BasicSegmentString;
-using geos::noding::SegmentSetMutualIntersector;
-
 
 namespace geos {
 namespace triangulate {
@@ -67,6 +60,12 @@ namespace polygon {
  * The output ring is always CW.
  */
 class GEOS_DLL PolygonHoleJoiner {
+    using Coordinate = geos::geom::Coordinate;
+    using CoordinateSequence = geos::geom::CoordinateSequence;
+    using Polygon = geos::geom::Polygon;
+    using LinearRing = geos::geom::LinearRing;
+    using BasicSegmentString = geos::noding::BasicSegmentString;
+    using SegmentSetMutualIntersector = geos::noding::SegmentSetMutualIntersector;
 
 private:
 
@@ -75,8 +74,8 @@ private:
     const Polygon* inputPolygon;
 
     //-- normalized, sorted and noded polygon rings
-    std::unique_ptr<CoordinateSequence> shellRing;
-    std::vector<std::unique_ptr<CoordinateSequence>> holeRings;
+    std::shared_ptr<const CoordinateSequence> shellRing;
+    std::vector<std::shared_ptr<const CoordinateSequence>> holeRings;
 
     //-- indicates whether a hole should be testing for touching
     std::vector<bool> isHoleTouchingHint;
@@ -98,7 +97,7 @@ private:
 
 
     void extractOrientedRings(const Polygon* polygon);
-    static std::unique_ptr<CoordinateSequence> extractOrientedRing(const LinearRing* ring, bool isCW);
+    static std::shared_ptr<const CoordinateSequence> extractOrientedRing(const LinearRing* ring, bool isCW);
     void nodeRings();
     void joinHoles();
 

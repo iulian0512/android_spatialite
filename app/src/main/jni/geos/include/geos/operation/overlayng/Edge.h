@@ -17,7 +17,6 @@
 #include <geos/geom/Coordinate.h>
 #include <geos/geom/CoordinateSequence.h>
 #include <geos/geom/Dimension.h>
-#include <geos/operation/overlayng/OverlayEdge.h>
 #include <geos/operation/overlayng/OverlayLabel.h>
 #include <geos/operation/overlayng/EdgeSourceInfo.h>
 #include <geos/util/GEOSException.h>
@@ -53,6 +52,7 @@ namespace overlayng { // geos.operation.overlayng
  * @author mdavis
  */
 class GEOS_DLL Edge {
+    using Location = geos::geom::Location;
 
 private:
 
@@ -63,7 +63,8 @@ private:
     int bDim = OverlayLabel::DIM_UNKNOWN;
     int bDepthDelta = 0;
     bool bIsHole = false;
-    std::unique_ptr<geom::CoordinateSequence> pts;
+    std::shared_ptr<const geom::CoordinateSequence> pts;
+    const bool ptsCurved;
 
     // Methods
 
@@ -183,25 +184,18 @@ private:
 
 public:
 
-    Edge()
-        : aDim(OverlayLabel::DIM_UNKNOWN)
-        , aDepthDelta(0)
-        , aIsHole(false)
-        , bDim(OverlayLabel::DIM_UNKNOWN)
-        , bDepthDelta(0)
-        , bIsHole(false)
-        , pts(nullptr)
-        {};
+    Edge(const std::shared_ptr<const geom::CoordinateSequence>& p_pts, const EdgeSourceInfo* info, bool isCurved);
 
     friend std::ostream& operator<<(std::ostream& os, const Edge& e);
 
     static bool isCollapsed(const geom::CoordinateSequence* pts);
 
-    // takes ownership of pts from caller
-    Edge(std::unique_ptr<geom::CoordinateSequence>&& p_pts, const EdgeSourceInfo* info);
+    bool isCurved() const {
+        return ptsCurved;
+    }
 
     // return a clone of the underlying points
-    std::unique_ptr<geom::CoordinateSequence> getCoordinates()
+    std::unique_ptr<geom::CoordinateSequence> getCoordinates() const
     {
         return pts->clone();
     };
@@ -213,14 +207,14 @@ public:
     };
 
     // release the underlying points to the caller
-    geom::CoordinateSequence* releaseCoordinates()
+    std::shared_ptr<const geom::CoordinateSequence> releaseCoordinates()
     {
-        geom::CoordinateSequence* cs = pts.release();
-        pts.reset(nullptr);
+        auto cs = pts;
+        pts.reset();
         return cs;
     };
 
-    const geom::Coordinate& getCoordinate(std::size_t index)  const
+    const geom::CoordinateXY& getCoordinate(std::size_t index)  const
     {
         return pts->getAt(index);
     };
@@ -236,25 +230,22 @@ public:
             throw util::GEOSException("Edge must have >= 2 points");
         }
 
-        const geom::Coordinate& p0 = pts->getAt(0);
-        const geom::Coordinate& p1 = pts->getAt(1);
-        const geom::Coordinate& pn0 = pts->getAt(pts->size() - 1);
-        const geom::Coordinate& pn1 = pts->getAt(pts->size() - 2);
+        const geom::CoordinateXY& p0 = getCoordinate(0);
+        const geom::CoordinateXY& pn0 = getCoordinate(pts->size() - 1);
 
-        int cmp = 0;
-        int cmp0 = p0.compareTo(pn0);
-        if (cmp0 != 0) cmp = cmp0;
-
-        if (cmp == 0) {
-            int cmp1 = p1.compareTo(pn1);
-            if (cmp1 != 0) cmp = cmp1;
+        const int cmp0 = p0.compareTo(pn0);
+        if (cmp0 != 0) {
+            return cmp0 == -1;
         }
 
-        if (cmp == 0) {
-            throw util::GEOSException("Edge direction cannot be determined because endpoints are equal");
+        const geom::CoordinateXY& p1 = getCoordinate(1);
+        const geom::CoordinateXY& pn1 = getCoordinate(pts->size() - 2);
+        const int cmp1 = p1.compareTo(pn1);
+        if (cmp1 != 0) {
+            return cmp1 == -1;
         }
 
-        return cmp == -1;
+        throw util::GEOSException("Edge direction cannot be determined because endpoints are equal");
     };
 
     /**
@@ -310,8 +301,8 @@ public:
 
     bool compareTo(const Edge& e) const
     {
-        const geom::Coordinate& ca = getCoordinate(0);
-        const geom::Coordinate& cb = e.getCoordinate(0);
+        const geom::CoordinateXY& ca = getCoordinate(0);
+        const geom::CoordinateXY& cb = e.getCoordinate(0);
         if(ca.compareTo(cb) < 0) {
             return true;
         }
@@ -319,8 +310,8 @@ public:
             return false;
         }
         else {
-            const geom::Coordinate& cca = getCoordinate(1);
-            const geom::Coordinate& ccb = e.getCoordinate(1);
+            const geom::CoordinateXY& cca = getCoordinate(1);
+            const geom::CoordinateXY& ccb = e.getCoordinate(1);
             if(cca.compareTo(ccb) < 0) {
                 return true;
             }

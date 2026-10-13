@@ -38,6 +38,8 @@
 #include "io.hpp"
 #include "metadata.hpp"
 
+#include "proj.h"
+
 NS_PROJ_START
 
 namespace crs {
@@ -103,6 +105,45 @@ using CoordinateOperationPtr = std::shared_ptr<CoordinateOperation>;
 /** Non-null shared pointer of CoordinateOperation */
 using CoordinateOperationNNPtr = util::nn<CoordinateOperationPtr>;
 
+// ---------------------------------------------------------------------------
+
+class CoordinateTransformer;
+/** Shared pointer of CoordinateTransformer */
+using CoordinateTransformerPtr = std::unique_ptr<CoordinateTransformer>;
+/** Non-null shared pointer of CoordinateTransformer */
+using CoordinateTransformerNNPtr = util::nn<CoordinateTransformerPtr>;
+
+/** \brief Coordinate transformer.
+ *
+ * Performs coordinate transformation of coordinate tuplies.
+ *
+ * @since 9.3
+ */
+class PROJ_GCC_DLL CoordinateTransformer {
+  public:
+    //! @cond Doxygen_Suppress
+    PROJ_DLL ~CoordinateTransformer();
+    //! @endcond
+
+    PROJ_DLL PJ_COORD transform(PJ_COORD coord);
+
+  protected:
+    PROJ_FRIEND(CoordinateOperation);
+
+    PROJ_INTERNAL CoordinateTransformer();
+
+    PROJ_INTERNAL static CoordinateTransformerNNPtr
+    create(const CoordinateOperationNNPtr &op, PJ_CONTEXT *ctx);
+
+  private:
+    PROJ_OPAQUE_PRIVATE_DATA
+    INLINED_MAKE_UNIQUE
+    CoordinateTransformer &
+    operator=(const CoordinateTransformer &other) = delete;
+};
+
+// ---------------------------------------------------------------------------
+
 class Transformation;
 /** Shared pointer of Transformation */
 using TransformationPtr = std::shared_ptr<Transformation>;
@@ -151,10 +192,12 @@ class PROJ_GCC_DLL CoordinateOperation : public common::ObjectUsage,
     PROJ_DLL const util::optional<common::DataEpoch> &
     targetCoordinateEpoch() const;
 
-    // virtual void transform(...) = 0;  TODO
+    PROJ_DLL CoordinateTransformerNNPtr
+    coordinateTransformer(PJ_CONTEXT *ctx) const;
 
     /** \brief Return the inverse of the coordinate operation.
-     * @throw util::UnsupportedOperationException
+     *
+     * \throw util::UnsupportedOperationException if inverse is not available
      */
     PROJ_DLL virtual CoordinateOperationNNPtr inverse() const = 0;
 
@@ -168,6 +211,8 @@ class PROJ_GCC_DLL CoordinateOperation : public common::ObjectUsage,
                        bool considerKnownGridsAsAvailable) const;
 
     PROJ_DLL bool hasBallparkTransformation() const;
+
+    PROJ_DLL bool requiresPerCoordinateInputTime() const;
 
     PROJ_DLL static const std::string OPERATION_VERSION_KEY;
 
@@ -196,6 +241,10 @@ class PROJ_GCC_DLL CoordinateOperation : public common::ObjectUsage,
                                const crs::CRSNNPtr &targetCRSIn,
                                const crs::CRSPtr &interpolationCRSIn);
     PROJ_INTERNAL void
+    setCRSsUpdateInverse(const crs::CRSNNPtr &sourceCRSIn,
+                         const crs::CRSNNPtr &targetCRSIn,
+                         const crs::CRSPtr &interpolationCRSIn);
+    PROJ_INTERNAL void
     setInterpolationCRS(const crs::CRSPtr &interpolationCRSIn);
     PROJ_INTERNAL void setCRSs(const CoordinateOperation *in,
                                bool inverseSourceTarget);
@@ -203,6 +252,8 @@ class PROJ_GCC_DLL CoordinateOperation : public common::ObjectUsage,
     void setAccuracies(
         const std::vector<metadata::PositionalAccuracyNNPtr> &accuracies);
     PROJ_INTERNAL void setHasBallparkTransformation(bool b);
+
+    PROJ_INTERNAL void setRequiresPerCoordinateInputTime(bool b);
 
     PROJ_INTERNAL void
     setSourceCoordinateEpoch(const util::optional<common::DataEpoch> &epoch);
@@ -347,6 +398,7 @@ class PROJ_GCC_DLL GeneralParameterValue : public util::BaseObject,
 
     friend class Conversion;
     friend class SingleOperation;
+    friend class PointMotionOperation;
     PROJ_INTERNAL virtual void _exportToWKT(io::WKTFormatter *formatter,
                                             const MethodMapping *mapping)
         const = 0; // throw(io::FormattingException)
@@ -683,6 +735,10 @@ class PROJ_GCC_DLL SingleOperation : virtual public CoordinateOperation {
     PROJ_INTERNAL static GeneralParameterValueNNPtr
     createOperationParameterValueFromInterpolationCRS(int methodEPSGCode,
                                                       int crsEPSGCode);
+
+    PROJ_INTERNAL static void
+    exportToPROJStringChangeVerticalUnit(io::PROJStringFormatter *formatter,
+                                         double convFactor);
 
   private:
     PROJ_OPAQUE_PRIVATE_DATA
@@ -1063,12 +1119,12 @@ class PROJ_GCC_DLL Conversion : public SingleOperation {
 
     PROJ_DLL static ConversionNNPtr
     createEquidistantConic(const util::PropertyMap &properties,
-                           const common::Angle &centerLat,
-                           const common::Angle &centerLong,
+                           const common::Angle &latitudeFalseOrigin,
+                           const common::Angle &longitudeFalseOrigin,
                            const common::Angle &latitudeFirstParallel,
                            const common::Angle &latitudeSecondParallel,
-                           const common::Length &falseEasting,
-                           const common::Length &falseNorthing);
+                           const common::Length &eastingFalseOrigin,
+                           const common::Length &northingFalseOrigin);
 
     PROJ_DLL static ConversionNNPtr
     createEckertI(const util::PropertyMap &properties,
@@ -1250,6 +1306,11 @@ class PROJ_GCC_DLL Conversion : public SingleOperation {
         const common::Angle &centerLong, const common::Length &falseEasting,
         const common::Length &falseNorthing);
 
+    PROJ_DLL static ConversionNNPtr createMercatorSpherical(
+        const util::PropertyMap &properties, const common::Angle &centerLat,
+        const common::Angle &centerLong, const common::Length &falseEasting,
+        const common::Length &falseNorthing);
+
     PROJ_DLL static ConversionNNPtr
     createMollweide(const util::PropertyMap &properties,
                     const common::Angle &centerLong,
@@ -1270,6 +1331,13 @@ class PROJ_GCC_DLL Conversion : public SingleOperation {
     PROJ_DLL static ConversionNNPtr createOrthographic(
         const util::PropertyMap &properties, const common::Angle &centerLat,
         const common::Angle &centerLong, const common::Length &falseEasting,
+        const common::Length &falseNorthing);
+
+    PROJ_DLL static ConversionNNPtr createLocalOrthographic(
+        const util::PropertyMap &properties, const common::Angle &centerLat,
+        const common::Angle &centerLong,
+        const common::Angle &azimuthInitialLine, const common::Scale &scale,
+        const common::Length &falseEasting,
         const common::Length &falseNorthing);
 
     PROJ_DLL static ConversionNNPtr createAmericanPolyconic(
@@ -1425,6 +1493,21 @@ class PROJ_GCC_DLL Conversion : public SingleOperation {
     PROJ_DLL static ConversionNNPtr
     createVerticalOffset(const util::PropertyMap &properties,
                          const common::Length &offsetHeight);
+
+    PROJ_DLL static ConversionNNPtr
+    createAffineParametric(const util::PropertyMap &properties,
+                           const common::Measure &A0, const common::Scale &A1,
+                           const common::Scale &A2, const common::Measure &B0,
+                           const common::Scale &B1, const common::Scale &B2);
+
+    PROJ_DLL static ConversionNNPtr
+    createAffineParametric(const util::PropertyMap &properties,
+                           const common::Measure &A0, const common::Scale &A1,
+                           const common::Scale &A2, const common::Scale &A3,
+                           const common::Measure &B0, const common::Scale &B1,
+                           const common::Scale &B2, const common::Scale &B3,
+                           const common::Measure &C0, const common::Scale &C1,
+                           const common::Scale &C2, const common::Scale &C3);
 
     PROJ_DLL ConversionPtr convertToOtherMethod(int targetEPSGCode) const;
 
@@ -1631,6 +1714,12 @@ class PROJ_GCC_DLL Transformation : public SingleOperation {
         const common::Angle &offsetLong, const common::Length &offsetHeight,
         const std::vector<metadata::PositionalAccuracyNNPtr> &accuracies);
 
+    PROJ_DLL static TransformationNNPtr createCartesianGridOffsets(
+        const util::PropertyMap &properties, const crs::CRSNNPtr &sourceCRSIn,
+        const crs::CRSNNPtr &targetCRSIn, const common::Length &eastingOffset,
+        const common::Length &northingOffset,
+        const std::vector<metadata::PositionalAccuracyNNPtr> &accuracies);
+
     PROJ_DLL static TransformationNNPtr createVerticalOffset(
         const util::PropertyMap &properties, const crs::CRSNNPtr &sourceCRSIn,
         const crs::CRSNNPtr &targetCRSIn, const common::Length &offsetHeight,
@@ -1644,10 +1733,10 @@ class PROJ_GCC_DLL Transformation : public SingleOperation {
     PROJ_PRIVATE :
         //! @cond Doxygen_Suppress
         PROJ_INTERNAL const std::string &
-        getNTv2Filename() const;
+        getPROJ4NadgridsCompatibleFilename() const;
 
-    PROJ_FOR_TEST std::vector<double>
-    getTOWGS84Parameters() const; // throw(io::FormattingException)
+    PROJ_FOR_TEST std::vector<double> getTOWGS84Parameters(
+        bool canThrowException) const; // throw(io::FormattingException)
 
     PROJ_INTERNAL const std::string &getHeightToGeographic3DFilename() const;
 
@@ -1685,6 +1774,7 @@ class PROJ_GCC_DLL Transformation : public SingleOperation {
     PROJ_INTERNAL void _exportToPROJString(io::PROJStringFormatter *formatter)
         const override; // throw(FormattingException)
 
+    PROJ_FRIEND(CoordinateOperation);
     PROJ_FRIEND(CoordinateOperationFactory);
     PROJ_FRIEND(SingleOperation);
     PROJ_INTERNAL TransformationNNPtr inverseAsTransformation() const;
@@ -1718,8 +1808,61 @@ class PROJ_GCC_DLL PointMotionOperation : public SingleOperation {
     PROJ_DLL ~PointMotionOperation() override;
     //! @endcond
 
+    PROJ_DLL const crs::CRSNNPtr &sourceCRS() PROJ_PURE_DECL;
+
+    PROJ_DLL CoordinateOperationNNPtr inverse() const override;
+
+    PROJ_DLL static PointMotionOperationNNPtr
+    create(const util::PropertyMap &properties, const crs::CRSNNPtr &crsIn,
+           const OperationMethodNNPtr &methodIn,
+           const std::vector<GeneralParameterValueNNPtr> &values,
+           const std::vector<metadata::PositionalAccuracyNNPtr>
+               &accuracies); // throw InvalidOperation
+
+    PROJ_DLL static PointMotionOperationNNPtr
+    create(const util::PropertyMap &propertiesOperation,
+           const crs::CRSNNPtr &crsIn,
+           const util::PropertyMap &propertiesOperationMethod,
+           const std::vector<OperationParameterNNPtr> &parameters,
+           const std::vector<ParameterValueNNPtr> &values,
+           const std::vector<metadata::PositionalAccuracyNNPtr>
+               &accuracies); // throw InvalidOperation
+
+    PROJ_DLL PointMotionOperationNNPtr substitutePROJAlternativeGridNames(
+        io::DatabaseContextNNPtr databaseContext) const;
+
+    PROJ_PRIVATE :
+        //! @cond Doxygen_Suppress
+        PROJ_INTERNAL PointMotionOperationNNPtr
+        shallowClone() const;
+
+    PROJ_INTERNAL PointMotionOperationNNPtr
+    cloneWithEpochs(const common::DataEpoch &sourceEpoch,
+                    const common::DataEpoch &targetEpoch) const;
+
+    PROJ_INTERNAL void _exportToPROJString(io::PROJStringFormatter *formatter)
+        const override; // throw(FormattingException)
+
+    PROJ_INTERNAL void _exportToWKT(io::WKTFormatter *formatter)
+        const override; // throw(io::FormattingException)
+
+    PROJ_INTERNAL void _exportToJSON(io::JSONFormatter *formatter)
+        const override; // throw(FormattingException)
+
+    //! @endcond
+
+  protected:
+    PROJ_INTERNAL PointMotionOperation(
+        const crs::CRSNNPtr &crsIn, const OperationMethodNNPtr &methodIn,
+        const std::vector<GeneralParameterValueNNPtr> &values,
+        const std::vector<metadata::PositionalAccuracyNNPtr> &accuracies);
+    PROJ_INTERNAL PointMotionOperation(const PointMotionOperation &other);
+    INLINED_MAKE_SHARED
+
+    PROJ_INTERNAL CoordinateOperationNNPtr _shallowClone() const override;
+
   private:
-    PointMotionOperation(const PointMotionOperation &) = delete;
+    PointMotionOperation &operator=(const PointMotionOperation &) = delete;
 };
 
 // ---------------------------------------------------------------------------
@@ -1781,9 +1924,10 @@ class PROJ_GCC_DLL ConcatenatedOperation final : public CoordinateOperation {
         const override; // throw(FormattingException)
 
     PROJ_INTERNAL static void
-    fixStepsDirection(const crs::CRSNNPtr &concatOpSourceCRS,
-                      const crs::CRSNNPtr &concatOpTargetCRS,
-                      std::vector<CoordinateOperationNNPtr> &operationsInOut);
+    fixSteps(const crs::CRSNNPtr &concatOpSourceCRS,
+             const crs::CRSNNPtr &concatOpTargetCRS,
+             std::vector<CoordinateOperationNNPtr> &operationsInOut,
+             const io::DatabaseContextPtr &dbContext, bool fixDirectionAllowed);
     //! @endcond
 
   protected:
@@ -1802,6 +1946,11 @@ class PROJ_GCC_DLL ConcatenatedOperation final : public CoordinateOperation {
     PROJ_OPAQUE_PRIVATE_DATA
     ConcatenatedOperation &
     operator=(const ConcatenatedOperation &other) = delete;
+
+    PROJ_INTERNAL
+    static void setCRSsUpdateInverse(CoordinateOperation *co,
+                                     const crs::CRSNNPtr &sourceCRS,
+                                     const crs::CRSNNPtr &targetCRS);
 };
 
 // ---------------------------------------------------------------------------
@@ -1998,6 +2147,11 @@ class PROJ_GCC_DLL CoordinateOperationFactory {
 
     PROJ_DLL std::vector<CoordinateOperationNNPtr> createOperations(
         const crs::CRSNNPtr &sourceCRS,
+        const coordinates::CoordinateMetadataNNPtr &targetCoordinateMetadata,
+        const CoordinateOperationContextNNPtr &context) const;
+
+    PROJ_DLL std::vector<CoordinateOperationNNPtr> createOperations(
+        const coordinates::CoordinateMetadataNNPtr &sourceCoordinateMetadata,
         const coordinates::CoordinateMetadataNNPtr &targetCoordinateMetadata,
         const CoordinateOperationContextNNPtr &context) const;
 

@@ -17,7 +17,7 @@ old_library='libspatialite.a'
 inherited_linker_flags=''
 
 # Libraries that this one depends upon.
-dependency_libs=' -L/home/iulian/github/android_spatialite/static_libs/geos-3.12.0/build/lib -L/home/iulian/github/android_spatialite/static_libs/libiconv-1.17/build/lib -L/home/iulian/github/android_spatialite/static_libs/librttopo-1.1.0/build/lib -L/home/iulian/github/android_spatialite/static_libs/proj-9.2.1/build/lib -L/home/iulian/github/android_spatialite/static_libs/sqlite-amalgamation-3430200 -L/home/iulian/github/android_spatialite/static_libs/icu73.2/build/android/x86_64/lib /home/iulian/github/android_spatialite/static_libs/libiconv-1.17/build/lib/libiconv.la /home/iulian/github/android_spatialite/static_libs/librttopo-1.1.0/build/lib/librttopo.la -lgeos -llog -lproj -licudata -licui18n -licuuc -lstdc++ -lsqlite3 -lpthread -ldl -lm -lz -lgeos_c'
+dependency_libs=' -L/root/as/static_libs/geos-3.15.0/build/lib -L/root/as/static_libs/libiconv-1.19/build/lib -L/root/as/static_libs/librttopo-1.1.0/build/lib -L/root/as/static_libs/proj-9.9.0/build/lib -L/root/as/static_libs/sqlite-amalgamation-3540000 -L/root/as/static_libs/icu78.3/build/android/x86_64/lib /root/as/static_libs/libiconv-1.19/build/lib/libiconv.la /root/as/static_libs/librttopo-1.1.0/build/lib/librttopo.la -lgeos -llog -lproj -licudata -licui18n -licuuc -lstdc++ -lsqlite3 -lpthread -ldl -lm -lz -lgeos_c'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/home/iulian/github/android_spatialite/static_libs/libspatialite-5.1.0/build/lib'
+libdir='/root/as/static_libs/libspatialite-5.1.0/build/lib'

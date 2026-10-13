@@ -81,6 +81,10 @@ public:
 
     GeometryTypeId getGeometryTypeId() const override;
 
+    std::unique_ptr<MultiLineString> getLinearized(const algorithm::CurveToLineParams&) const {
+        return clone();
+    }
+
     bool isClosed() const;
 
     std::unique_ptr<MultiLineString> clone() const
@@ -124,6 +128,9 @@ protected:
     MultiLineString(std::vector<std::unique_ptr<Geometry>> && newLines,
                     const GeometryFactory& newFactory);
 
+    MultiLineString(std::vector<std::unique_ptr<Curve>> && newLines,
+                    const GeometryFactory& newFactory);
+
     MultiLineString(const MultiLineString& mp)
         : GeometryCollection(mp)
         {};
@@ -132,11 +139,20 @@ protected:
 
     MultiLineString* reverseImpl() const override;
 
+    GeometryCollection* getCurvedImpl(const algorithm::LineToCurveParams&) const override;
+
+    MultiLineString* getLinearizedImpl(const algorithm::CurveToLineParams&) const override;
+
     int
     getSortIndex() const override
     {
         return SORTINDEX_MULTILINESTRING;
     };
+
+    bool hasCurvedComponents() const override
+    {
+        return false;
+    }
 
 };
 

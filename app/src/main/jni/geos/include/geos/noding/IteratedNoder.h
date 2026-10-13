@@ -57,14 +57,14 @@ private:
 
     const geom::PrecisionModel* pm;
     algorithm::LineIntersector li;
-    std::vector<SegmentString*>* nodedSegStrings;
+    std::vector<std::unique_ptr<SegmentString>> nodedSegStrings;
     int maxIter;
 
     /**
      * Node the input segment strings once
      * and create the split edges between the nodes
      */
-    void node(std::vector<SegmentString*>* segStrings,
+    void node(const std::vector<SegmentString*>& segStrings,
               int& numInteriorIntersections,
               geom::CoordinateXY& intersectionPoint);
 
@@ -96,15 +96,15 @@ public:
         maxIter = n;
     }
 
-    std::vector<SegmentString*>*
-    getNodedSubstrings() const override
+    std::vector<std::unique_ptr<SegmentString>>
+    getNodedSubstrings() override
     {
-        return nodedSegStrings;
+        return std::move(nodedSegStrings);
     }
 
 
     /** \brief
-     * Fully nodes a list of {@link SegmentString}s, i.e. peforms noding iteratively
+     * Fully nodes a list of {@link SegmentString}s, i.e. performs noding iteratively
      * until no intersections are found between segments.
      *
      * Maintains labelling of edges correctly through the noding.
@@ -112,7 +112,11 @@ public:
      * @param inputSegmentStrings a collection of SegmentStrings to be noded
      * @throws TopologyException if the iterated noding fails to converge.
      */
-    void computeNodes(std::vector<SegmentString*>* inputSegmentStrings) override; // throw(GEOSException);
+    void computeNodes(const std::vector<SegmentString*>& inputSegmentStrings) override; // throw(GEOSException);
+
+    // Declare type as noncopyable
+    IteratedNoder(IteratedNoder const&) = delete;
+    IteratedNoder& operator=(IteratedNoder const&) = delete;
 };
 
 } // namespace geos::noding

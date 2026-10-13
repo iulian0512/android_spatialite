@@ -16,12 +16,13 @@
 
 #include <geos/export.h>
 
+#include <memory>
 #include <vector>
-#include <iostream>
 
 // Forward declarations
 namespace geos {
 namespace noding {
+class PathString;
 class SegmentString;
 }
 }
@@ -40,8 +41,6 @@ namespace noding { // geos.noding
  *
  * Last port: noding/Noder.java rev. 1.8 (JTS-1.7)
  *
- * TODO: this was really an interface, we should avoid making it a Base class
- *
  */
 class GEOS_DLL Noder {
 public:
@@ -53,19 +52,24 @@ public:
      *
      * @param segStrings a collection of {@link SegmentString}s to node
      *        The caller remains responsible for releasing the memory
-     *        associated with the container and its elements.
+     *        associated with the SegmentStrings.
      */
-    virtual void computeNodes(std::vector<SegmentString*>* segStrings) = 0;
+    virtual void computeNodes(const std::vector<SegmentString*>& segStrings) = 0;
 
     /** \brief
      * Returns a collection of fully noded [SegmentStrings](@ref SegmentString).
      * The SegmentStrings have the same context as their parent.
      *
-     * @return a newly allocated std::vector of newly allocated
-     *         SegmentStrings (copies of input, if needs be).
-     *         Caller is responsible to delete container and elements.
+     * @return a std::vector of SegmentStrings (copies of input, if needs be).
+     *         Caller is responsible to delete elements of container.
+     *         This method may only be called once.
      */
-    virtual std::vector<SegmentString*>* getNodedSubstrings() const = 0;
+    virtual std::vector<std::unique_ptr<SegmentString>> getNodedSubstrings() = 0;
+
+    virtual void computePathNodes(const std::vector<PathString*>& inputPaths);
+
+    virtual std::vector<std::unique_ptr<PathString>> getNodedPaths();
+
 
     virtual
     ~Noder() {}

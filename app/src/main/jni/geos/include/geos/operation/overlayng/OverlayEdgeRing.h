@@ -28,10 +28,11 @@ class PointOnGeometryLocator;
 }
 namespace geom {
 class Coordinate;
+class CoordinateXY;
 class CoordinateSequence;
+class Curve;
 class GeometryFactory;
-class LinearRing;
-class Polygon;
+class Surface;
 }
 namespace operation {
 namespace overlayng {
@@ -44,43 +45,50 @@ namespace geos {      // geos.
 namespace operation { // geos.operation
 namespace overlayng { // geos.operation.overlayng
 
-using namespace geos::geom;
-using algorithm::locate::PointOnGeometryLocator;
-using algorithm::locate::IndexedPointInAreaLocator;
-
 class GEOS_DLL OverlayEdgeRing {
+    using Coordinate = geos::geom::Coordinate;
+    using CoordinateXY = geos::geom::CoordinateXY;
+    using CoordinateSequence = geos::geom::CoordinateSequence;
+    using GeometryFactory = geos::geom::GeometryFactory;
+    using Curve = geos::geom::Curve;
+    using Surface = geos::geom::Surface;
+    using PointOnGeometryLocator = algorithm::locate::PointOnGeometryLocator;
+    using IndexedPointInAreaLocator = algorithm::locate::IndexedPointInAreaLocator;
 
 private:
 
     // Members
     OverlayEdge* startEdge;
-    std::unique_ptr<LinearRing> ring;
+    std::unique_ptr<Curve> ring;
     bool m_isHole;
-    std::unique_ptr<IndexedPointInAreaLocator> locator;
+    mutable std::unique_ptr<PointOnGeometryLocator> locator;
     OverlayEdgeRing* shell;
     // a list of EdgeRings which are holes in this EdgeRing
     std::vector<OverlayEdgeRing*> holes;
 
     // Methods
-    void computeRingPts(OverlayEdge* start, CoordinateSequence& pts);
-    void computeRing(std::unique_ptr<CoordinateSequence> && ringPts, const GeometryFactory* geometryFactory);
+    void computeRing(OverlayEdge* start, const GeometryFactory* geometryFactory);
+    std::unique_ptr<Curve> computeRingGeometry(OverlayEdge* start, const GeometryFactory* geometryFactory) const;
 
     /**
     * Computes the list of coordinates which are contained in this ring.
     * The coordinates are computed once only and cached.
     * @return an array of the {@link Coordinate}s in this ring
     */
-    const CoordinateSequence& getCoordinates();
-    PointOnGeometryLocator* getLocator();
+    PointOnGeometryLocator* getLocator() const;
     static void closeRing(CoordinateSequence& pts);
+    bool contains(const OverlayEdgeRing& otherRing) const;
+    bool isPointInOrOut(const OverlayEdgeRing& otherRing) const;
 
 
 public:
 
     OverlayEdgeRing(OverlayEdge* start, const GeometryFactory* geometryFactory);
 
-    std::unique_ptr<LinearRing> getRing();
-    const LinearRing* getRingPtr() const;
+    std::unique_ptr<Curve> getRing();
+    const Curve* getRingPtr() const;
+
+    const geom::Envelope& getEnvelope() const;
 
     /**
     * Tests whether this ring is a hole.
@@ -111,15 +119,15 @@ public:
 
     void addHole(OverlayEdgeRing* ring);
 
-    bool isInRing(const Coordinate& pt);
+    geom::Location locate(const CoordinateXY& pt) const;
 
-    const Coordinate& getCoordinate();
+    const Coordinate& getCoordinate() const;
 
     /**
     * Computes the {@link Polygon} formed by this ring and any contained holes.
     * @return the {@link Polygon} formed by this ring and its holes.
     */
-    std::unique_ptr<Polygon> toPolygon(const GeometryFactory* factory);
+    std::unique_ptr<Surface> toSurface(const GeometryFactory* factory);
 
     OverlayEdge* getEdge();
 
@@ -141,7 +149,7 @@ public:
     * @return containing EdgeRing, if there is one
     * or null if no containing EdgeRing is found
     */
-    OverlayEdgeRing* findEdgeRingContaining(const std::vector<OverlayEdgeRing*>& erList);
+    OverlayEdgeRing* findEdgeRingContaining(const std::vector<OverlayEdgeRing*>& erList) const;
 
 
 };

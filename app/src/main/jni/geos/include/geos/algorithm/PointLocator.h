@@ -25,12 +25,16 @@
 // Forward declarations
 namespace geos {
 namespace geom {
+class CircularString;
+class CompoundCurve;
 class CoordinateXY;
+class Curve;
 class Geometry;
 class LinearRing;
 class LineString;
 class Polygon;
 class Point;
+class Surface;
 }
 }
 
@@ -96,9 +100,13 @@ private:
 
     geom::Location locate(const geom::CoordinateXY& p, const geom::LineString* l);
 
-    geom::Location locateInPolygonRing(const geom::CoordinateXY& p, const geom::LinearRing* ring);
+    geom::Location locate(const geom::CoordinateXY& p, const geom::CircularString* cs);
 
-    geom::Location locate(const geom::CoordinateXY& p, const geom::Polygon* poly);
+    geom::Location locate(const geom::CoordinateXY& p, const geom::CompoundCurve* cs);
+
+    static geom::Location locateInPolygonRing(const geom::CoordinateXY& p, const geom::Curve* ring);
+
+    static geom::Location locate(const geom::CoordinateXY& p, const geom::Surface* poly);
 
 };
 

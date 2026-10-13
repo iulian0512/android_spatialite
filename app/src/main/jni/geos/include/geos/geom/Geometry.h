@@ -34,6 +34,8 @@
 #include <geos/geom/Envelope.h>
 #include <geos/geom/Dimension.h> // for Dimension::DimensionType
 #include <geos/geom/GeometryComponentFilter.h> // for inheritance
+#include <geos/geom/CoordinateSequence.h> // to materialize CoordinateSequence
+#include <geos/util/Progress.h>
 
 #include <algorithm>
 #include <string>
@@ -49,6 +51,10 @@
 
 // Forward declarations
 namespace geos {
+namespace algorithm {
+class CurveToLineParams;
+class LineToCurveParams;
+}
 namespace geom {
 class Coordinate;
 class CoordinateFilter;
@@ -62,7 +68,6 @@ class Point;
 class IntersectionMatrix;
 }
 namespace io { // geos.io
-class Unload;
 } // namespace geos.io
 }
 
@@ -70,7 +75,7 @@ namespace geos { // geos
 namespace geom { // geos::geom
 
 /// Geometry types
-enum GeometryTypeId {
+enum GeometryTypeId : int {
     /// a point
     GEOS_POINT,
     /// a linestring
@@ -86,7 +91,12 @@ enum GeometryTypeId {
     /// a collection of polygons
     GEOS_MULTIPOLYGON,
     /// a collection of heterogeneus geometries
-    GEOS_GEOMETRYCOLLECTION
+    GEOS_GEOMETRYCOLLECTION,
+    GEOS_CIRCULARSTRING,
+    GEOS_COMPOUNDCURVE,
+    GEOS_CURVEPOLYGON,
+    GEOS_MULTICURVE,
+    GEOS_MULTISURFACE,
 };
 
 enum GeometrySortIndex {
@@ -97,7 +107,12 @@ enum GeometrySortIndex {
     SORTINDEX_MULTILINESTRING = 4,
     SORTINDEX_POLYGON = 5,
     SORTINDEX_MULTIPOLYGON = 6,
-    SORTINDEX_GEOMETRYCOLLECTION = 7
+    SORTINDEX_GEOMETRYCOLLECTION = 7,
+    SORTINDEX_CIRCULARSTRING = 8,
+    SORTINDEX_COMPOUNDCURVE = 9,
+    SORTINDEX_CURVEPOLYGON = 10,
+    SORTINDEX_MULTICURVE = 11,
+    SORTINDEX_MULTISURFACE = 12,
 };
 
 /**
@@ -259,8 +274,7 @@ public:
      *
      * @return the ID of the coordinate space in which the Geometry is defined.
      */
-    virtual int
-    getSRID() const
+    int getSRID() const
     {
         return SRID;
     }
@@ -299,11 +313,23 @@ public:
     /// Return a string representation of this Geometry type
     virtual std::string getGeometryType() const = 0; //Abstract
 
+    /// Returns whether the Geometry contains arcs
+    virtual bool hasCurvedComponents() const;
+
+    /// Returns whether the Geometry contains curved geometry types,
+    /// regardless of whether they actually contain any arcs.
+    virtual bool hasCurvedTypes() const;
+
     /// Return an integer representation of this Geometry type
     virtual GeometryTypeId getGeometryTypeId() const = 0; //Abstract
 
-    /// Returns the number of geometries in this collection
-    /// (or 1 if this is not a collection)
+    /**
+     * \brief Returns the number of geometries in this collection,
+     * or 1 if this is not a collection.
+     *
+     * Empty collection or multi-geometry types return 0,
+     * and empty simple geometry types return 1.
+     */
     virtual std::size_t
     getNumGeometries() const
     {
@@ -318,6 +344,20 @@ public:
         return this;
     }
 
+    /// Compute an approximation of the Geometry that contains no arcs.
+    /// If the Geometry already contains no arcs, a copy will be returned.
+    std::unique_ptr<Geometry> getLinearized(const algorithm::CurveToLineParams& params) const
+    {
+        return std::unique_ptr<Geometry>(getLinearizedImpl(params));
+    }
+
+    /// Attempt to replace linear sections of a geometry with arcs, where possible.
+    /// Any arcs that already exist in the Geometry will be retained unmodified.
+    std::unique_ptr<Geometry> getCurved(const algorithm::LineToCurveParams& params) const
+    {
+        return std::unique_ptr<Geometry>(getCurvedImpl(params));
+    }
+
     /**
      * \brief Tests the validity of this <code>Geometry</code>.
      *
@@ -327,7 +367,7 @@ public:
      *
      * @see IsValidOp
      */
-    virtual bool isValid() const;
+    bool isValid() const;
 
     /// Returns whether or not the set of points in this Geometry is empty.
     virtual bool isEmpty() const = 0; //Abstract
@@ -372,7 +412,9 @@ public:
         return t == GEOS_GEOMETRYCOLLECTION ||
                t == GEOS_MULTIPOINT ||
                t == GEOS_MULTILINESTRING ||
-               t == GEOS_MULTIPOLYGON;
+               t == GEOS_MULTIPOLYGON ||
+               t == GEOS_MULTICURVE ||
+               t == GEOS_MULTISURFACE;
     }
 
     static GeometryTypeId multiTypeId(GeometryTypeId typeId) {
@@ -380,6 +422,9 @@ public:
             case GEOS_POINT: return GEOS_MULTIPOINT;
             case GEOS_LINESTRING: return GEOS_MULTILINESTRING;
             case GEOS_POLYGON: return GEOS_MULTIPOLYGON;
+            case GEOS_CIRCULARSTRING:
+            case GEOS_COMPOUNDCURVE: return GEOS_MULTICURVE;
+            case GEOS_CURVEPOLYGON: return GEOS_MULTISURFACE;
             default: return typeId;
         }
     }
@@ -521,7 +566,7 @@ public:
      * Returns true if the DE-9IM intersection matrix for the two
      * Geometrys is T*F**FFF*.
      */
-    virtual bool equals(const Geometry* g) const;
+    bool equals(const Geometry* g) const;
 
     /** \brief
      * Returns <code>true</code> if this geometry covers the
@@ -593,11 +638,7 @@ public:
      * @see Geometry#within
      * @see Geometry#covers
      */
-    bool
-    coveredBy(const Geometry* g) const
-    {
-        return g->covers(this);
-    }
+    bool coveredBy(const Geometry* g) const;
 
 
     /// Returns the Well-known Text representation of this Geometry.
@@ -705,15 +746,21 @@ public:
      *   and dissolving the linework.
      * - Unioning a set of [Polygons](@ref Polygon) will always
      *   return a polygonal geometry (unlike Geometry::Union(const Geometry* other) const),
-     *   which may return geometrys of lower dimension if a topology collapse
+     *   which may return geometries of lower dimension if a topology collapse
      *   occurred.
      *
      * @return the union geometry
      *
      * @see UnaryUnionOp
      */
-    Ptr Union() const;
+    Ptr Union(geos::util::ProgressFunction* progressFunction) const;
     // throw(IllegalArgumentException *, TopologyException *);
+
+    Ptr Union() const
+    {
+        geos::util::ProgressFunction* progressFunction = nullptr;
+        return Union(progressFunction);
+    }
 
     /**
      * \brief
@@ -804,7 +851,7 @@ public:
     virtual void normalize() = 0; //Abstract
 
     /// Comparator for sorting geometry
-    virtual int compareTo(const Geometry* geom) const;
+    int compareTo(const Geometry* geom) const;
 
     /// Returns the area of this Geometry.
     virtual double getArea() const;
@@ -815,7 +862,7 @@ public:
     /** Returns the minimum distance between this Geometry and the Geometry g
      *
      * @param g the Geometry to calculate distance to
-     * @return the distance in cartesian units
+     * @return the distance in Cartesian units
      */
     virtual double distance(const Geometry* g) const;
 
@@ -868,7 +915,7 @@ public:
      * Notifies this Geometry that its Coordinates have been changed
      * by an external party (using a CoordinateFilter, for example).
      */
-    virtual void geometryChanged();
+    void geometryChanged();
 
     /**
      * \brief
@@ -883,6 +930,10 @@ protected:
 
     /// Make a geometry with coordinates in reverse order
     virtual Geometry* reverseImpl() const = 0;
+
+    virtual Geometry* getLinearizedImpl(const algorithm::CurveToLineParams&) const = 0;
+
+    virtual Geometry* getCurvedImpl(const algorithm::LineToCurveParams&) const = 0;
 
     /// Returns true if the array contains any non-empty Geometrys.
     template<typename T>
@@ -914,11 +965,34 @@ protected:
 
     virtual int compareToSameClass(const Geometry* geom) const = 0; //Abstract
 
-    int compare(std::vector<Coordinate> a, std::vector<Coordinate> b) const;
+    template<typename T>
+    static int compare(const T& a, const T& b)
+    {
+        std::size_t i = 0;
+        std::size_t j = 0;
+        while(i < a.size() && j < b.size()) {
+            const auto& aGeom = *a[i];
+            const auto& bGeom = *b[j];
 
-    int compare(std::vector<Geometry*> a, std::vector<Geometry*> b) const;
+            int comparison = aGeom.compareTo(&bGeom);
+            if(comparison != 0) {
+                return comparison;
+            }
 
-    int compare(const std::vector<std::unique_ptr<Geometry>> & a, const std::vector<std::unique_ptr<Geometry>> & b) const;
+            i++;
+            j++;
+        }
+
+        if(i < a.size()) {
+            return 1;
+        }
+
+        if(j < b.size()) {
+            return -1;
+        }
+
+        return 0;
+    }
 
     bool equal(const CoordinateXY& a, const CoordinateXY& b,
                double tolerance) const;
@@ -1010,4 +1084,3 @@ struct GeomPtrPair {
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-

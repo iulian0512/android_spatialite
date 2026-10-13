@@ -1,0 +1,161 @@
+/**********************************************************************
+ *
+ * GEOS - Geometry Engine Open Source
+ * http://geos.osgeo.org
+ *
+ * Copyright (C) 2020 Paul Ramsey <pramsey@cleverelephant.ca>
+ *
+ * This is free software; you can redistribute and/or modify it under
+ * the terms of the GNU Lesser General Public Licence as published
+ * by the Free Software Foundation.
+ * See the COPYING file for more information.
+ *
+ **********************************************************************/
+
+#pragma once
+
+#include <geos/algorithm/locate/IndexedPointInAreaLocator.h>
+#include <geos/geom/CoordinateSequence.h>
+#include <geos/geom/LinearRing.h>
+#include <geos/export.h>
+
+// Forward declarations
+namespace geos {
+namespace algorithm {
+namespace locate {
+class PointOnGeometryLocator;
+}
+}
+namespace geom {
+class Coordinate;
+class CoordinateXY;
+class CoordinateSequence;
+class Curve;
+class GeometryFactory;
+class Surface;
+}
+namespace operation {
+namespace overlayng {
+class OverlayEdge;
+}
+}
+}
+
+namespace geos {      // geos.
+namespace operation { // geos.operation
+namespace overlayng { // geos.operation.overlayng
+
+class GEOS_DLL OverlayEdgeRing {
+    using Coordinate = geos::geom::Coordinate;
+    using CoordinateXY = geos::geom::CoordinateXY;
+    using CoordinateSequence = geos::geom::CoordinateSequence;
+    using GeometryFactory = geos::geom::GeometryFactory;
+    using Curve = geos::geom::Curve;
+    using Surface = geos::geom::Surface;
+    using PointOnGeometryLocator = algorithm::locate::PointOnGeometryLocator;
+    using IndexedPointInAreaLocator = algorithm::locate::IndexedPointInAreaLocator;
+
+private:
+
+    // Members
+    OverlayEdge* startEdge;
+    std::unique_ptr<Curve> ring;
+    bool m_isHole;
+    mutable std::unique_ptr<PointOnGeometryLocator> locator;
+    OverlayEdgeRing* shell;
+    // a list of EdgeRings which are holes in this EdgeRing
+    std::vector<OverlayEdgeRing*> holes;
+
+    // Methods
+    void computeRing(OverlayEdge* start, const GeometryFactory* geometryFactory);
+    std::unique_ptr<Curve> computeRingGeometry(OverlayEdge* start, const GeometryFactory* geometryFactory) const;
+
+    /**
+    * Computes the list of coordinates which are contained in this ring.
+    * The coordinates are computed once only and cached.
+    * @return an array of the {@link Coordinate}s in this ring
+    */
+    PointOnGeometryLocator* getLocator() const;
+    static void closeRing(CoordinateSequence& pts);
+    bool contains(const OverlayEdgeRing& otherRing) const;
+    bool isPointInOrOut(const OverlayEdgeRing& otherRing) const;
+
+
+public:
+
+    OverlayEdgeRing(OverlayEdge* start, const GeometryFactory* geometryFactory);
+
+    std::unique_ptr<Curve> getRing();
+    const Curve* getRingPtr() const;
+
+    const geom::Envelope& getEnvelope() const;
+
+    /**
+    * Tests whether this ring is a hole.
+    * @return <code>true</code> if this ring is a hole
+    */
+    bool isHole() const;
+
+    /**
+    * Sets the containing shell ring of a ring that has been determined to be a hole.
+    *
+    * @param shell the shell ring
+    */
+    void setShell(OverlayEdgeRing* p_shell);
+
+    /**
+    * Tests whether this ring has a shell assigned to it.
+    *
+    * @return true if the ring has a shell
+    */
+    bool hasShell() const;
+
+    /**
+    * Gets the shell for this ring.  The shell is the ring itself if it is not a hole, otherwise its parent shell.
+    *
+    * @return the shell for this ring
+    */
+    const OverlayEdgeRing* getShell() const;
+
+    void addHole(OverlayEdgeRing* ring);
+
+    geom::Location locate(const CoordinateXY& pt) const;
+
+    const Coordinate& getCoordinate() const;
+
+    /**
+    * Computes the {@link Polygon} formed by this ring and any contained holes.
+    * @return the {@link Polygon} formed by this ring and its holes.
+    */
+    std::unique_ptr<Surface> toSurface(const GeometryFactory* factory);
+
+    OverlayEdge* getEdge();
+
+    /**
+    * Finds the innermost enclosing shell OverlayEdgeRing
+    * containing this OverlayEdgeRing, if any.
+    * The innermost enclosing ring is the smallest enclosing ring.
+    * The algorithm used depends on the fact that:
+    *  ring A contains ring B iff envelope(ring A) contains envelope(ring B)
+    *
+    * This routine is only safe to use if the chosen point of the hole
+    * is known to be properly contained in a shell
+    * (which is guaranteed to be the case if the hole does not touch its shell)
+    *
+    * To improve performance of this function the caller should
+    * make the passed shellList as small as possible (e.g.
+    * by using a spatial index filter beforehand).
+    *
+    * @return containing EdgeRing, if there is one
+    * or null if no containing EdgeRing is found
+    */
+    OverlayEdgeRing* findEdgeRingContaining(const std::vector<OverlayEdgeRing*>& erList) const;
+
+
+};
+
+
+} // namespace geos.operation.overlayng
+} // namespace geos.operation
+} // namespace geos
+

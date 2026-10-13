@@ -62,6 +62,13 @@ public:
      */
     static const int INSIDE_AREA = -1;
 
+    GeometryLocation() :
+        component(nullptr),
+        segIndex(0),
+        inside_area(false),
+        pt()
+    {}
+
     /** \brief
      * Constructs a GeometryLocation specifying a point on a geometry,
      * as well as the segment that the point is on (or INSIDE_AREA if
@@ -87,7 +94,7 @@ public:
     /**
      * Returns the geometry component on (or in) which this location occurs.
      */
-    const geom::Geometry* getGeometryComponent();
+    const geom::Geometry* getGeometryComponent() const;
 
     /**
      * Returns the segment index for this location.
@@ -97,20 +104,20 @@ public:
      *
      * @return the segment index for the location, or INSIDE_AREA
      */
-    std::size_t getSegmentIndex();
+    std::size_t getSegmentIndex() const;
 
     /**
      * Returns the geom::Coordinate of this location.
      */
-    geom::CoordinateXY& getCoordinate();
+    const geom::CoordinateXY& getCoordinate() const;
 
     /** \brief
      * Tests whether this location represents a point
      * inside an area geometry.
      */
-    bool isInsideArea();
+    bool isInsideArea() const;
 
-    std::string toString();
+    std::string toString() const;
 };
 
 } // namespace geos::operation::distance

@@ -1,0 +1,86 @@
+### This file must contain only (crs_src, crs_dst) tuples where the best transformation
+### DOES involve the use a grid/json/etc. resource file
+### Otherwise use epsg_no_grid.gie
+
+<gie-strict>
+
+###################################
+#### Generic / worldwide scope ####
+###################################
+
+# Test EGM2008 grid
+crs_src         EPSG:4979       # WGS 84 geographic 3D
+crs_dst         EPSG:9518       # WGS 84 + EGM2008
+tolerance       0.1 mm
+require_grid    us_nga_egm08_25.tif
+
+accept          55.0            12.0            10.0
+expect          55.0            12.0            -27.8257
+
+#################
+#### Belgium ####
+#################
+## contact: gdoc (at) ngi.be
+
+#### planar (old) ####
+crs_src         EPSG:31370      # BD72 / Belgian Lambert 72
+crs_dst         EPSG:3812       # ETRS89-BEL [BEREF2002] / Belgian Lambert 2008
+tolerance       0.1 mm
+require_grid    be_ign_bd72lb72_etrs89lb08.tif
+
+accept          149186.41       170810.74
+expect          649186.03701863 670811.16949360
+
+#### planar (new) ####
+crs_src         EPSG:31370      # BD72 / Belgian Lambert 72
+crs_dst         EPSG:11219      # ETRS89-BEL [BEREF2011] / Belgian Lambert 2008
+tolerance       0.1 mm
+require_grid    be_ign_bd72lb72_etrs89lb08.tif
+
+accept          149186.41       170810.74
+expect          649186.03701863 670811.16949360
+
+#### heights (new) ####
+crs_src         EPSG:11214      # ETRS89-BEL [BEREF2011]
+crs_dst         EPSG:11512      # ETRS89-BEL [BEREF2011] / Ostend heights
+tolerance       0.1 mm
+require_grid    be_ign_hBG18.tif
+
+accept          50.22054332  4.663484651  354.6988105
+expect          50.22054332  4.663484651  310.9250
+
+#### heights (old) ####
+crs_src         EPSG:4937     # ETRS89
+crs_dst         EPSG:9907     # ETRS89 / Ostend heights
+tolerance       0.1 mm
+require_grid    be_ign_hBG18.tif
+
+accept          50.22054332  4.663484651  354.6988105
+expect          50.22054332  4.663484651  310.9250
+
+
+###################
+#### Catalonia ####
+###################
+
+crs_src         EPSG:4230      # ED50
+crs_dst         EPSG:4258      # ETRS89
+tolerance       0.1 mm
+require_grid    es_cat_icgc_100800401.tif
+
+accept          41.4         2.17
+expect          41.398875399 2.168850772
+
+################
+#### France ####
+################
+
+crs_src         EPSG:9785       # RGF93 v2b + NGF-IGN69 height
+crs_dst         EPSG:9781       # RGF93 v2b geographic 3D
+tolerance       0.1 mm
+require_grid    fr_ign_RAF20.tif
+
+accept          43.6109         3.8761          0.0
+expect          43.6109         3.8761          49.6904
+
+</gie-strict>

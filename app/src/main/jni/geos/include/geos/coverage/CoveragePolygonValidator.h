@@ -17,6 +17,7 @@
 #include <geos/noding/BasicSegmentString.h>
 #include <geos/geom/LineSegment.h>
 #include <geos/algorithm/locate/IndexedPointInAreaLocator.h>
+#include <geos/coverage/CoveragePolygon.h>
 #include <geos/coverage/CoverageRing.h>
 
 #include <unordered_map>
@@ -32,12 +33,6 @@ class GeometryFactory;
 }
 }
 
-using geos::geom::Coordinate;
-using geos::geom::Envelope;
-using geos::geom::Geometry;
-using geos::geom::GeometryFactory;
-using geos::geom::LineSegment;
-using geos::algorithm::locate::IndexedPointInAreaLocator;
 
 namespace geos {      // geos
 namespace coverage { // geos::coverage
@@ -95,6 +90,15 @@ namespace coverage { // geos::coverage
  *
  */
 class GEOS_DLL CoveragePolygonValidator {
+    using Coordinate = geos::geom::Coordinate;
+    using CoordinateSequence = geos::geom::CoordinateSequence;
+    using Envelope = geos::geom::Envelope;
+    using Polygon = geos::geom::Polygon;
+    using LinearRing = geos::geom::LinearRing;
+    using Geometry = geos::geom::Geometry;
+    using GeometryFactory = geos::geom::GeometryFactory;
+    using LineSegment = geos::geom::LineSegment;
+    using IndexedPointInAreaLocator = geos::algorithm::locate::IndexedPointInAreaLocator;
 
 private:
 
@@ -195,13 +199,11 @@ private:
     // Members
     const Geometry* targetGeom;
     std::vector<const Geometry*> adjGeoms;
-    std::vector<const Polygon*> m_adjPolygons;
+    //std::vector<const Polygon*> m_adjPolygons;
     const GeometryFactory* geomFactory;
     double gapWidth = 0.0;
-    std::map<std::size_t, std::unique_ptr<IndexedPointInAreaLocator>> adjPolygonLocators;
-    // std::vector<std::unique_ptr<CoverageRing>> coverageRingStore;
+    std::vector<std::unique_ptr<CoveragePolygon>> m_adjCovPolygons;
     std::deque<CoverageRing> coverageRingStore;
-    std::vector<std::unique_ptr<CoordinateSequence>> localCoordinateSequences;
     std::deque<CoverageRingSegment> coverageRingSegmentStore;
 
     typedef std::unordered_map<CoverageRingSegment*, CoverageRingSegment*, CoverageRingSegment::CoverageRingSegHash, CoverageRingSegment::CoverageRingSegEq> CoverageRingSegmentMap;
@@ -273,6 +275,8 @@ public:
 
 private:
 
+    static std::vector<std::unique_ptr<CoveragePolygon>> 
+        toCoveragePolygons(const std::vector<const Polygon*> polygons);
     static std::vector<const Polygon*> extractPolygons(std::vector<const Geometry*>& geoms);
 
     /* private */
@@ -336,33 +340,25 @@ private:
     * to an adjacent polygon.
     *
     * @param targetRings the rings with segments to test
-    * @param adjPolygons the adjacent polygons
+    * @param adjCovPolygons the adjacent polygons
     */
     void markInvalidInteriorSegments(
         std::vector<CoverageRing*>& targetRings,
-        std::vector<const Polygon*>& adjPolygons);
+        std::vector<std::unique_ptr<CoveragePolygon>>& adjCovPolygons);
+
+    void markInvalidInteriorSection(
+        CoverageRing& ring,
+        std::size_t iStart, 
+        std::size_t iEnd, 
+        std::vector<std::unique_ptr<CoveragePolygon>>& adjCovPolygons );
+
+    void markInvalidInteriorSegment(
+        CoverageRing& ring, std::size_t i, CoveragePolygon* adjPoly);
 
     void checkTargetRings(
         std::vector<CoverageRing*>& targetRings,
         std::vector<CoverageRing*>& adjRngs,
         const Envelope& targetEnv);
-
-    /**
-    * Tests if a coordinate is in the interior of some adjacent polygon.
-    * Uses the cached Point-In-Polygon indexed locators, for performance.
-    *
-    * @param p the coordinate to test
-    * @param adjPolygons the list of polygons
-    * @return true if the point is in the interior
-    */
-    bool isInteriorVertex(const Coordinate& p,
-        std::vector<const Polygon*>& adjPolygons);
-
-
-    bool polygonContainsPoint(std::size_t index,
-        const Polygon* poly, const Coordinate& pt);
-
-    IndexedPointInAreaLocator* getLocator(std::size_t index, const Polygon* poly);
 
     std::unique_ptr<Geometry> createInvalidLines(std::vector<CoverageRing*>& rings);
 

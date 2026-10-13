@@ -1,6 +1,6 @@
 #! /bin/bash
 # Generated automatically by config.status (libspatialite) 5.1.0
-# Libtool was configured on host iulian-ubuntu:
+# Libtool was configured on host desktop-pc:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 
 # Provide generalized library-building support services.
@@ -42,7 +42,7 @@ macro_version=2.4.6
 macro_revision=2.4.6
 
 # Assembler program.
-AS="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang"
+AS="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang"
 
 # DLL creation program.
 DLLTOOL="false"
@@ -145,7 +145,7 @@ want_nocaseglob="no"
 sharedlib_from_linklib_cmd="printf %s\\n"
 
 # The archiver.
-AR="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+AR="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
 
 # Flags to create an archive.
 AR_FLAGS="cru"
@@ -154,10 +154,10 @@ AR_FLAGS="cru"
 archiver_list_spec="@"
 
 # A symbol stripping program.
-STRIP="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
+STRIP="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
 
 # Commands used to install an old-style archive.
-RANLIB="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib"
+RANLIB="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib"
 old_postinstall_cmds="chmod 644 \$oldlib~\$RANLIB \$tool_oldlib"
 old_postuninstall_cmds=""
 
@@ -165,10 +165,10 @@ old_postuninstall_cmds=""
 lock_old_archive_extraction=no
 
 # A C compiler.
-LTCC="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang"
+LTCC="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang"
 
 # LTCC compiler flags.
-LTCFLAGS=" -I/home/iulian/github/android_spatialite/static_libs/geos-3.12.0/build/include -I/home/iulian/github/android_spatialite/static_libs/libiconv-1.17/build/include -I/home/iulian/github/android_spatialite/static_libs/librttopo-1.1.0/build/include -I/home/iulian/github/android_spatialite/static_libs/proj-9.2.1/build/include -I/home/iulian/github/android_spatialite/static_libs/sqlite-amalgamation-3430200 -I/home/iulian/github/android_spatialite/static_libs/icu73.2/build/android/x86_64/include -frtti -fexceptions -fPIC"
+LTCFLAGS=" -I/root/as/static_libs/geos-3.15.0/build/include -I/root/as/static_libs/libiconv-1.19/build/include -I/root/as/static_libs/librttopo-1.1.0/build/include -I/root/as/static_libs/proj-9.9.0/build/include -I/root/as/static_libs/sqlite-amalgamation-3540000 -I/root/as/static_libs/icu78.3/build/android/x86_64/include -frtti -fexceptions -fPIC"
 
 # Take the output of nm and produce a listing of raw symbols and C names.
 global_symbol_pipe="sed -n -e 's/^.*[	 ]\\([ABCDGIRSTW][ABCDGIRSTW]*\\)[	 ][	 ]*\\([_A-Za-z][_A-Za-z0-9]*\\)\$/\\1 \\2 \\2/p' | sed '/ __gnu_lto/d'"
@@ -285,10 +285,10 @@ finish_eval=""
 hardcode_into_libs=yes
 
 # Compile-time system search path for libraries.
-sys_lib_search_path_spec="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/lib/clang/21 /home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/lib/clang/21/lib/linux/x86_64 /home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/x86_64-linux-android/21 /home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/x86_64-linux-android /home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib "
+sys_lib_search_path_spec="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/lib/clang/21 /opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/lib/clang/21/lib/linux/x86_64 /opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/x86_64-linux-android/21 /opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/x86_64-linux-android /opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib "
 
 # Detected run-time system search path for libraries.
-sys_lib_dlsearch_path_spec="/lib64 /usr/lib64 /lib /usr/lib /usr/lib/x86_64-linux-gnu/libfakeroot /usr/local/lib/i386-linux-gnu /lib/i386-linux-gnu /usr/lib/i386-linux-gnu /usr/local/lib/i686-linux-gnu /lib/i686-linux-gnu /usr/lib/i686-linux-gnu /usr/local/lib /usr/local/lib/x86_64-linux-gnu /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu /lib32 /usr/lib32 "
+sys_lib_dlsearch_path_spec="/lib64 /usr/lib64 /lib /usr/lib /usr/lib/x86_64-linux-gnu/libfakeroot /usr/lib/wsl/lib /usr/local/lib /usr/local/lib/x86_64-linux-gnu /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu "
 
 # Explicit LT_SYS_LIBRARY_PATH set during ./configure time.
 configure_time_lt_sys_library_path=""
@@ -303,12 +303,12 @@ dlopen_self=unknown
 dlopen_self_static=unknown
 
 # Commands to strip libraries.
-old_striplib="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip --strip-debug"
-striplib="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip --strip-unneeded"
+old_striplib="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip --strip-debug"
+striplib="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip --strip-unneeded"
 
 
 # The linker used to build libraries.
-LD="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/ld"
+LD="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/ld"
 
 # How to create reloadable object files.
 reload_flag=" -r"
@@ -318,7 +318,7 @@ reload_cmds="\$LD\$reload_flag -o \$output\$reload_objs"
 old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs~\$RANLIB \$tool_oldlib"
 
 # A language specific compiler.
-CC="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang"
+CC="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang"
 
 # Is the compiler the GNU compiler?
 with_gcc=yes
@@ -11657,7 +11657,7 @@ build_old_libs=`case $build_libtool_libs in yes) echo no;; *) echo yes;; esac`
 # ### BEGIN LIBTOOL TAG CONFIG: CXX
 
 # The linker used to build libraries.
-LD="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/ld"
+LD="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/ld"
 
 # How to create reloadable object files.
 reload_flag=" -r"
@@ -11667,7 +11667,7 @@ reload_cmds="\$LD\$reload_flag -o \$output\$reload_objs"
 old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs~\$RANLIB \$tool_oldlib"
 
 # A language specific compiler.
-CC="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang++"
+CC="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang++"
 
 # Is the compiler the GNU compiler?
 with_gcc=yes
@@ -11788,17 +11788,17 @@ file_list_spec=""
 hardcode_action=immediate
 
 # The directories searched by this compiler when creating a shared library.
-compiler_lib_search_dirs="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/lib/clang/21/lib/linux/x86_64 /home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib/x86_64-linux-android/21 /home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib/x86_64-linux-android /home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib"
+compiler_lib_search_dirs="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/lib/clang/21/lib/linux/x86_64 /opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib/x86_64-linux-android/21 /opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib/x86_64-linux-android /opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib"
 
 # Dependencies to place before and after the objects being linked to
 # create a shared library.
-predep_objects="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib/x86_64-linux-android/21/crtbegin_so.o"
-postdep_objects="/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib/x86_64-linux-android/21/crtend_so.o"
+predep_objects="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib/x86_64-linux-android/21/crtbegin_so.o"
+postdep_objects="/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib/x86_64-linux-android/21/crtend_so.o"
 predeps=""
 postdeps="-lc++ -lm -l:libunwind.a -ldl -lc -l:libunwind.a -ldl"
 
 # The library search path used internally by the compiler when linking
 # a shared library.
-compiler_lib_search_path="-L/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/lib/clang/21/lib/linux/x86_64 -L/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib/x86_64-linux-android/21 -L/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib/x86_64-linux-android -L/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib"
+compiler_lib_search_path="-L/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/lib/clang/21/lib/linux/x86_64 -L/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib/x86_64-linux-android/21 -L/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib/x86_64-linux-android -L/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/../sysroot/usr/lib"
 
 # ### END LIBTOOL TAG CONFIG: CXX

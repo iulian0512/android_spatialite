@@ -101,9 +101,9 @@ public:
     /// FIXME: refactor memory management of this
     ///
     void
-    getCoordinates(std::vector<geom::CoordinateSequence*>& to)
+    getCoordinates(std::vector<std::unique_ptr<geom::CoordinateSequence>>& to)
     {
-        to.push_back(segList.getCoordinates());
+        to.emplace_back(segList.getCoordinates());
     }
 
     std::unique_ptr<geom::CoordinateSequence>
@@ -144,7 +144,8 @@ public:
     /// Add an end cap around point p1, terminating a line segment
     /// coming from p0
     void addLineEndCap(const geom::Coordinate& p0,
-                       const geom::Coordinate& p1);
+                       const geom::Coordinate& p1,
+                       const geom::Coordinate& p2);
 
     void
     addSegments(const geom::CoordinateSequence& pts, bool isForward)

@@ -19,6 +19,7 @@
 #include <vector>
 #include <memory>
 #include <geos/export.h>
+#include <geos/util/Progress.h>
 
 
 namespace geos {
@@ -31,13 +32,6 @@ namespace coverage {
 class CoverageEdge;
 }
 }
-
-
-using geos::coverage::CoverageEdge;
-using geos::geom::Geometry;
-using geos::geom::GeometryFactory;
-using geos::geom::MultiLineString;
-
 
 namespace geos {
 namespace coverage { // geos::coverage
@@ -74,7 +68,10 @@ namespace coverage { // geos::coverage
  * @author Martin Davis
  */
 class GEOS_DLL CoverageSimplifier {
-
+    using CoverageEdge = geos::coverage::CoverageEdge;
+    using Geometry = geos::geom::Geometry;
+    using GeometryFactory = geos::geom::GeometryFactory;
+    using MultiLineString = geos::geom::MultiLineString;
 
 public:
 
@@ -83,7 +80,7 @@ public:
     *
     * @param coverage a set of polygonal geometries forming a coverage
     */
-    CoverageSimplifier(std::vector<const Geometry*>& coverage);
+    CoverageSimplifier(const std::vector<const Geometry*>& coverage);
 
     /**
     * Simplifies the boundaries of a set of polygonal geometries forming a coverage,
@@ -91,15 +88,18 @@ public:
     *
     * @param coverage a set of polygonal geometries forming a coverage
     * @param tolerance the simplification tolerance
+    * @param progressFunction Progress function, or nullptr.
     * @return the simplified polygons
     */
     static std::vector<std::unique_ptr<Geometry>> simplify(
         std::vector<const Geometry*>& coverage,
-        double tolerance);
+        double tolerance,
+        geos::util::ProgressFunction* progressFunction = nullptr);
 
     static std::vector<std::unique_ptr<Geometry>> simplify(
         const std::vector<std::unique_ptr<Geometry>>& coverage,
-        double tolerance);
+        double tolerance,
+        geos::util::ProgressFunction* progressFunction = nullptr);
 
     /**
     * Simplifies the inner boundaries of a set of polygonal geometries forming a coverage,
@@ -108,24 +108,28 @@ public:
     *
     * @param coverage a set of polygonal geometries forming a coverage
     * @param tolerance the simplification tolerance
+    * @param progressFunction Progress function, or nullptr.
     * @return the simplified polygons
     */
     static std::vector<std::unique_ptr<Geometry>> simplifyInner(
         std::vector<const Geometry*>& coverage,
-        double tolerance);
+        double tolerance,
+        geos::util::ProgressFunction* progressFunction);
 
     static std::vector<std::unique_ptr<Geometry>> simplifyInner(
         const std::vector<std::unique_ptr<Geometry>>& coverage,
-        double tolerance);
+        double tolerance,
+        geos::util::ProgressFunction* progressFunction);
 
     /**
     * Computes the simplified coverage, preserving the coverage topology.
     *
     * @param tolerance the simplification tolerance
+    * @param progressFunction Progress function, or nullptr.
     * @return the simplified polygons
     */
     std::vector<std::unique_ptr<Geometry>> simplify(
-        double tolerance);
+        double tolerance, geos::util::ProgressFunction* progressFunction);
 
     /**
     * Computes the inner-boundary simplified coverage,
@@ -133,23 +137,25 @@ public:
     * and leaving outer boundary edges unchanged.
     *
     * @param tolerance the simplification tolerance
+    * @param progressFunction Progress function, or nullptr.
     * @return the simplified polygons
     */
     std::vector<std::unique_ptr<Geometry>> simplifyInner(
-        double tolerance);
+        double tolerance, geos::util::ProgressFunction* progressFunction);
 
 
 private:
 
     // Members
-    std::vector<const Geometry*>& m_input; // TODO? make this const
+    const std::vector<const Geometry*>& m_input;
     const GeometryFactory* m_geomFactory;
 
     // Methods
     void simplifyEdges(
         std::vector<CoverageEdge*> edges,
         const MultiLineString* constraints,
-        double tolerance);
+        double tolerance,
+        geos::util::ProgressFunction* progressFunction);
 
     void setCoordinates(
         std::vector<CoverageEdge*>& edges,

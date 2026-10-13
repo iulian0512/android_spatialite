@@ -26,7 +26,7 @@
 // Forward declarations
 namespace geos {
 namespace geom {
-class LineString;
+class SimpleCurve;
 }
 }
 
@@ -42,14 +42,14 @@ namespace polygonize { // geos::operation::polygonize
 class GEOS_DLL PolygonizeEdge: public planargraph::Edge {
 private:
     // Externally owned
-    const geom::LineString* line;
+    const geom::SimpleCurve* line;
 public:
 
     // Keep the given pointer (won't do anything to it)
-    PolygonizeEdge(const geom::LineString* newLine);
+    PolygonizeEdge(const geom::SimpleCurve* newLine);
 
     // Just return what it was given initially
-    const geom::LineString* getLine();
+    const geom::SimpleCurve* getLine() const;
 };
 
 } // namespace geos::operation::polygonize

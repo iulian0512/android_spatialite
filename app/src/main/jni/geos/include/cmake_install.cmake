@@ -1,8 +1,8 @@
-# Install script for directory: /home/iulian/github/android_spatialite/static_libs/geos-3.12.0/include
+# Install script for directory: /root/as/static_libs/geos-3.15.0/include
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/iulian/github/android_spatialite/static_libs/geos-3.12.0/build")
+  set(CMAKE_INSTALL_PREFIX "/root/as/static_libs/geos-3.15.0/build")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -39,6 +39,6 @@ endif()
 
 # Set default install directory permissions.
 if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "/home/iulian/Android/Sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-objdump")
+  set(CMAKE_OBJDUMP "/opt/ndk/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-objdump")
 endif()
 

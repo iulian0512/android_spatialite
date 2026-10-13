@@ -77,6 +77,9 @@
     "Lambert Conic Conformal (2SP Michigan)"
 #define EPSG_CODE_METHOD_LAMBERT_CONIC_CONFORMAL_2SP_MICHIGAN 1051
 
+#define EPSG_NAME_METHOD_AZIMUTHAL_EQUIDISTANT "Azimuthal Equidistant"
+#define EPSG_CODE_METHOD_AZIMUTHAL_EQUIDISTANT 1125
+
 #define EPSG_NAME_METHOD_MODIFIED_AZIMUTHAL_EQUIDISTANT                        \
     "Modified Azimuthal Equidistant"
 #define EPSG_CODE_METHOD_MODIFIED_AZIMUTHAL_EQUIDISTANT 9832
@@ -104,6 +107,9 @@
 #define EPSG_CODE_METHOD_HYPERBOLIC_CASSINI_SOLDNER 9833
 
 #define PROJ_WKT2_NAME_METHOD_EQUIDISTANT_CONIC "Equidistant Conic"
+
+#define EPSG_NAME_METHOD_EQUIDISTANT_CONIC "Equidistant Conic"
+#define EPSG_CODE_METHOD_EQUIDISTANT_CONIC 1119
 
 #define PROJ_WKT2_NAME_METHOD_ECKERT_I "Eckert I"
 
@@ -167,6 +173,13 @@
 #define EPSG_NAME_METHOD_KROVAK "Krovak"
 #define EPSG_CODE_METHOD_KROVAK 9819
 
+#define EPSG_NAME_METHOD_KROVAK_MODIFIED "Krovak Modified"
+#define EPSG_CODE_METHOD_KROVAK_MODIFIED 1042
+
+#define EPSG_NAME_METHOD_KROVAK_MODIFIED_NORTH_ORIENTED                        \
+    "Krovak Modified (North Orientated)"
+#define EPSG_CODE_METHOD_KROVAK_MODIFIED_NORTH_ORIENTED 1043
+
 #define EPSG_NAME_METHOD_LAMBERT_AZIMUTHAL_EQUAL_AREA                          \
     "Lambert Azimuthal Equal Area"
 #define EPSG_CODE_METHOD_LAMBERT_AZIMUTHAL_EQUAL_AREA 9820
@@ -187,6 +200,9 @@
     "Popular Visualisation Pseudo Mercator"
 #define EPSG_CODE_METHOD_POPULAR_VISUALISATION_PSEUDO_MERCATOR 1024
 
+#define EPSG_NAME_METHOD_MERCATOR_SPHERICAL "Mercator (Spherical)"
+#define EPSG_CODE_METHOD_MERCATOR_SPHERICAL 1026
+
 #define PROJ_WKT2_NAME_METHOD_MOLLWEIDE "Mollweide"
 
 #define PROJ_WKT2_NAME_METHOD_NATURAL_EARTH "Natural Earth"
@@ -197,6 +213,9 @@
 
 #define EPSG_NAME_METHOD_ORTHOGRAPHIC "Orthographic"
 #define EPSG_CODE_METHOD_ORTHOGRAPHIC 9840
+
+#define EPSG_NAME_METHOD_LOCAL_ORTHOGRAPHIC "Local Orthographic"
+#define EPSG_CODE_METHOD_LOCAL_ORTHOGRAPHIC 1130
 
 #define PROJ_WKT2_NAME_ORTHOGRAPHIC_SPHERICAL "Orthographic (Spherical)"
 
@@ -262,6 +281,10 @@
 #define PROJ_WKT2_NAME_METHOD_PEIRCE_QUINCUNCIAL_DIAMOND                       \
     "Peirce Quincuncial (Diamond)"
 
+#define EPSG_NAME_METHOD_TRANSVERSE_MERCATOR_ZONED_GRID_SYSTEM                 \
+    "Transverse Mercator Zoned Grid System"
+#define EPSG_CODE_METHOD_TRANSVERSE_MERCATOR_ZONED_GRID_SYSTEM 9824
+
 /* ------------------------------------------------------------------------ */
 
 /* Projection parameters */
@@ -295,16 +318,28 @@
     "Longitude of projection centre"
 #define EPSG_CODE_PARAMETER_LONGITUDE_PROJECTION_CENTRE 8812
 
+// Before EPSG 11.015
 #define EPSG_NAME_PARAMETER_AZIMUTH_INITIAL_LINE "Azimuth of initial line"
 #define EPSG_CODE_PARAMETER_AZIMUTH_INITIAL_LINE 8813
+
+// Since EPSG 11.015
+#define EPSG_NAME_PARAMETER_AZIMUTH_PROJECTION_CENTRE                          \
+    "Azimuth at projection centre"
+#define EPSG_CODE_PARAMETER_AZIMUTH_PROJECTION_CENTRE 8813
 
 #define EPSG_NAME_PARAMETER_ANGLE_RECTIFIED_TO_SKEW_GRID                       \
     "Angle from Rectified to Skew Grid"
 #define EPSG_CODE_PARAMETER_ANGLE_RECTIFIED_TO_SKEW_GRID 8814
 
+// Before EPSG 11.015
 #define EPSG_NAME_PARAMETER_SCALE_FACTOR_INITIAL_LINE                          \
     "Scale factor on initial line"
 #define EPSG_CODE_PARAMETER_SCALE_FACTOR_INITIAL_LINE 8815
+
+// Since EPSG 11.015
+#define EPSG_NAME_PARAMETER_SCALE_FACTOR_PROJECTION_CENTRE                     \
+    "Scale factor at projection centre"
+#define EPSG_CODE_PARAMETER_SCALE_FACTOR_PROJECTION_CENTRE 8815
 
 #define EPSG_NAME_PARAMETER_EASTING_PROJECTION_CENTRE                          \
     "Easting at projection centre"
@@ -371,6 +406,12 @@
     "Projection plane origin height"
 #define EPSG_CODE_PARAMETER_PROJECTION_PLANE_ORIGIN_HEIGHT 1039
 
+#define EPSG_NAME_PARAMETER_INITIAL_LONGITUDE "Initial longitude"
+#define EPSG_CODE_PARAMETER_INITIAL_LONGITUDE 8830
+
+#define EPSG_NAME_PARAMETER_ZONE_WIDTH "Zone width"
+#define EPSG_CODE_PARAMETER_ZONE_WIDTH 8831
+
 /* ------------------------------------------------------------------------ */
 
 /* Other conversions and transformations */
@@ -379,13 +420,29 @@
     "Coordinate Frame rotation (geocentric domain)"
 #define EPSG_CODE_METHOD_COORDINATE_FRAME_GEOCENTRIC 1032
 
+#define EPSG_NAME_METHOD_COORDINATE_FRAME_FULL_MATRIX_GEOCENTRIC               \
+    "Coordinate Frame rotation full matrix (geocen)"
+#define EPSG_CODE_METHOD_COORDINATE_FRAME_FULL_MATRIX_GEOCENTRIC 1132
+
 #define EPSG_NAME_METHOD_COORDINATE_FRAME_GEOGRAPHIC_2D                        \
     "Coordinate Frame rotation (geog2D domain)"
 #define EPSG_CODE_METHOD_COORDINATE_FRAME_GEOGRAPHIC_2D 9607
 
+#define EPSG_NAME_METHOD_COORDINATE_FRAME_FULL_MATRIX_GEOGRAPHIC_2D            \
+    "Coordinate Frame rotation full matrix (geog2D)"
+#define EPSG_CODE_METHOD_COORDINATE_FRAME_FULL_MATRIX_GEOGRAPHIC_2D 1133
+
+#define EPSG_NAME_METHOD_COORDINATE_FRAME_FULL_MATRIX_GEOGRAPHIC_3D            \
+    "Coordinate Frame rotation full matrix (geog3D)"
+#define EPSG_CODE_METHOD_COORDINATE_FRAME_FULL_MATRIX_GEOGRAPHIC_3D 1140
+
 #define EPSG_NAME_METHOD_COORDINATE_FRAME_GEOGRAPHIC_3D                        \
     "Coordinate Frame rotation (geog3D domain)"
 #define EPSG_CODE_METHOD_COORDINATE_FRAME_GEOGRAPHIC_3D 1038
+
+#define EPSG_NAME_METHOD_COORDINATE_FRAME_GEOG3D_TO_COMPOUND                   \
+    "Coordinate Frame rotation (geog3D to compound)"
+#define EPSG_CODE_METHOD_COORDINATE_FRAME_GEOG3D_TO_COMPOUND 1149
 
 #define EPSG_NAME_METHOD_POSITION_VECTOR_GEOCENTRIC                            \
     "Position Vector transformation (geocentric domain)"
@@ -561,9 +618,15 @@
     "Geoid (height correction) model file"
 #define EPSG_CODE_PARAMETER_GEOID_CORRECTION_FILENAME 8666
 
+/* Before EPSG 12.019 */
 #define EPSG_NAME_METHOD_GEOCENTRIC_TRANSLATION_BY_GRID_INTERPOLATION_IGN      \
     "Geocentric translation by Grid Interpolation (IGN)"
 #define EPSG_CODE_METHOD_GEOCENTRIC_TRANSLATION_BY_GRID_INTERPOLATION_IGN 1087
+
+/* Since EPSG 12.019 */
+#define EPSG_NAME_METHOD_GEOCENTRIC_TRANSLATIONS_GEOG2D_DOMAIN_BY_GRID_IGN     \
+    "Geocentric translations (geog2D domain) by grid (IGN)"
+#define EPSG_CODE_METHOD_GEOCENTRIC_TRANSLATIONS_GEOG2D_DOMAIN_BY_GRID_IGN 1087
 
 #define EPSG_CODE_PARAMETER_GEOCENTRIC_TRANSLATION_FILE 8727
 #define EPSG_NAME_PARAMETER_GEOCENTRIC_TRANSLATION_FILE                        \
@@ -572,6 +635,99 @@
 #define EPSG_NAME_PARAMETER_EPSG_CODE_FOR_INTERPOLATION_CRS                    \
     "EPSG code for Interpolation CRS"
 #define EPSG_CODE_PARAMETER_EPSG_CODE_FOR_INTERPOLATION_CRS 1048
+
+/* ------------------------------------------------------------------------ */
+
+#define EPSG_NAME_METHOD_POINT_MOTION_BY_GRID_CANADA_NTV2_VEL                  \
+    "Point motion by grid (Canada NTv2_Vel)"
+#define EPSG_CODE_METHOD_POINT_MOTION_BY_GRID_CANADA_NTV2_VEL 1070
+
+// Before EPSG 12.019
+#define EPSG_NAME_METHOD_POINT_MOTION_BY_GRID_CANADA_NEU_DOMAIN_NTV2_VEL       \
+    "Point motion by grid (NEU domain) (NTv2_Vel)"
+#define EPSG_CODE_METHOD_POINT_MOTION_BY_GRID_CANADA_NEU_DOMAIN_NTV2_VEL 1141
+
+// Since EPSG 12.019
+#define EPSG_NAME_METHOD_POINT_MOTION_GEOG3D_DOMAIN_USING_NEU_VELOCITY_GRID_NTV2_VEL \
+    "Point motion (geog3D domain) using NEU velocity grid (NTv2_Vel)"
+#define EPSG_CODE_METHOD_POINT_MOTION_GEOG3D_DOMAIN_USING_NEU_VELOCITY_GRID_NTV2_VEL \
+    1141
+
+#define EPSG_CODE_PARAMETER_POINT_MOTION_VELOCITY_GRID_FILE 1050
+#define EPSG_NAME_PARAMETER_POINT_MOTION_VELOCITY_GRID_FILE                    \
+    "Point motion velocity grid file"
+
+#define EPSG_CODE_METHOD_POINT_MOTION_GEOCEN_DOMAIN_USING_NEU_VELOCITY_GRID_GRAVSOFT \
+    1139
+#define EPSG_NAME_METHOD_POINT_MOTION_GEOCEN_DOMAIN_USING_NEU_VELOCITY_GRID_GRAVSOFT \
+    "Point motion (geocen domain) using NEU velocity grid (Gravsoft)"
+
+#define EPSG_CODE_PARAMETER_POINT_MOTION_VELOCITY_NORTH_GRID_FILE 1072
+#define EPSG_NAME_PARAMETER_POINT_MOTION_VELOCITY_NORTH_GRID_FILE              \
+    "Point motion velocity north grid file"
+
+#define EPSG_CODE_METHOD_GEOCENTRIC_TRANSLATIONS_BY_GRID_GTG_AND_GEOCENTRIC_TRANSLATIONS_NEU_VELOCITIES_GTG \
+    1142
+#define EPSG_NAME_METHOD_GEOCENTRIC_TRANSLATIONS_BY_GRID_GTG_AND_GEOCENTRIC_TRANSLATIONS_NEU_VELOCITIES_GTG \
+    "Geocen translations by grid (gtg) & Geocen translations NEU "                                          \
+    "velocities (gtg)"
+
+#define EPSG_CODE_METHOD_POSITION_VECTOR_GEOCENTRIC_AND_GEOCENTRIC_TRANSLATIONS_NEU_VELOCITIES_GTG \
+    1143
+#define EPSG_NAME_METHOD_POSITION_VECTOR_GEOCENTRIC_AND_GEOCENTRIC_TRANSLATIONS_NEU_VELOCITIES_GTG \
+    "Position Vector (geocen) & Geocen translations NEU velocities (gtg)"
+
+#define EPSG_CODE_METHOD_GEOCENTRIC_TRANSLATIONS_USING_NEU_VELOCITY_GRID_GTG   \
+    1144
+#define EPSG_NAME_METHOD_GEOCENTRIC_TRANSLATIONS_USING_NEU_VELOCITY_GRID_GTG   \
+    "Geocentric translations using NEU velocity grid (gtg)"
+
+#define EPSG_CODE_PARAMETER_SOURCE_EPOCH 1068
+#define EPSG_NAME_PARAMETER_SOURCE_EPOCH "Source epoch"
+
+#define EPSG_CODE_PARAMETER_TARGET_EPOCH 1069
+#define EPSG_NAME_PARAMETER_TARGET_EPOCH "Target epoch"
+
+/* ------------------------------------------------------------------------ */
+
+#define EPSG_NAME_METHOD_NEW_ZEALAND_DEFORMATION_MODEL                         \
+    "New Zealand Deformation Model"
+#define EPSG_CODE_METHOD_NEW_ZEALAND_DEFORMATION_MODEL 1079
+
+/* ------------------------------------------------------------------------ */
+
+/* Has been renamed to
+ * EPSG_NAME_METHOD_GEOGRAPHIC3D_OFFSET_BY_VELOCITY_GRID_NTV2_VEL */
+#define EPSG_NAME_METHOD_GEOGRAPHIC3D_OFFSET_BY_VELOCITY_GRID_NRCAN            \
+    "Geographic3D Offset by velocity grid (NRCan byn)"
+#define EPSG_CODE_METHOD_GEOGRAPHIC3D_OFFSET_BY_VELOCITY_GRID_NRCAN 1114
+
+#define EPSG_NAME_METHOD_GEOGRAPHIC3D_OFFSET_BY_VELOCITY_GRID_NTV2_VEL         \
+    "Geographic3D Offset by velocity grid (NTv2_Vel)"
+#define EPSG_CODE_METHOD_GEOGRAPHIC3D_OFFSET_BY_VELOCITY_GRID_NTV2_VEL 1114
+
+/* ------------------------------------------------------------------------ */
+
+/* Before EPSG 12.019 */
+#define EPSG_NAME_METHOD_VERTICAL_OFFSET_BY_VELOCITY_GRID_NRCAN                \
+    "Vertical Offset by velocity grid (NRCan NTv2_Vel)"
+#define EPSG_CODE_METHOD_VERTICAL_OFFSET_BY_VELOCITY_GRID_NRCAN 1113
+
+/* Since EPSG 12.019 */
+
+#define EPSG_NAME_METHOD_VERTICAL_OFFSET_USING_NEU_VELOCITY_GRID_NTV2_VEL      \
+    "Vertical Offset using NEU velocity grid (NTv2_Vel)"
+#define EPSG_CODE_METHOD_VERTICAL_OFFSET_USING_NEU_VELOCITY_GRID_NTV2_VEL 1113
+
+/* ------------------------------------------------------------------------ */
+
+#define EPSG_NAME_METHOD_GEOGRAPHIC3D_TO_GRAVITYRELATEDHEIGHT                  \
+    "Geographic3D to GravityRelatedHeight"
+#define EPSG_CODE_METHOD_GEOGRAPHIC3D_TO_GRAVITYRELATEDHEIGHT 1136
+
+#define EPSG_NAME_METHOD_GEOGRAPHIC3D_TO_GEOG2D_GRAVITYRELATEDHEIGHT           \
+    "Geog3D to Geog2D+GravityRelatedHeight"
+#define EPSG_CODE_METHOD_GEOGRAPHIC3D_TO_GEOG2D_GRAVITYRELATEDHEIGHT 1131
 
 /* ------------------------------------------------------------------------ */
 
@@ -606,16 +762,34 @@
 #define EPSG_NAME_METHOD_VERTICALGRID_GTX                                      \
     "Vertical Offset by Grid Interpolation (gtx)"
 
+#define EPSG_CODE_METHOD_VERTICALGRID_ASC 1085
+#define EPSG_NAME_METHOD_VERTICALGRID_ASC                                      \
+    "Vertical Offset by Grid Interpolation (asc)"
+
+#define EPSG_CODE_METHOD_VERTICALGRID_GTG 1129
+#define EPSG_NAME_METHOD_VERTICALGRID_GTG                                      \
+    "Vertical Offset by Grid Interpolation (gtg)"
+
 #define EPSG_CODE_METHOD_VERTICALGRID_PL_TXT 1101
 #define EPSG_NAME_METHOD_VERTICALGRID_PL_TXT                                   \
     "Vertical Offset by Grid Interpolation (PL txt)"
 
+/* has been deprecated by
+ * EPSG_CODE_METHOD_VERTICALCHANGE_BY_GEOID_GRID_DIFFERENCE_NRCAN */
 #define EPSG_CODE_METHOD_VERTICALGRID_NRCAN_BYN 1112
 #define EPSG_NAME_METHOD_VERTICALGRID_NRCAN_BYN                                \
     "Vertical Offset by Grid Interpolation (NRCan byn)"
 
 #define EPSG_NAME_PARAMETER_VERTICAL_OFFSET_FILE "Vertical offset file"
 #define EPSG_CODE_PARAMETER_VERTICAL_OFFSET_FILE 8732
+
+#define EPSG_CODE_METHOD_VERTICALCHANGE_BY_GEOID_GRID_DIFFERENCE_NRCAN 1126
+#define EPSG_NAME_METHOD_VERTICALCHANGE_BY_GEOID_GRID_DIFFERENCE_NRCAN         \
+    "Vertical change by geoid grid difference (NRCan)"
+
+#define EPSG_NAME_PARAMETER_GEOID_MODEL_DIFFERENCE_FILE                        \
+    "Geoid model difference file"
+#define EPSG_CODE_PARAMETER_GEOID_MODEL_DIFFERENCE_FILE 1063
 
 /* ------------------------------------------------------------------------ */
 
@@ -638,6 +812,25 @@
 
 #define EPSG_CODE_METHOD_NADCON5_3D 1075
 #define EPSG_NAME_METHOD_NADCON5_3D "NADCON5 (3D)"
+
+/* ------------------------------------------------------------------------ */
+
+/* TIN-based transformations */
+
+#define EPSG_NAME_METHOD_VERTICAL_OFFSET_BY_TIN_INTERPOLATION_JSON             \
+    "Vertical Offset by TIN Interpolation (JSON)"
+#define EPSG_CODE_METHOD_VERTICAL_OFFSET_BY_TIN_INTERPOLATION_JSON 1137
+
+#define EPSG_NAME_METHOD_CARTESIAN_GRID_OFFSETS_BY_TIN_INTERPOLATION_JSON      \
+    "Cartesian Grid Offsets by TIN Interpolation (JSON)"
+#define EPSG_CODE_METHOD_CARTESIAN_GRID_OFFSETS_BY_TIN_INTERPOLATION_JSON 1138
+
+#define EPSG_NAME_METHOD_GEOGRAPHIC2D_OFFSETS_BY_TIN_INTERPOLATION_JSON        \
+    "Geographic2D Offsets by TIN Interpolation (JSON)"
+#define EPSG_CODE_METHOD_GEOGRAPHIC2D_OFFSETS_BY_TIN_INTERPOLATION_JSON 1145
+
+#define EPSG_NAME_PARAMETER_TIN_OFFSET_FILE "TIN offset file"
+#define EPSG_CODE_PARAMETER_TIN_OFFSET_FILE 1064
 
 /* ------------------------------------------------------------------------ */
 
@@ -685,6 +878,10 @@
 #define EPSG_NAME_PARAMETER_VERTICAL_OFFSET "Vertical Offset"
 #define EPSG_CODE_PARAMETER_VERTICAL_OFFSET 8603
 
+#define EPSG_NAME_PARAMETER_GEOID_HEIGHT "Geoid height"
+#define EPSG_CODE_PARAMETER_GEOID_HEIGHT 8604
+
+/* Geoid undulation is the name before EPSG v11.023 */
 #define EPSG_NAME_PARAMETER_GEOID_UNDULATION "Geoid undulation"
 #define EPSG_CODE_PARAMETER_GEOID_UNDULATION 8604
 
@@ -722,6 +919,16 @@
 #define EPSG_NAME_PARAMETER_B2 "B2"
 #define EPSG_CODE_PARAMETER_B2 8641
 
+#define PROJ_WKT2_NAME_METHOD_3D_AFFINE_PARAMETRIC_TRANSFORMATION              \
+    "3D Affine parametric transformation"
+
+#define PROJ_WKT2_NAME_PARAMETER_A3 "A3"
+#define PROJ_WKT2_NAME_PARAMETER_B3 "B3"
+#define PROJ_WKT2_NAME_PARAMETER_C0 "C0"
+#define PROJ_WKT2_NAME_PARAMETER_C1 "C1"
+#define PROJ_WKT2_NAME_PARAMETER_C2 "C2"
+#define PROJ_WKT2_NAME_PARAMETER_C3 "C3"
+
 /* ------------------------------------------------------------------------ */
 
 #define EPSG_CODE_METHOD_SIMILARITY_TRANSFORMATION 9621
@@ -745,6 +952,49 @@
 
 /* ------------------------------------------------------------------------ */
 
+#define EPSG_CODE_METHOD_SEISMIC_BIN_GRID_I_EQ_J_PLUS_90 9666
+#define EPSG_NAME_METHOD_SEISMIC_BIN_GRID_I_EQ_J_PLUS_90                       \
+    "P6 I=J+90 seismic bin grid coordinate operation"
+
+#define EPSG_CODE_METHOD_SEISMIC_BIN_GRID_I_EQ_J_MINUS_90 1049
+#define EPSG_NAME_METHOD_SEISMIC_BIN_GRID_I_EQ_J_MINUS_90                      \
+    "P6 I=J-90 seismic bin grid coordinate operation"
+
+#define EPSG_NAME_PARAMETER_BIN_GRID_ORIGIN_I "Bin grid origin I"
+#define EPSG_CODE_PARAMETER_BIN_GRID_ORIGIN_I 8733
+
+#define EPSG_NAME_PARAMETER_BIN_GRID_ORIGIN_J "Bin grid origin J"
+#define EPSG_CODE_PARAMETER_BIN_GRID_ORIGIN_J 8734
+
+#define EPSG_NAME_PARAMETER_BIN_GRID_ORIGIN_EASTING "Bin grid origin Easting"
+#define EPSG_CODE_PARAMETER_BIN_GRID_ORIGIN_EASTING 8735
+
+#define EPSG_NAME_PARAMETER_BIN_GRID_ORIGIN_NORTHING "Bin grid origin Northing"
+#define EPSG_CODE_PARAMETER_BIN_GRID_ORIGIN_NORTHING 8736
+
+#define EPSG_NAME_PARAMETER_SCALE_FACTOR_OF_BIN_GRID "Scale factor of bin grid"
+#define EPSG_CODE_PARAMETER_SCALE_FACTOR_OF_BIN_GRID 8737
+
+#define EPSG_NAME_PARAMETER_BIN_WIDTH_ON_I_AXIS "Bin width on I-axis"
+#define EPSG_CODE_PARAMETER_BIN_WIDTH_ON_I_AXIS 8738
+
+#define EPSG_NAME_PARAMETER_BIN_WIDTH_ON_J_AXIS "Bin width on J-axis"
+#define EPSG_CODE_PARAMETER_BIN_WIDTH_ON_J_AXIS 8739
+
+#define EPSG_NAME_PARAMETER_MAP_GRID_BEARING_OF_BIN_GRID_J_AXIS                \
+    "Map grid bearing of bin grid J-axis"
+#define EPSG_CODE_PARAMETER_MAP_GRID_BEARING_OF_BIN_GRID_J_AXIS 8740
+
+#define EPSG_NAME_PARAMETER_BIN_NODE_INCREMENT_ON_I_AXIS                       \
+    "Bin node increment on I-axis"
+#define EPSG_CODE_PARAMETER_BIN_NODE_INCREMENT_ON_I_AXIS 8741
+
+#define EPSG_NAME_PARAMETER_BIN_NODE_INCREMENT_ON_J_AXIS                       \
+    "Bin node increment on J-axis"
+#define EPSG_CODE_PARAMETER_BIN_NODE_INCREMENT_ON_J_AXIS 8742
+
+/* ------------------------------------------------------------------------ */
+
 #define EPSG_CODE_METHOD_AXIS_ORDER_REVERSAL_2D 9843
 #define EPSG_NAME_METHOD_AXIS_ORDER_REVERSAL_2D "Axis Order Reversal (2D)"
 
@@ -756,6 +1006,17 @@
 
 #define EPSG_CODE_METHOD_HEIGHT_DEPTH_REVERSAL 1068
 #define EPSG_NAME_METHOD_HEIGHT_DEPTH_REVERSAL "Height Depth Reversal"
+
+/* ------------------------------------------------------------------------ */
+
+#define EPSG_CODE_METHOD_CARTESIAN_GRID_OFFSETS 9656
+#define EPSG_NAME_METHOD_CARTESIAN_GRID_OFFSETS "Cartesian Grid Offsets"
+
+#define EPSG_CODE_PARAMETER_EASTING_OFFSET 8728
+#define EPSG_NAME_PARAMETER_EASTING_OFFSET "Easting offset"
+
+#define EPSG_CODE_PARAMETER_NORTHING_OFFSET 8729
+#define EPSG_NAME_PARAMETER_NORTHING_OFFSET "Northing offset"
 
 /* ------------------------------------------------------------------------ */
 

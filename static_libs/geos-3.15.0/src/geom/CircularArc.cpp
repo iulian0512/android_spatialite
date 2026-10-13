@@ -1,0 +1,500 @@
+/**********************************************************************
+*
+ * GEOS - Geometry Engine Open Source
+ * http://geos.osgeo.org
+ *
+ * Copyright (C) 2024-2025 ISciences, LLC
+ *
+ * This is free software; you can redistribute and/or modify it under
+ * the terms of the GNU Lesser General Public Licence as published
+ * by the Free Software Foundation.
+ * See the COPYING file for more information.
+ *
+ **********************************************************************/
+
+#include <geos/algorithm/Angle.h>
+#include <geos/algorithm/CircularArcs.h>
+#include <geos/algorithm/CurveToLineParams.h>
+#include <geos/geom/CircularArc.h>
+#include <geos/geom/Envelope.h>
+#include <geos/triangulate/quadedge/TrianglePredicate.h>
+#include <sstream>
+
+using geos::algorithm::CircularArcs;
+
+namespace geos::geom {
+
+CircularArc::CircularArc() :
+    m_seq(nullptr),
+    m_center_known(true),
+    m_radius_known(true),
+    m_orientation_known(true),
+    m_own_coordinates(true)
+{}
+
+template<typename CoordType>
+static CircularArc createFromPoints(const CoordType& p0, const CoordType& p2, const CoordinateXY& center, double radius, int orientation)
+{
+    static_assert(std::is_base_of_v<CoordinateXY, CoordType>);
+
+    constexpr bool hasZ = CoordType::template has<Ordinate::Z>();
+    constexpr bool hasM = CoordType::template has<Ordinate::M>();
+
+    auto seq = std::make_unique<CoordinateSequence>(3, hasZ, hasM);
+
+    CoordType p1(geos::algorithm::CircularArcs::getMidpoint(p0, p2, center, radius, orientation == algorithm::Orientation::COUNTERCLOCKWISE));
+    if constexpr (hasZ) {
+        p1.z = 0.5*(p0.z + p2.z);
+    }
+    if constexpr (hasM) {
+        p1.m = 0.5*(p0.m + p2.m);
+    }
+
+    seq->setAt(p0, 0);
+    seq->setAt(p1, 1);
+    seq->setAt(p2, 2);
+
+    CircularArc ret(std::move(seq), 0);
+
+    return ret;
+}
+
+CircularArc
+CircularArc::create(const CoordinateXY& p0, const CoordinateXY& p2, const CoordinateXY& center, double radius, int orientation) {
+    return createFromPoints(p0, p2, center, radius, orientation);
+}
+
+CircularArc
+CircularArc::create(const Coordinate& p0, const Coordinate& p2, const CoordinateXY& center, double radius, int orientation) {
+    return createFromPoints(p0, p2, center, radius, orientation);
+}
+
+CircularArc
+CircularArc::create(const CoordinateXYM& p0, const CoordinateXYM& p2, const CoordinateXY& center, double radius, int orientation) {
+    return createFromPoints(p0, p2, center, radius, orientation);
+}
+
+CircularArc
+CircularArc::create(const CoordinateXYZM& p0, const CoordinateXYZM& p2, const CoordinateXY& center, double radius, int orientation) {
+    return createFromPoints(p0, p2, center, radius, orientation);
+}
+
+CircularArc::CircularArc(const CoordinateSequence& seq, std::size_t pos) :
+    m_seq(&seq),
+    m_pos(pos),
+    m_own_coordinates(false) {}
+
+CircularArc::CircularArc(std::unique_ptr<CoordinateSequence> seq, std::size_t pos) :
+    CircularArc(*seq, pos)
+{
+    m_own_coordinates = true;
+    seq.release();
+}
+
+CircularArc::CircularArc(const CoordinateSequence& seq, std::size_t pos, const CoordinateXY& center, double radius, int orientation) :
+    m_seq(&seq),
+    m_pos(pos),
+    m_center(center),
+    m_radius(radius),
+    m_orientation(orientation),
+    m_center_known(true),
+    m_radius_known(true),
+    m_orientation_known(true),
+    m_own_coordinates(false)
+{}
+
+CircularArc::CircularArc(std::unique_ptr<CoordinateSequence> seq, std::size_t pos, const CoordinateXY& center, double radius, int orientation) :
+    CircularArc(*seq, pos, center, radius, orientation)
+{
+    m_own_coordinates = true;
+    seq.release();
+}
+
+CircularArc::CircularArc(const CircularArc& other) :
+    m_seq(new CoordinateSequence(0, other.getCoordinateSequence()->hasZ(), other.getCoordinateSequence()->hasM())),
+    m_pos(0),
+    m_center(other.m_center),
+    m_radius(other.m_radius),
+    m_orientation(other.m_orientation),
+    m_center_known(other.m_center_known),
+    m_radius_known(other.m_radius_known),
+    m_orientation_known(other.m_orientation_known),
+    m_own_coordinates(true)
+{
+    CoordinateSequence* seq = const_cast<CoordinateSequence*>(m_seq);
+    seq->reserve(3);
+    seq->add(*other.getCoordinateSequence(), other.getCoordinatePosition(), other.getCoordinatePosition() + 2);
+}
+
+CircularArc::CircularArc(CircularArc&& other) noexcept {
+    m_seq = other.m_seq;
+    m_pos = other.m_pos;
+    m_center = other.m_center;
+    m_radius = other.m_radius;
+    m_orientation = other.m_orientation;
+    m_center_known = other.m_center_known;
+    m_radius_known = other.m_radius_known;
+    m_orientation_known = other.m_orientation_known;
+    m_own_coordinates = other.m_own_coordinates;
+
+    if (other.m_own_coordinates) {
+        other.m_own_coordinates = false;
+    }
+}
+
+CircularArc&
+CircularArc::operator=(const CircularArc& other)
+{
+    if (this == &other) {
+        return *this;
+    }
+
+    if (m_own_coordinates) {
+        delete m_seq;
+    }
+
+    m_seq = new CoordinateSequence(0, other.getCoordinateSequence()->hasZ(), other.getCoordinateSequence()->hasM());
+    m_pos = other.m_pos;
+    m_own_coordinates = true;
+    m_orientation = other.m_orientation;
+    m_orientation_known = other.m_orientation_known;
+    m_center = other.m_center;
+    m_center_known = other.m_center_known;
+    m_radius = other.m_radius;
+    m_radius_known = other.m_radius_known;
+
+    CoordinateSequence* seq = const_cast<CoordinateSequence*>(m_seq);
+    seq->reserve(3);
+    seq->add(*other.getCoordinateSequence(), other.getCoordinatePosition(), other.getCoordinatePosition() + 2);
+
+    return *this;
+}
+
+CircularArc&
+CircularArc::operator=(CircularArc&& other) noexcept
+{
+    if (m_own_coordinates) {
+        delete m_seq;
+    }
+
+    m_seq = other.m_seq;
+    m_pos = other.m_pos;
+    m_own_coordinates = other.m_own_coordinates;
+    m_orientation = other.m_orientation;
+    m_orientation_known = other.m_orientation_known;
+    m_center = other.m_center;
+    m_center_known = other.m_center_known;
+    m_radius = other.m_radius;
+    m_radius_known = other.m_radius_known;
+
+    if (m_own_coordinates) {
+        other.m_own_coordinates = false;
+    }
+
+    return *this;
+}
+
+CircularArc::~CircularArc()
+{
+    if (m_own_coordinates) {
+        delete m_seq;
+    }
+}
+
+bool
+CircularArc::containsAngle(double theta) const
+{
+    auto t0 = theta0();
+    auto t2 = theta2();
+
+    return CircularArcs::containsAngle(t0, t2, isCCW(), theta);
+}
+
+bool
+CircularArc::containsPoint(const CoordinateXY& q) const
+{
+    if (q == p0() || q == p1() || q == p2()) {
+        return true;
+    }
+
+    //auto dist = std::abs(q.distance(getCenter()) - getRadius());
+
+    //if (dist > 1e-8) {
+    //    return false;
+    //}
+
+    if (triangulate::quadedge::TrianglePredicate::isInCircleRobust(p0(), p1(), p2(), q) != geom::Location::BOUNDARY) {
+        return false;
+    }
+
+    return containsPointOnCircle(q);
+}
+
+CoordinateXY
+CircularArc::closestPoint(const CoordinateXY &q) const
+{
+    return CircularArcs::closestPointArcPoint(getCenter(), getRadius(), p0(), p2(), isCCW(), q);
+}
+
+std::array<CoordinateXY, 2>
+CircularArc::closestPoints(const CoordinateXY& q0, const CoordinateXY& q1) const
+{
+    return CircularArcs::closestPointsArcSegment(getCenter(), getRadius(), p0(), p2(), isCCW(), q0, q1);
+}
+
+std::array<CoordinateXY, 2>
+CircularArc::closestPoints(const CircularArc &other) const
+{
+    return CircularArcs::closestPointsArcArc(getCenter(), getRadius(), p0(), p2(), isCCW(),
+        other.getCenter(), other.getRadius(), other.p0(), other.p2(), other.isCCW());
+}
+
+double
+CircularArc::distance(const CoordinateXY &q) const
+{
+    return CircularArcs::distanceArcPoint(getCenter(), getRadius(), p0(), p2(), isCCW(), q);
+}
+
+double
+CircularArc::distance(const CoordinateXY& q0, const CoordinateXY& q1) const
+{
+    return CircularArcs::distanceArcSegment(getCenter(), getRadius(), p0(), p2(), isCCW(), q0, q1);
+}
+
+double
+CircularArc::distance(const CircularArc &other) const
+{
+    return CircularArcs::distanceArcArc(
+        getCenter(), getRadius(), p0(), p2(), isCCW(),
+        other.getCenter(), other.getRadius(), other.p0(), other.p2(), other.isCCW());
+}
+
+
+double
+CircularArc::getAngle() const
+{
+    if (isCircle()) {
+        return 2*MATH_PI;
+    }
+
+    /// Even Rouault:
+    /// potential optimization?: using crossproduct(p0 - center, p2 - center) = radius * radius * sin(angle)
+    /// could yield the result by just doing a single asin(), instead of 2 atan2()
+    /// actually one should also likely compute dotproduct(p0 - center, p2 - center) = radius * radius * cos(angle),
+    /// and thus angle = atan2(crossproduct(p0 - center, p2 - center) , dotproduct(p0 - center, p2 - center) )
+    auto t0 = theta0();
+    auto t2 = theta2();
+
+    if (getOrientation() == algorithm::Orientation::COUNTERCLOCKWISE) {
+        std::swap(t0, t2);
+    }
+
+    if (t0 < t2) {
+        t0 += 2*MATH_PI;
+    }
+
+    auto diff = t0-t2;
+
+    return diff;
+}
+
+double
+CircularArc::getArea() const {
+    if (isLinear()) {
+        return 0;
+    }
+
+    auto R = getRadius();
+    auto theta = getAngle();
+    return R*R/2*(theta - std::sin(theta));
+}
+
+CoordinateXY
+CircularArc::getDirectionPoint() const
+{
+    if (isLinear()) {
+        return p2();
+    }
+
+    return CircularArcs::getDirectionPoint(getCenter(), getRadius(), theta0(), getOrientation() == algorithm::Orientation::COUNTERCLOCKWISE);
+}
+
+CoordinateXY
+CircularArc::getReverseDirectionPoint() const
+{
+    if (isLinear()) {
+        return p0();
+    }
+
+    return CircularArcs::getDirectionPoint(getCenter(), getRadius(), theta2(), getOrientation() != algorithm::Orientation::COUNTERCLOCKWISE);
+}
+
+Envelope
+CircularArc::getEnvelope() const
+{
+    Envelope env;
+    CircularArcs::expandEnvelope(env, p0(), p1(), p2());
+    return env;
+}
+
+double
+CircularArc::getLength() const
+{
+    if (isLinear()) {
+        return p0().distance(p2());
+    }
+
+    return getAngle()*getRadius();
+}
+
+
+void
+CircularArc::addLinearizedPoints(CoordinateSequence& seq, const algorithm::CurveToLineParams& params) const
+{
+    if (isLinear()) {
+        seq.add(*getCoordinateSequence(), getCoordinatePosition() + 1, getCoordinatePosition() + 2);
+        return;
+    }
+
+    const double stepDegrees = params.getStepSizeDegrees(*this);
+
+    const double angle = getAngle();
+    const bool isCCW = getOrientation() == geos::algorithm::Orientation::COUNTERCLOCKWISE;
+    const double stepRad = stepDegrees * MATH_PI / 180.0;
+    const int nSegments = std::max(static_cast<int>(std::ceil(angle / stepRad)), 2);
+
+    double adjStepRad = angle / nSegments;
+
+    const CoordinateXY& center = getCenter();
+    const double radius = getRadius();
+
+    // To ensure that the vertices in the linearized arc are independent of the
+    // arc orientation, we process the arc in a CCW manner regardless of its
+    // original orientation.
+    const double startAngle = isCCW ? theta0() : theta2();
+
+    const bool hasZ = getCoordinateSequence()->hasZ();
+    const bool hasM = getCoordinateSequence()->hasM();
+
+    for (int i = 1; i < nSegments; i++) {
+        const int j = isCCW ? i: nSegments - i;
+        const double theta = startAngle + j*adjStepRad;
+
+        CoordinateXYZM pt{geos::algorithm::CircularArcs::createPoint(center, radius, theta)};
+
+        if (hasZ || hasM) {
+            CircularArcs::interpolateZM(*getCoordinateSequence(), getCoordinatePosition(),
+                                        center, isCCW, pt, pt.z, pt.m);
+        }
+
+        seq.add(pt);
+    }
+
+    seq.add(*getCoordinateSequence(), getCoordinatePosition() + 2, getCoordinatePosition() + 2);
+}
+
+CircularArc
+CircularArc::reverse() const
+{
+    auto seq = std::make_unique<CoordinateSequence>(3, m_seq->hasZ(), m_seq->hasM());
+    m_seq->applyAt(m_pos, [&seq](const auto& pt) {
+        seq->setAt(pt, 2);
+    });
+    m_seq->applyAt(m_pos + 1, [&seq](const auto& pt) {
+        seq->setAt(pt, 1);
+    });
+    m_seq->applyAt(m_pos + 2, [&seq](const auto& pt) {
+        seq->setAt(pt, 0);
+    });
+
+    CircularArc ret(std::move(seq), 0);
+
+    if (m_orientation_known) {
+        if (m_orientation == algorithm::Orientation::COUNTERCLOCKWISE) {
+            ret.m_orientation = algorithm::Orientation::CLOCKWISE;
+        } else if (m_orientation == algorithm::Orientation::CLOCKWISE) {
+            ret.m_orientation = algorithm::Orientation::COUNTERCLOCKWISE;
+        } else {
+            ret.m_orientation = algorithm::Orientation::COLLINEAR;
+        }
+        ret.m_orientation_known = true;
+    }
+
+    if (m_center_known) {
+        ret.m_center = m_center;
+        ret.m_center_known = true;
+    }
+
+    if (m_radius_known) {
+        ret.m_radius = m_radius;
+        ret.m_radius_known = true;
+    }
+
+    return ret;
+}
+
+bool
+CircularArc::equals(const CircularArc &other, double tol) const
+{
+    if (getCoordinateSequence()->hasZ() != other.getCoordinateSequence()->hasZ()) {
+        return false;
+    }
+
+    if (getCoordinateSequence()->hasM() != other.getCoordinateSequence()->hasM()) {
+        return false;
+    }
+
+    if (getCenter().distance(other.getCenter()) > tol) {
+        return false;
+    }
+
+    if (std::abs(getRadius() - other.getRadius()) > tol) {
+        return false;
+    }
+
+    if (getOrientation() != other.getOrientation()) {
+        return false;
+    }
+
+    CoordinateXYZM a, b;
+    getCoordinateSequence()->getAt(getCoordinatePosition(), a);
+    other.getCoordinateSequence()->getAt(other.getCoordinatePosition(), b);
+
+    if (a.distance(b) > tol) {
+        return false;
+    }
+
+    if ((!std::isnan(a.z) || !std::isnan(b.z)) && !(std::abs(a.z - b.z) <= tol)) {
+        return false;
+    }
+
+    if ((!std::isnan(a.m) || !std::isnan(b.m)) && !(std::abs(a.m - b.m) <= tol)) {
+        return false;
+    }
+
+    return true;
+}
+
+std::string
+CircularArc::toString() const {
+    std::stringstream ss;
+    ss << "CIRCULARSTRING ";
+    if (m_seq->hasZ()) {
+        ss << "Z";
+    }
+    if (m_seq->hasM()) {
+        ss << "M";
+    }
+    if (m_seq->hasZ() || m_seq->hasM()) {
+        ss << " ";
+    }
+    ss << "(";
+    m_seq->applyAt(m_pos, [&ss](const auto& pt) {
+        ss << pt << ", " << *(&pt + 1) << ", " << *(&pt + 2);
+    });
+    ss << ")";
+    return ss.str();
+}
+
+
+}

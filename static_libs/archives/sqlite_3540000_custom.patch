@@ -1,0 +1,209 @@
+--- /root/pristine354/sqlite-amalgamation-3540000/sqlite3.c	2026-10-09 19:14:55.000000000 +0300
++++ sqlite-amalgamation-3540000/sqlite3.c	2026-10-13 15:30:05.016683075 +0300
+@@ -192021,6 +192021,7 @@
+     db->eOpenState = SQLITE_STATE_SICK;
+   }
+   *ppDb = db;
++  sqlite3_enable_load_extension(*ppDb,1);
+ #ifdef SQLITE_ENABLE_SQLLOG
+   if( sqlite3GlobalConfig.xSqllog ){
+     /* Opening a db handle. Fourth parameter is passed 0. */
+@@ -226157,7 +226158,7 @@
+ ){
+   static const uint32_t MATCH_ONE = (uint32_t)'_';
+   static const uint32_t MATCH_ALL = (uint32_t)'%';
+-
++  
+   int prevEscape = 0;     /* True if the previous character was uEsc */
+ 
+   while( 1 ){
+@@ -226560,6 +226561,91 @@
+   }
+ }
+ 
++char* remove_accents(const char* input) {
++    UErrorCode status = U_ZERO_ERROR;
++
++    int32_t utf8_len = strlen(input);
++    UChar* source = (UChar*)malloc((utf8_len + 1) * sizeof(UChar)); // +1 for null terminator
++
++    u_strFromUTF8(source, utf8_len + 1, NULL, input, utf8_len, &status);
++    if (U_FAILURE(status)) {
++        printf("Error converting from UTF-8: %s\n", u_errorName(status));
++        free(source);
++        return NULL;
++    }
++
++    UChar* dest = (UChar*)malloc((utf8_len + 1) * sizeof(UChar));
++
++    const UNormalizer2* norm2 = unorm2_getNFDInstance(&status);
++    if (U_FAILURE(status)) {
++        printf("Error getting NFD instance: %s\n", u_errorName(status));
++        free(source);
++        free(dest);
++        return NULL;
++    }
++
++    int32_t srcLength = u_strlen(source);
++    int32_t destLength = unorm2_normalize(norm2, source, srcLength, dest, utf8_len + 1, &status);
++
++    if (U_FAILURE(status)) {
++        printf("Error normalizing: %s\n", u_errorName(status));
++        free(source);
++        free(dest);
++        return NULL;
++    }
++
++    // Allocate a buffer for the result with enough space
++    char* output = (char*)malloc((utf8_len + 1) * sizeof(char));
++    int32_t outputIndex = 0;
++
++    for (int32_t i = 0; i < destLength; i++) {
++        if (dest[i] == ' ' || u_isbase(dest[i])) {
++            output[outputIndex++] = (char)dest[i];
++        }
++    }
++
++    output[outputIndex] = '\0';
++
++    free(source);
++    free(dest);
++
++    return output;
++}
++
++
++static void sqlite_remove_accents(sqlite3_context* context, int argc, sqlite3_value** argv) {
++    if (argc != 1) // Ensure only one argument is passed 
++    {
++      sqlite3_result_error(context, "remove_accents() expects only one argument", -1);
++      return;
++    }
++    else
++    {
++      int valueType=sqlite3_value_type(argv[0]);
++      if(valueType == SQLITE_NULL)
++      {
++        sqlite3_result_null(context); // Return NULL if input is NULL nothing to do
++        return; 
++      }
++      else if(valueType != SQLITE_TEXT) 
++      {
++          sqlite3_result_error(context, "Invalid arguments expecting string literal or expression that evaluates to a string", -1);
++          return;
++      }
++    }
++
++    const char* input = (const char*)sqlite3_value_text(argv[0]);
++    char* result = remove_accents(input); 
++
++    if (result) {
++        sqlite3_result_text(context, result, -1, SQLITE_TRANSIENT);
++        free(result);
++    } else {
++        sqlite3_result_error(context, "Failed to process input", -1);
++    }
++}
++
++
+ /*
+ ** Register the ICU extension functions with database db.
+ */
+@@ -226586,6 +226672,7 @@
+     {"upper",  2, SQLITE_UTF8|SQLITEICU_EXTRAFLAGS,        1, icuCaseFunc16},
+     {"like",   2, SQLITE_UTF8|SQLITEICU_EXTRAFLAGS,        0, icuLikeFunc},
+     {"like",   3, SQLITE_UTF8|SQLITEICU_EXTRAFLAGS,        0, icuLikeFunc},
++    {"remove_accents",1,SQLITE_UTF8,0,sqlite_remove_accents},
+ #endif /* !defined(SQLITE_CORE) || defined(SQLITE_ENABLE_ICU) */
+   };
+   int rc = SQLITE_OK;
+@@ -226669,6 +226756,8 @@
+   int iToken;
+ };
+ 
++
++
+ /*
+ ** Create a new tokenizer instance.
+ */
+@@ -271070,3 +271159,79 @@
+ SQLITE_API const char *sqlite3_sourceid(void){ return SQLITE_SOURCE_ID; }
+ #endif /* SQLITE_AMALGAMATION */
+ /************************** End of sqlite3.c ******************************/
++
++
++#ifdef _MSC_VER
++#include <wchar.h>
++#include <crtdbg.h>  // Required for memory leak detection functions
++#include <Windows.h>
++void test_remove_accents() {
++    struct TestCase {
++        const char* input;
++        const char* expectedOutput;
++    };
++
++    struct TestCase testCases[] = {
++        {"café", "cafe"},
++        {"élite", "elite"},
++        {"résumé", "resume"},
++        {"touché", "touche"},
++        {"façade", "facade"},
++        {"jalapeño", "jalapeno"},
++        {"papier-mâché", "papiermache"},
++        {"măr", "mar"},
++        {"pâine", "paine"},
++        {"mîncare", "mincare"},
++        {"șarpe", "sarpe"},
++        {"țară", "tara"},
++        // ... [Add more test cases here] ...
++    };
++
++    for (int i = 0; i < sizeof(testCases) / sizeof(testCases[0]); i++) {
++        char* result = remove_accents(testCases[i].input);
++        assert(strcmp(result, testCases[i].expectedOutput) == 0);
++        free(result);
++    }
++
++
++    // Testing with a large string:
++    const char* single_ă = "ă";
++    const size_t single_ă_length = strlen(single_ă);
++    const int repeatCount = 1024*1024*10;  // Adjust this for the desired size
++    
++    size_t largeSize = single_ă_length * repeatCount + 1;
++    char* largeInput = (char*)malloc(largeSize);
++
++    for (int i = 0; i < repeatCount; i++) {
++        strcpy(largeInput + i * single_ă_length, single_ă);
++    }
++
++    const char* single_a = "a"; 
++    char* largeExpectedOutput = (char*)malloc(repeatCount + 1);  // Just a series of 'a' characters
++    for (int i = 0; i < repeatCount; i++) {
++        strcpy(largeExpectedOutput + i, single_a);
++    }
++
++    char* largeResult = remove_accents(largeInput);
++
++    assert(strcmp(largeResult, largeExpectedOutput) == 0);
++
++    free(largeInput);
++    free(largeExpectedOutput);
++    free(largeResult);
++}
++
++int main() {
++    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
++   for(int i=0;i<100;i++)
++   {
++       test_remove_accents();
++       
++   }
++     
++   _CrtCheckMemory();
++   _CrtDumpMemoryLeaks();
++    
++    return 0;
++}
++#endif
+\ No newline at end of file

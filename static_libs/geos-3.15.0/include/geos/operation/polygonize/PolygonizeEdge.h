@@ -1,0 +1,58 @@
+/**********************************************************************
+ *
+ * GEOS - Geometry Engine Open Source
+ * http://geos.osgeo.org
+ *
+ * Copyright (C) 2006 Refractions Research Inc.
+ * Copyright (C) 2001-2002 Vivid Solutions Inc.
+ *
+ * This is free software; you can redistribute and/or modify it under
+ * the terms of the GNU Lesser General Public Licence as published
+ * by the Free Software Foundation.
+ * See the COPYING file for more information.
+ *
+ **********************************************************************
+ *
+ * Last port: operation/polygonize/PolygonizeEdge.java rev. 1.3 (JTS-1.10)
+ *
+ **********************************************************************/
+
+#pragma once
+
+#include <geos/export.h>
+
+#include <geos/planargraph/Edge.h> // for inheritance
+
+// Forward declarations
+namespace geos {
+namespace geom {
+class SimpleCurve;
+}
+}
+
+namespace geos {
+namespace operation { // geos::operation
+namespace polygonize { // geos::operation::polygonize
+
+/** \brief
+ * An edge of a polygonization graph.
+ *
+ * @version 1.4
+ */
+class GEOS_DLL PolygonizeEdge: public planargraph::Edge {
+private:
+    // Externally owned
+    const geom::SimpleCurve* line;
+public:
+
+    // Keep the given pointer (won't do anything to it)
+    PolygonizeEdge(const geom::SimpleCurve* newLine);
+
+    // Just return what it was given initially
+    const geom::SimpleCurve* getLine() const;
+};
+
+} // namespace geos::operation::polygonize
+} // namespace geos::operation
+} // namespace geos
+

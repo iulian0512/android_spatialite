@@ -70,7 +70,7 @@ public:
             std::ostringstream s;
             s << "Cannot compute the quadrant for point ";
             s << "(" << dx << "," << dy << ")" << std::endl;
-            throw util::IllegalArgumentException(s.str());
+            throw geos::util::IllegalArgumentException(s.str());
         }
         if(dx >= 0) {
             if(dy >= 0) {
@@ -98,7 +98,7 @@ public:
     static int quadrant(const geom::CoordinateXY& p0, const geom::CoordinateXY& p1)
     {
         if(p1.x == p0.x && p1.y == p0.y) {
-            throw util::IllegalArgumentException("Cannot compute the quadrant for two identical points " + p0.toString());
+            throw geos::util::IllegalArgumentException("Cannot compute the quadrant for two identical points " + p0.toString());
         }
 
         if(p1.x >= p0.x) {
@@ -118,6 +118,24 @@ public:
             }
         }
     };
+
+    /** Return a measure that increases monotonically with counterclockwise
+     *  angle and avoids trigonometric calculations. Values are consistent
+     *  with the numeric quadrant codes
+     *
+     * @param p0 circle center coordinate
+     * @param p1 coordinate for which pseudoangle should be calculated
+     */
+    static double pseudoAngle(const CoordinateXY& p0, const CoordinateXY& p1)
+    {
+        const double dx = p1.x - p0.x;
+        const double dy = p1.y - p0.y;
+
+        const double k = dx / (std::abs(dx) + std::abs(dy));
+        const double w = 2 + (dy > 0 ? 3 - k : 1 + k);
+
+        return w >= 4 ? w - 4 : w;
+    }
 
     /**
      * Returns true if the quadrants are 1 and 3, or 2 and 4

@@ -55,32 +55,40 @@ namespace simplify { // geos::simplify
  * Contains and owns a list of TaggedLineSegments.
  */
 class GEOS_DLL TaggedLineString {
+    using Coordinate = geos::geom::Coordinate;
+    using CoordinateSequence = geos::geom::CoordinateSequence;
 
 public:
 
-    typedef std::vector<geom::Coordinate> CoordVect;
+    typedef std::vector<Coordinate> CoordVect;
 
     typedef std::unique_ptr<CoordVect> CoordVectPtr;
 
-    typedef geom::CoordinateSequence CoordSeq;
+    typedef CoordinateSequence CoordSeq;
 
-    typedef std::unique_ptr<geom::CoordinateSequence> CoordSeqPtr;
+    typedef std::unique_ptr<CoordinateSequence> CoordSeqPtr;
 
     TaggedLineString(const geom::LineString* nParentLine,
                      std::size_t minimumSize,
-                     bool preserveEndpoint);
+                     bool bIsRing);
 
     ~TaggedLineString();
 
     std::size_t getMinimumSize() const;
 
-    bool getPreserveEndpoint() const;
+    bool isRing() const;
 
     const geom::LineString* getParent() const;
 
     const CoordSeq* getParentCoordinates() const;
 
     CoordSeqPtr getResultCoordinates() const;
+
+    const Coordinate& getCoordinate(std::size_t i) const;
+
+    std::size_t size() const;
+
+    const Coordinate& getComponentPoint() const;
 
     std::size_t getResultSize() const;
 
@@ -96,7 +104,7 @@ public:
 
     void addToResult(std::unique_ptr<TaggedLineSegment> seg);
 
-    void removeRingEndpoint();
+    const TaggedLineSegment* removeRingEndpoint();
 
     std::unique_ptr<geom::Geometry> asLineString() const;
 
@@ -114,11 +122,11 @@ private:
 
     std::size_t minimumSize;
 
-    bool preserveEndpoint;
+    bool m_isRing;
 
     void init();
 
-    static std::unique_ptr<geom::CoordinateSequence> extractCoordinates(
+    static std::unique_ptr<CoordinateSequence> extractCoordinates(
         const std::vector<TaggedLineSegment*>& segs);
 
     // Copying is turned off

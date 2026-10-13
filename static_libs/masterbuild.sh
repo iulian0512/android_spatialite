@@ -23,16 +23,16 @@ export JNI_DIR="$APROJ_MAIN_DIR/jni"
 # Run the build scripts in a subshell to avoid env variables pollution
 
 # Directory for GEOS
-GEOS_DIR="geos-3.12.0"
+GEOS_DIR="geos-3.15.0"
 #GEOS_INSTALL_DIR needed for rttopo
 export GEOS_INSTALL_DIR="$SCRIPT_DIR/$GEOS_DIR/build"
 
 # Directory for proj
-PROJ_DIR="proj-9.2.1"
+PROJ_DIR="proj-9.9.0"
 export PROJ_INSTALL_DIR="$SCRIPT_DIR/$PROJ_DIR/build"
 
 # Directory for iconv
-ICONV_DIR="libiconv-1.17"
+ICONV_DIR="libiconv-1.19"
 export ICONV_INSTALL_DIR="$SCRIPT_DIR/$ICONV_DIR/build"
 
 # Directory for topo
@@ -40,12 +40,12 @@ RTTOPO_DIR="librttopo-1.1.0"
 export RTTOPO_INSTALL_DIR="$SCRIPT_DIR/$RTTOPO_DIR/build"
 
 # sqlite
-SQLITE_DIR="sqlite-amalgamation-3430200"
+SQLITE_DIR="sqlite-amalgamation-3540000"
 #env var needed by proj
 export SQLITE_INSTALL_DIR="$SCRIPT_DIR/$SQLITE_DIR"
 
 #icu
-ICU_DIR="icu73.2"
+ICU_DIR="icu78.3"
 #env var needed by sqlite3
 export ICU_INSTALL_DIR="$SCRIPT_DIR/$ICU_DIR/build"
 

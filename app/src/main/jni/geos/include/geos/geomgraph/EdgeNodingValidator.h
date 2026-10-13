@@ -51,22 +51,16 @@ namespace geomgraph { // geos.geomgraph
  *
  * Throws an appropriate exception if an noding error is found.
  */
-class GEOS_DLL EdgeNodingValidator {
+class GEOS_DLL EdgeNodingValidator final {
 
 private:
-    std::vector<noding::SegmentString*>& toSegmentStrings(std::vector<Edge*>& edges);
+    const std::vector<std::unique_ptr<noding::SegmentString>>& toSegmentStrings(std::vector<Edge*>& edges);
 
     // Make sure this member is initialized *before*
     // the NodingValidator, as initialization of
     // NodingValidator will use toSegmentString(), that
     // in turn expects this member to be initialized
-    std::vector<noding::SegmentString*> segStr;
-
-    // Make sure this member is initialized *before*
-    // the NodingValidator, as initialization of
-    // NodingValidator will use toSegmentString(), that
-    // in turn expects this member to be initialized
-    std::vector<geom::CoordinateSequence*> newCoordSeq;
+    std::vector<std::unique_ptr<noding::SegmentString>> segStr;
 
     noding::FastNodingValidator nv;
 
@@ -91,7 +85,6 @@ public:
     EdgeNodingValidator(std::vector<Edge*>& edges)
         :
         segStr(),
-        newCoordSeq(),
         nv(toSegmentStrings(edges))
     {}
 

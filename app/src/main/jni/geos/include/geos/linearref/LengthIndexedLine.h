@@ -64,14 +64,13 @@ public:
      *
      * If the index is out of range the first or last point on the
      * line will be returned.
-     * The Z-ordinate of the computed point will be interpolated from
-     * the Z-ordinates of the line segment containing it, if they exist.
+     * The Z and M ordinates of the computed point will be interpolated from
+     * the Z and M ordinates of the line segment containing it, if they exist.
      *
      * @param index the index of the desired point
      * @return the Coordinate at the given index
      */
-    geom::Coordinate extractPoint(double index) const;
-
+    geom::CoordinateXYZM extractPoint(double index) const;
 
     /**
      * \brief
@@ -138,7 +137,7 @@ public:
      * slightly off the line and is equidistant from two different
      * points on the line.
      *
-     * The supplied point does not `*necessarily* have to lie precisely
+     * The supplied point does not *necessarily* have to lie precisely
      * on the line, but if it is far from the line the accuracy and
      * performance of this function is not guaranteed.
      * Use {@link #project} to compute a guaranteed result for points
@@ -157,7 +156,7 @@ public:
      *
      * (The subline must **conform** to the line; that is,
      * all vertices in the subline (except possibly the first and last)
-     * must be vertices of the line and occcur in the same order).
+     * must be vertices of the line and occur in the same order).
      *
      * @param subLine a subLine of the line
      * @return a pair of indices for the start and end of the subline.

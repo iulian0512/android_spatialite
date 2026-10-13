@@ -97,7 +97,7 @@ private:
     * @param ei1 the end node of the split edge
     * @return the points for the split edge
     */
-    std::unique_ptr<geom::CoordinateSequence> createSplitEdgePts(const SegmentNode* ei0, const SegmentNode* ei1) const;
+    std::shared_ptr<geom::CoordinateSequence> createSplitEdgePts(const SegmentNode *ei0, const SegmentNode *ei1) const;
 
     /**
      * Adds nodes for any collapsed edge pairs.
@@ -219,10 +219,10 @@ public:
      * Adds the edges to the input list (this is so a single list
      * can be used to accumulate all split edges for a Geometry).
      */
-    void addSplitEdges(std::vector<SegmentString*>& edgeList);
+    void addSplitEdges(std::vector<std::unique_ptr<SegmentString>>& edgeList);
 
     void
-    addSplitEdges(std::vector<SegmentString*>* edgeList)
+    addSplitEdges(std::vector<std::unique_ptr<SegmentString>>* edgeList)
     {
         assert(edgeList);
         addSplitEdges(*edgeList);

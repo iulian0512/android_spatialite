@@ -32,13 +32,13 @@ google-services.json
 # Android Profiling
 *.hprof
 static_libs/libspatialite-5.1.0/build
-static_libs/libiconv-1.17/build
-static_libs/geos-3.12.0/build
+static_libs/libiconv-1.19/build
+static_libs/geos-3.15.0/build
 static_libs/librttopo-1.1.0/build
-static_libs/icu73.2/build
-static_libs/icu73.2/build/intermediate_*
-static_libs/icu73.2/data/out/build
-static_libs/proj-9.2.1/build
+static_libs/icu78.3/build
+static_libs/icu78.3/build/intermediate_*
+static_libs/icu78.3/data/out/build
+static_libs/proj-9.9.0/build
 static_libs/**/*.d
 static_libs/**/*.lo
 static_libs/**/*.la

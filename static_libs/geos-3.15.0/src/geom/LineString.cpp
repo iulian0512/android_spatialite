@@ -1,0 +1,194 @@
+/**********************************************************************
+ *
+ * GEOS - Geometry Engine Open Source
+ * http://geos.osgeo.org
+ *
+ * Copyright (C) 2011 Sandro Santilli <strk@kbt.io>
+ * Copyright (C) 2005-2006 Refractions Research Inc.
+ * Copyright (C) 2001-2002 Vivid Solutions Inc.
+ *
+ * This is free software; you can redistribute and/or modify it under
+ * the terms of the GNU Lesser General Public Licence as published
+ * by the Free Software Foundation.
+ * See the COPYING file for more information.
+ *
+ **********************************************************************
+ *
+ * Last port: geom/LineString.java r320 (JTS-1.12)
+ *
+ **********************************************************************/
+
+#include <geos/util/IllegalArgumentException.h>
+#include <geos/algorithm/CircularArcs.h>
+#include <geos/algorithm/LineToCurveConverter.h>
+#include <geos/algorithm/Length.h>
+#include <geos/algorithm/Orientation.h>
+#include <geos/geom/CircularArc.h>
+#include <geos/geom/CircularString.h>
+#include <geos/geom/CompoundCurve.h>
+#include <geos/geom/Coordinate.h>
+#include <geos/geom/CoordinateSequence.h>
+#include <geos/geom/CoordinateSequenceFilter.h>
+#include <geos/geom/CoordinateFilter.h>
+#include <geos/geom/Dimension.h>
+#include <geos/geom/GeometryFilter.h>
+#include <geos/geom/GeometryComponentFilter.h>
+#include <geos/geom/GeometryFactory.h>
+#include <geos/geom/LineString.h>
+#include <geos/geom/Point.h>
+#include <geos/geom/MultiPoint.h> // for getBoundary
+#include <geos/geom/Envelope.h>
+#include <geos/operation/BoundaryOp.h>
+#include <geos/util/IllegalArgumentException.h>
+#include <geos/util.h>
+
+#include <algorithm>
+#include <typeinfo>
+#include <memory>
+#include <cassert>
+
+using namespace geos::algorithm;
+
+namespace geos {
+namespace geom { // geos::geom
+
+LineString::~LineString(){}
+
+/*protected*/
+LineString::LineString(const LineString& ls)
+    : SimpleCurve(ls)
+{
+}
+
+/*public*/
+LineString::LineString(const std::shared_ptr<const CoordinateSequence> & newCoords,
+                       const GeometryFactory& factory)
+    :
+    SimpleCurve(newCoords, true, factory)
+{
+    validateConstruction();
+}
+
+/*public*/
+LineString::LineString(CoordinateSequence::Ptr && newCoords,
+                       const GeometryFactory& factory)
+    :
+    SimpleCurve(std::move(newCoords), true, factory)
+{
+    validateConstruction();
+}
+
+LineString*
+LineString::reverseImpl() const
+{
+    if(isEmpty()) {
+        return clone().release();
+    }
+
+    assert(points.get());
+    auto seq = points->clone();
+    seq->reverse();
+    assert(getFactory());
+    return getFactory()->createLineString(std::move(seq)).release();
+}
+
+
+/*private*/
+void
+LineString::validateConstruction()
+{
+    if(points.get() == nullptr) {
+        points = std::make_unique<CoordinateSequence>();
+        return;
+    }
+
+    if(points->size() == 1) {
+        throw geos::util::IllegalArgumentException("point array must contain 0 or >1 elements\n");
+    }
+}
+
+Curve*
+LineString::getCurvedImpl(const algorithm::LineToCurveParams& params) const
+{
+    return getCurved(params).release();
+}
+
+std::unique_ptr<Curve>
+LineString::getCurved(const algorithm::LineToCurveParams& params) const
+{
+    return LineToCurveConverter::getCurved(*this, params);
+}
+
+std::string
+LineString::getGeometryType() const
+{
+    return "LineString";
+}
+
+
+double
+LineString::getLength() const
+{
+    return Length::ofLine(points.get());
+}
+
+
+GeometryTypeId
+LineString::getGeometryTypeId() const
+{
+    return GEOS_LINESTRING;
+}
+
+void
+LineString::normalize()
+{
+    if (isEmpty()) return;
+    assert(points.get());
+    if (isClosed()) {
+        normalizeClosed();
+        return;
+    }
+
+    if (points->front<CoordinateXY>().compareTo( points->back<CoordinateXY>()) == 1) {
+        if (points.use_count() > 1) {
+            points = points->clone();
+        }
+        const_cast<CoordinateSequence*>(points.get())->reverse();
+    }
+}
+
+/*private*/
+void
+LineString::normalizeClosed()
+{
+    if (isEmpty()) {
+        return;
+    }
+
+    const auto& ringCoords = getCoordinatesRO();
+    std::size_t minIndex = ringCoords->minCoordinateIndex();
+
+    const bool isCCW = ringCoords->size() >= 4 && Orientation::isCCW(ringCoords);
+
+    if (minIndex == 0 && !isCCW) {
+        // already normalized
+        return;
+    }
+
+    auto coords = std::make_shared<CoordinateSequence>(0u, ringCoords->hasZ(), ringCoords->hasM());
+    coords->reserve(ringCoords->size());
+    // exclude last point (repeated)
+    coords->add(*ringCoords, 0, ringCoords->size() - 2);
+    coords->scroll(minIndex);
+    coords->closeRing(true);
+
+    if (isCCW) {
+        coords->reverse();
+    }
+
+    points = coords;
+}
+
+
+} // namespace geos::geom
+} // namespace geos

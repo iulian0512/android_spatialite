@@ -1,0 +1,161 @@
+// Test Suite for C-API MakeValid
+
+#include <tut/tut.hpp>
+// geos
+#include <geos_c.h>
+#include <geos/constants.h>
+// std
+#include <cstring>
+#include <cstdint>
+
+#include "capi_test_utils.h"
+
+namespace tut {
+//
+// Test Group
+//
+
+// Common data used in test cases.
+struct test_capimakevalid_data : public capitest::utility {
+    test_capimakevalid_data() {
+    }
+};
+
+typedef test_group<test_capimakevalid_data> group;
+typedef group::object object;
+
+group test_capimakevalid_group("capi::GEOSMakeValid");
+
+//
+// Test Cases
+//
+
+template<>
+template<>
+void object::test<1>
+()
+{
+    geom1_ = GEOSGeomFromWKT("POLYGON((0 0,1 1,0 1,1 0,0 0))");
+    geom2_ = GEOSMakeValid(geom1_);
+    expected_ = GEOSGeomFromWKT("MULTIPOLYGON (((0 0, 0.5 0.5, 1 0, 0 0)), ((0.5 0.5, 0 1, 1 1, 0.5 0.5)))");
+    GEOSNormalize(geom2_);
+    GEOSNormalize(expected_);
+    ensure(GEOSEqualsExact(geom2_, expected_, 0.01));
+}
+
+template<>
+template<>
+void object::test<2>
+()
+{
+    const char* hex = "0103000000010000000900000062105839207df640378941e09d491c41ced67431387df640c667e7d398491c4179e92631387df640d9cef7d398491c41fa7e6abcf87df640cdcccc4c70491c41e3a59bc4527df64052b81e053f491c41cdcccccc5a7ef640e3a59bc407491c4104560e2da27df640aaf1d24dd3481c41e9263108c67bf64048e17a1437491c4162105839207df640378941e09d491c41";
+    geom1_ = GEOSGeomFromHEX_buf((uint8_t*)hex, std::strlen(hex));
+    geom2_ = GEOSMakeValid(geom1_);
+    // std::cout << toWKT(geom2_) << std::endl;
+    expected_ = GEOSGeomFromWKT("POLYGON ((92127.546 463452.075, 92117.173 463439.755, 92133.675 463425.942, 92122.136 463412.826, 92092.37699999999 463437.77, 92114.014 463463.469, 92115.512 463462.207, 92115.51207431706 463462.2069374289, 92127.546 463452.075))");
+    GEOSNormalize(geom2_);
+    GEOSNormalize(expected_);
+    ensure(GEOSEqualsExact(geom2_, expected_, 0.01));
+}
+
+
+template<>
+template<>
+void object::test<3>
+()
+{
+    const char* wkt = "LINESTRING(0 0, 0 0)";
+    GEOSMakeValidParams *params = GEOSMakeValidParams_create();
+    GEOSMakeValidParams_setKeepCollapsed(params, 1);
+    geom1_ = GEOSGeomFromWKT(wkt);
+    geom2_ = GEOSMakeValidWithParams(geom1_, params);
+    GEOSMakeValidParams_destroy(params);
+    // std::cout << toWKT(geom2_) << std::endl;
+    expected_ = GEOSGeomFromWKT("POINT(0 0)");
+    ensure(GEOSEqualsExact(geom2_, expected_, 0.01));
+}
+
+template<>
+template<>
+void object::test<4>
+()
+{
+    const char* wkt = "LINESTRING(0 0, 0 0)";
+    GEOSMakeValidParams *params = GEOSMakeValidParams_create();
+    GEOSMakeValidParams_setKeepCollapsed(params, 0);
+    geom1_ = GEOSGeomFromWKT(wkt);
+    geom2_ = GEOSMakeValidWithParams(geom1_, params);
+    GEOSMakeValidParams_destroy(params);
+    // std::cout << toWKT(geom2_) << std::endl;
+    expected_ = GEOSGeomFromWKT("POINT(0 0)");
+    ensure(GEOSEqualsExact(geom2_, expected_, 0.01));
+}
+
+template<>
+template<>
+void object::test<5>()
+{
+    set_test_name("curved inputs, curved output");
+    useContext();
+
+    // ring outside shell
+    input_ = fromWKT("CURVEPOLYGON (COMPOUNDCURVE (CIRCULARSTRING (0 0, 10 10, 20 0), (20 0, 0 0)), (10 10, 30 10, 30 30, 10 10))");
+    ensure(input_);
+    GEOSSetSRID_r(ctxt_, input_, 4326);
+
+
+    result_ = GEOSMakeValid_r(ctxt_, input_);
+    ensure("curved geometry not supported", result_ == nullptr);
+
+    // Input converted to line, output not converted to curve
+    GEOSContext_setCurveToLineParams_r(ctxt_, curveToLineParams_);
+    result_ = GEOSMakeValid_r(ctxt_, input_);
+    ensure(result_);
+    ensure_equals(GEOSGeomTypeId_r(ctxt_, result_), GEOS_MULTIPOLYGON);
+    GEOSGeom_destroy_r(ctxt_, result_);
+
+    // Input converted to line, output converted to curve
+    GEOSContext_setLineToCurveParams_r(ctxt_, lineToCurveParams_);
+    result_ = GEOSMakeValid_r(ctxt_, input_);
+
+    ensure_equals(GEOSGeomTypeId_r(ctxt_, result_), GEOS_MULTISURFACE);
+    ensure_equals(GEOSGetNumGeometries_r(ctxt_, result_), 2);
+    ensure_equals(GEOSGeomTypeId_r(ctxt_, GEOSGetGeometryN_r(ctxt_, result_, 0u)), GEOS_CURVEPOLYGON);
+    ensure_equals(GEOSGeomTypeId_r(ctxt_, GEOSGetGeometryN_r(ctxt_, result_, 1u)), GEOS_POLYGON);
+
+    double area = -1;
+    ensure(GEOSArea_r(ctxt_, result_, &area));
+    ensure_equals("area does not match expected", area, geos::MATH_PI*10*10/2 + 20*20/2, 1e-2);
+
+    ensure_equals(GEOSGetSRID_r(ctxt_, result_), 4326);
+}
+
+template<>
+template<>
+void object::test<6>()
+{
+    set_test_name("Z/M values preserved for valid input");
+
+    input_ = fromWKT("POLYGON ZM ((0 0 1 2, 1 0 2 3, 1 1 3 4, 0 0 1 2))");
+    ensure(input_);
+
+    result_ = GEOSMakeValid(input_);
+    ensure_geometry_equals_identical(result_, input_);
+}
+
+template<>
+template<>
+void object::test<7>()
+{
+    set_test_name("Z/M values are preserved/interpolated for self-intersecting input");
+
+    input_ = fromWKT("POLYGON ZM ((0 0 1 2, 1 0 2 3, 0 1 3 4, 1 1 4 5, 0 0 1 2))");
+    ensure(input_);
+
+    result_ = GEOSMakeValid(input_);
+    expected_ = fromWKT("MULTIPOLYGON ZM (((0.5 0.5 2.5 3.5, 1 0 2 3, 0 0 1 2, 0.5 0.5 2.5 3.5)), ((0.5 0.5 2.5 3.5, 0 1 3 4, 1 1 4 5, 0.5 0.5 2.5 3.5)))");
+
+    ensure_geometry_equals_identical(result_, expected_);
+}
+
+} // namespace tut

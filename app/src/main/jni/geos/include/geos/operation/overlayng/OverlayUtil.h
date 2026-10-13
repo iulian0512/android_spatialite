@@ -14,10 +14,10 @@
 
 #pragma once
 
-#include <geos/geom/Point.h>
-#include <geos/geom/Polygon.h>
-#include <geos/geom/LineString.h>
+#include <geos/geom/Curve.h>
 #include <geos/geom/Geometry.h>
+#include <geos/geom/Point.h>
+#include <geos/geom/Surface.h>
 
 #include <geos/export.h>
 
@@ -41,12 +41,9 @@ class OverlayGraph;
 }
 }
 
-
 namespace geos {      // geos.
 namespace operation { // geos.operation
 namespace overlayng { // geos.operation.overlayng
-
-using namespace geos::geom;
 
 /**
  * Utility methods for overlay processing.
@@ -55,6 +52,15 @@ using namespace geos::geom;
  *
  */
 class GEOS_DLL OverlayUtil {
+    using Geometry = geos::geom::Geometry;
+    using Coordinate = geos::geom::Coordinate;
+    using CoordinateSequence = geos::geom::CoordinateSequence;
+    using Curve = geos::geom::Curve;
+    using Envelope = geos::geom::Envelope;
+    using Point = geos::geom::Point;
+    using Surface = geos::geom::Surface;
+    using GeometryFactory = geos::geom::GeometryFactory;
+    using PrecisionModel = geos::geom::PrecisionModel;
 
 private:
 
@@ -69,7 +75,7 @@ private:
     * are:
     *
     * - INTERSECTION: result envelope is the intersection of the input envelopes
-    * - DIFERENCE: result envelope is the envelope of the A input geometry
+    * - DIFFERENCE: result envelope is the envelope of the A input geometry
     *
     * Otherwise, <code>null</code> is returned to indicate full extent.
     */
@@ -132,13 +138,13 @@ public:
     static bool isEnvDisjoint(const Geometry* a, const Geometry* b, const PrecisionModel* pm);
 
     /**
-    * Creates an empty result geometry of the appropriate dimension,
+    * Creates an empty result geometry of the appropriate dimension and coordinate dimension,
     * based on the given overlay operation and the dimensions of the inputs.
     * The created geometry is an atomic geometry,
     * not a collection (unless the dimension is -1,
     * in which case a GEOMETRYCOLLECTION EMPTY is created.)
     */
-    static std::unique_ptr<Geometry> createEmptyResult(int dim, const GeometryFactory* geomFact);
+    static std::unique_ptr<Geometry> createEmptyResult(int dim, size_t coordDim, const GeometryFactory* geomFact);
 
     /**
     * Computes the dimension of the result of
@@ -156,11 +162,18 @@ public:
     static int resultDimension(int opCode, int dim0, int dim1);
 
     /**
+     * Computes the coordinate dimension of overlaying two geometries.
+     * This is the smallest of the two coordinate dimensions 
+     * (to avoid having to populate Z and M with unknown values).
+     */
+    static uint8_t resultCoordinateDimension(uint8_t coordDim0, uint8_t coordDim1);
+
+    /**
     * Creates an overlay result geometry for homogeneous or mixed components.
     */
     static std::unique_ptr<Geometry> createResultGeometry(
-        std::vector<std::unique_ptr<Polygon>>& resultPolyList,
-        std::vector<std::unique_ptr<LineString>>& resultLineList,
+        std::vector<std::unique_ptr<Surface>>& resultPolyList,
+        std::vector<std::unique_ptr<Curve>>& resultLineList,
         std::vector<std::unique_ptr<Point>>& resultPointList,
         const GeometryFactory* geometryFactory);
 
@@ -191,6 +204,9 @@ public:
     * Note: return value is only copied if rounding is performed.
     */
     static bool round(const Point* pt, const PrecisionModel* pm, Coordinate& rsltCoord);
+
+    static geom::CoordinateXY
+    getDirectionPoint(const CoordinateSequence& pts, bool forward, bool isCurved);
 
     template<typename T>
     static void moveGeometry(std::vector<std::unique_ptr<T>>& inGeoms, std::vector<std::unique_ptr<Geometry>>& outGeoms)

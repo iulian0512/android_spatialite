@@ -246,16 +246,22 @@ public:
         return std::atan2(p1.y - p0.y, p1.x - p0.x);
     };
 
-    /// Computes the midpoint of the segment
-    //
-    /// @param ret will be set to the midpoint of the segment
-    ///
-    void midPoint(Coordinate& ret) const
+    /** \brief
+     * Computes the midpoint of the segment
+     *
+     *  @return the midpoint of the segment
+     */
+    CoordinateXY midPoint() const
     {
-        ret = Coordinate(
-            (p0.x + p1.x) / 2,
-            (p0.y + p1.y) / 2);
+        return midPoint(p0, p1);
     };
+
+    static CoordinateXY midPoint(const CoordinateXY& pt0, const CoordinateXY& pt1)
+    {
+        return CoordinateXY(
+            (pt0.x + pt1.x) / 2,
+            (pt0.y + pt1.y) / 2);        
+    }
 
     /// Computes the distance between this line segment and another one.
     double distance(const LineSegment& ls) const
@@ -316,8 +322,37 @@ public:
     {
         ret = Coordinate(
             p0.x + segmentLengthFraction * (p1.x - p0.x),
-            p0.y + segmentLengthFraction * (p1.y - p0.y));
+            p0.y + segmentLengthFraction * (p1.y - p0.y),
+            p0.z + segmentLengthFraction * (p1.z - p0.z));
     };
+
+    static CoordinateXY pointAlong(double segmentLengthFraction, const CoordinateXY& p0, const CoordinateXY& p1)
+    {
+        return { p0.x + segmentLengthFraction * (p1.x - p0.x),
+                 p0.y + segmentLengthFraction * (p1.y - p0.y) };
+    }
+
+    static Coordinate pointAlong(double segmentLengthFraction, const Coordinate& p0, const Coordinate& p1)
+    {
+        return { p0.x + segmentLengthFraction * (p1.x - p0.x),
+                 p0.y + segmentLengthFraction * (p1.y - p0.y),
+                 p0.z + segmentLengthFraction * (p1.z - p0.z) };
+    }
+
+    static CoordinateXYM pointAlong(double segmentLengthFraction, const CoordinateXYM& p0, const CoordinateXYM& p1)
+    {
+        return { p0.x + segmentLengthFraction * (p1.x - p0.x),
+                 p0.y + segmentLengthFraction * (p1.y - p0.y),
+                 p0.m + segmentLengthFraction * (p1.m - p0.m) };
+    }
+
+    static CoordinateXYZM pointAlong(double segmentLengthFraction, const CoordinateXYZM& p0, const CoordinateXYZM& p1)
+    {
+        return { p0.x + segmentLengthFraction * (p1.x - p0.x),
+                 p0.y + segmentLengthFraction * (p1.y - p0.y),
+                 p0.z + segmentLengthFraction * (p1.z - p0.z),
+                 p0.m + segmentLengthFraction * (p1.m - p0.m) };
+    }
 
     /** \brief
      * Computes the {@link Coordinate} that lies a given
@@ -382,6 +417,8 @@ public:
      */
     double projectionFactor(const CoordinateXY& p) const;
 
+    static double projectionFactor(const CoordinateXY& p0, const CoordinateXY& p1, const CoordinateXY& q);
+
     /** \brief
      * Computes the fraction of distance (in <tt>[0.0, 1.0]</tt>)
      * that the projection of a point occurs along this line segment.
@@ -411,6 +448,8 @@ public:
 
     CoordinateXY project(const CoordinateXY& p) const;
 
+    static CoordinateXY project(const CoordinateXY& p0, const CoordinateXY& p1, const CoordinateXY& q);
+
     /** \brief
      * Project a line segment onto this line segment and return the resulting
      * line segment.
@@ -436,6 +475,9 @@ public:
     ///
     void closestPoint(const CoordinateXY& p, CoordinateXY& ret) const;
 
+    static CoordinateXY closestPoint(const CoordinateXY& p0, const CoordinateXY& p1,
+                                     const CoordinateXY& q);
+
     /** \brief
      *  Returns <code>true</code> if <code>other</code> is
      *  topologically equal to this LineSegment (e.g. irrespective
@@ -460,6 +502,11 @@ public:
         assert(line);
         return closestPoints(*line);
     }
+
+    static std::array<CoordinateXY, 2> closestPoints(const CoordinateXY& p0,
+                                                     const CoordinateXY& p1,
+                                                     const CoordinateXY& q0,
+                                                     const CoordinateXY& q1);
 
     /**
      * Computes an intersection point between two segments,
@@ -557,6 +604,8 @@ public:
 
 
 private:
+    static CoordinateXY project(const CoordinateXY& p0, const CoordinateXY& p1, double factor);
+
     void project(double factor, CoordinateXY& ret) const;
 
 };

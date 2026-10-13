@@ -18,7 +18,12 @@
 // #include <geos/geom/Coordinate.h>
 //#include <geos/geom/CoordinateSequence.h>
 
+#include <geos/export.h>
+#include <geos/triangulate/tri/Tri.h>
+
 #include <map>
+#include <memory>
+#include <vector>
 
 // Forward declarations
 namespace geos {
@@ -29,13 +34,10 @@ class CoordinateSequence;
 namespace noding {
 class NodedSegmentString;
 }
+namespace algorithm {
+class LineIntersector;
 }
-
-using geos::geom::Coordinate;
-using geos::geom::CoordinateSequence;
-using geos::noding::NodedSegmentString;
-using geos::algorithm::LineIntersector;
-
+}
 
 namespace geos {
 namespace triangulate {
@@ -53,12 +55,19 @@ namespace polygon {
  * and does not trigger an error.
  */
 class GEOS_DLL PolygonNoder {
+    using Coordinate = geos::geom::Coordinate;
+    using CoordinateSequence = geos::geom::CoordinateSequence;
+    using NodedSegmentString = geos::noding::NodedSegmentString;
+    using LineIntersector = geos::algorithm::LineIntersector;
+    using Tri = geos::triangulate::tri::Tri;
+    template<typename TriType>
+    using TriList = geos::triangulate::tri::TriList<TriType>;
 
 public:
 
     PolygonNoder(
-        std::unique_ptr<CoordinateSequence>& shellRing,
-        std::vector<std::unique_ptr<CoordinateSequence>>& holeRings);
+        const std::shared_ptr<const CoordinateSequence>& shellRing,
+        const std::vector<std::shared_ptr<const CoordinateSequence>>& holeRings);
 
     void node();
     bool isShellNoded();
@@ -82,11 +91,11 @@ private:
 
     // Methods
     NodedSegmentString*
-        createNodedSegString(std::unique_ptr<CoordinateSequence>& ringPts, std::size_t i);
+        createNodedSegString(const std::shared_ptr<const CoordinateSequence> &ringPts, std::size_t i);
 
     void createNodedSegmentStrings(
-        std::unique_ptr<CoordinateSequence>& shellRing,
-        std::vector<std::unique_ptr<CoordinateSequence>>& holeRings);
+        const std::shared_ptr<const CoordinateSequence> &shellRing,
+        const std::vector<std::shared_ptr<const CoordinateSequence>> &holeRings);
 
     /* Turn off copy constructors for MSVC */
     PolygonNoder(const PolygonNoder&) = delete;

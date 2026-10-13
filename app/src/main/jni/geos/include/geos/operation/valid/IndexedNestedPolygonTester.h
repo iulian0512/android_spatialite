@@ -37,14 +37,14 @@ namespace geos {      // geos.
 namespace operation { // geos.operation
 namespace valid {     // geos.operation.valid
 
-using geos::geom::Polygon;
-using geos::geom::MultiPolygon;
-using geos::geom::LinearRing;
-using geos::geom::CoordinateXY;
-using algorithm::locate::IndexedPointInAreaLocator;
-using index::strtree::TemplateSTRtree;
-
 class GEOS_DLL IndexedNestedPolygonTester {
+    using Polygon = geos::geom::Polygon;
+    using MultiPolygon = geos::geom::MultiPolygon;
+    using LinearRing = geos::geom::LinearRing;
+    using CoordinateXY = geos::geom::CoordinateXY;
+    using IndexedPointInAreaLocator = algorithm::locate::IndexedPointInAreaLocator;
+    template<typename ItemType>
+    using TemplateSTRtree = index::strtree::TemplateSTRtree<ItemType>;
 
 private:
 
@@ -70,7 +70,7 @@ private:
     *
     * @param the shell to test
     * @param the polygon to test against
-    * @param coordNested return parametr for found coordinate
+    * @param coordNested return parameter for found coordinate
     * @return an interior segment point, or null if the shell is nested correctly
     */
     static bool findIncidentSegmentNestedPoint(

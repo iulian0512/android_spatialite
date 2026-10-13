@@ -17,6 +17,7 @@
 
 #include <geos/export.h>
 #include <geos/noding/Noder.h>
+#include <geos/noding/SegmentString.h>
 
 #include <memory> // for unique_ptr
 
@@ -51,7 +52,7 @@ class GEOS_DLL ValidatingNoder : public Noder {
 
 private:
 
-    std::vector<SegmentString*>* nodedSS;
+    std::vector<std::unique_ptr<SegmentString>> nodedSS;
     noding::Noder& noder;
 
 
@@ -61,11 +62,17 @@ public:
         : noder(noderArg)
         {}
 
-    void computeNodes(std::vector<SegmentString*>* segStrings) override;
+    ~ValidatingNoder() override;
 
-    void validate();
+    void computeNodes(const std::vector<SegmentString*>& segStrings) override;
 
-    std::vector<SegmentString*>* getNodedSubstrings() const override;
+    void validate() const;
+
+    std::vector<std::unique_ptr<SegmentString>> getNodedSubstrings() override;
+
+    // Declare type as noncopyable
+    ValidatingNoder(ValidatingNoder const&) = delete;
+    ValidatingNoder& operator=(ValidatingNoder const&) = delete;
 
 };
 

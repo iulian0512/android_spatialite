@@ -80,9 +80,9 @@ private:
 
     bool isDirected;
 
-    std::vector<std::unique_ptr<geom::LineString>> mergedLineStrings;
+    std::vector<std::unique_ptr<geom::Curve>> mergedGeometries;
 
-    std::vector<EdgeString*> edgeStrings;
+    std::vector<std::unique_ptr<EdgeString>> edgeStrings;
 
     const geom::GeometryFactory* factory;
 
@@ -98,7 +98,7 @@ private:
 
     void buildEdgeStringsStartingAt(planargraph::Node* node);
 
-    EdgeString* buildEdgeStringStartingWith(LineMergeDirectedEdge* start);
+    std::unique_ptr<EdgeString> buildEdgeStringStartingWith(LineMergeDirectedEdge* start) const;
 
 public:
     LineMerger(bool directed = false);
@@ -132,7 +132,9 @@ public:
      */
     std::vector<std::unique_ptr<geom::LineString>> getMergedLineStrings();
 
-    void add(const geom::LineString* lineString);
+    std::vector<std::unique_ptr<geom::Curve>> getMergedCurves();
+
+    void add(const geom::Curve* curve);
 
     // Declare type as noncopyable
     LineMerger(const LineMerger& other) = delete;

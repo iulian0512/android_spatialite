@@ -168,6 +168,14 @@ public:
     /// Returns the number of geometries in this collection
     std::size_t getNumGeometries() const override;
 
+    std::unique_ptr<GeometryCollection> getCurved(const algorithm::LineToCurveParams& params) {
+        return std::unique_ptr<GeometryCollection>(getCurvedImpl(params));
+    }
+
+    std::unique_ptr<GeometryCollection> getLinearized(const algorithm::CurveToLineParams& params) {
+        return std::unique_ptr<GeometryCollection>(getLinearizedImpl(params));
+    }
+
     /// Returns a pointer to the nth Geometry in this collection
     const Geometry* getGeometryN(std::size_t n) const override;
 
@@ -197,6 +205,16 @@ public:
     }
 
 protected:
+
+    struct CollectionFlags {
+        bool flagsCalculated;
+        bool hasPoints;
+        bool hasLines;
+        bool hasPolygons;
+        bool hasM;
+        bool hasZ;
+        bool hasCurves;
+    };
 
     GeometryCollection(const GeometryCollection& gc);
     GeometryCollection& operator=(const GeometryCollection& gc);
@@ -229,6 +247,10 @@ protected:
 
     GeometryCollection* reverseImpl() const override;
 
+    GeometryCollection* getLinearizedImpl(const algorithm::CurveToLineParams&) const override;
+
+    GeometryCollection* getCurvedImpl(const algorithm::LineToCurveParams&) const override;
+
     int
     getSortIndex() const override
     {
@@ -236,15 +258,21 @@ protected:
     };
 
     std::vector<std::unique_ptr<Geometry>> geometries;
+    mutable CollectionFlags flags;
     mutable Envelope envelope;
 
     Envelope computeEnvelopeInternal() const;
 
     void geometryChangedAction() override {
         envelope.setToNull();
+        flags.flagsCalculated = false;
     }
 
     int compareToSameClass(const Geometry* gc) const override;
+
+    bool hasCurvedComponents() const override;
+
+    void setFlags() const;
 
 };
 

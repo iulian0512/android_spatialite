@@ -40,14 +40,14 @@ namespace locate {
 class PointOnGeometryLocator;
 }
 }
+namespace noding {
+class Noder;
+}
 }
 
 namespace geos {      // geos.
 namespace operation { // geos.operation
 namespace overlayng { // geos.operation.overlayng
-
-using namespace geos::geom;
-using algorithm::locate::PointOnGeometryLocator;
 
 /**
  * Computes an overlay where one input is Point(s) and one is not.
@@ -77,6 +77,19 @@ using algorithm::locate::PointOnGeometryLocator;
  * @author Martin Davis
  */
 class GEOS_DLL OverlayMixedPoints {
+    using Curve = geos::geom::Curve;
+    using GeometryFactory = geos::geom::GeometryFactory;
+    using PrecisionModel = geos::geom::PrecisionModel;
+    using Geometry = geos::geom::Geometry;
+    using Coordinate = geos::geom::Coordinate;
+    using CoordinateXY = geos::geom::CoordinateXY;
+    using CoordinateSequence = geos::geom::CoordinateSequence;
+    using Point = geos::geom::Point;
+    using Polygon = geos::geom::Polygon;
+    using LineString = geos::geom::LineString;
+    using Noder = geos::noding::Noder;
+    using Surface = geos::geom::Surface;
+    using PointOnGeometryLocator = algorithm::locate::PointOnGeometryLocator;
 
 private:
 
@@ -87,6 +100,7 @@ private:
     const Geometry* geomNonPointInput;
     const GeometryFactory* geometryFactory;
     bool isPointRHS;
+    Noder* noder;
 
     std::unique_ptr<Geometry> geomNonPoint;
     int geomNonPointDim;
@@ -114,19 +128,19 @@ private:
 
     std::unique_ptr<Geometry> copyNonPoint() const;
 
-    std::unique_ptr<CoordinateSequence> extractCoordinates(const Geometry* points, const PrecisionModel* pm) const;
+    static std::unique_ptr<CoordinateSequence> extractCoordinates(const Geometry* points, const PrecisionModel* pm);
 
-    std::vector<std::unique_ptr<Polygon>> extractPolygons(const Geometry* geom) const;
+    static std::vector<std::unique_ptr<Surface>> extractPolygons(const Geometry* geom);
 
-    std::vector<std::unique_ptr<LineString>> extractLines(const Geometry* geom) const;
+    static std::vector<std::unique_ptr<Curve>> extractLines(const Geometry* geom);
 
 
 
 public:
 
-    OverlayMixedPoints(int p_opCode, const Geometry* geom0, const Geometry* geom1, const PrecisionModel* p_pm);
+    OverlayMixedPoints(int p_opCode, const Geometry* geom0, const Geometry* geom1, const PrecisionModel* p_pm, Noder* p_noder);
 
-    static std::unique_ptr<Geometry> overlay(int opCode, const Geometry* geom0, const Geometry* geom1, const PrecisionModel* pm);
+    static std::unique_ptr<Geometry> overlay(int opCode, const Geometry* geom0, const Geometry* geom1, const PrecisionModel* pm, Noder* p_noder);
 
     std::unique_ptr<Geometry> getResult();
 

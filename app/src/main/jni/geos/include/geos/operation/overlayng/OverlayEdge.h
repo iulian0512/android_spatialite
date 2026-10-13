@@ -37,11 +37,6 @@ class MaximalEdgeRing;
 }
 }
 
-using geos::geom::Coordinate;
-using geos::geom::CoordinateXYZM;
-using geos::geom::CoordinateSequence;
-using geos::geom::Location;
-
 namespace geos {      // geos.
 namespace operation { // geos.operation
 namespace overlayng { // geos.operation.overlayng
@@ -50,18 +45,24 @@ namespace overlayng { // geos.operation.overlayng
 * Creates a single OverlayEdge.
 */
 class GEOS_DLL OverlayEdge : public edgegraph::HalfEdge {
+    using Coordinate = geos::geom::Coordinate;
+    using CoordinateXY = geos::geom::CoordinateXY;
+    using CoordinateXYZM = geos::geom::CoordinateXYZM;
+    using CoordinateSequence = geos::geom::CoordinateSequence;
+    using Location = geos::geom::Location;
 
 private:
 
     // Members
-    const CoordinateSequence* pts;
+    std::shared_ptr<const CoordinateSequence> pts;
     /**
     * 'true' indicates direction is forward along segString
     * 'false' is reverse direction
     * The label must be interpreted accordingly.
     */
     bool direction;
-    CoordinateXYZM dirPt;
+    bool m_isCurved;
+    CoordinateXY dirPt;
     OverlayLabel* label;
     bool m_isInResultArea;
     bool m_isInResultLine;
@@ -79,12 +80,14 @@ private:
 
 public:
 
-    OverlayEdge(const CoordinateXYZM& p_orig, const CoordinateXYZM& p_dirPt,
+    OverlayEdge(const CoordinateXYZM& p_orig, const CoordinateXY& p_dirPt,
                 bool p_direction, OverlayLabel* p_label,
-                const CoordinateSequence* p_pts)
+                const std::shared_ptr<const CoordinateSequence>& p_pts,
+                bool isCurved)
         : HalfEdge(p_orig)
         , pts(p_pts)
         , direction(p_direction)
+        , m_isCurved(isCurved)
         , dirPt(p_dirPt)
         , label(p_label)
         , m_isInResultArea(false)
@@ -103,7 +106,12 @@ public:
         return direction;
     };
 
-    const CoordinateXYZM& directionPt() const override
+    bool isCurved() const
+    {
+        return m_isCurved;
+    }
+
+    const CoordinateXY& directionPt() const override
     {
         return dirPt;
     };
@@ -125,16 +133,10 @@ public:
 
     const CoordinateSequence* getCoordinatesRO() const
     {
-        return pts;
+        return pts.get();
     };
 
-    std::unique_ptr<CoordinateSequence> getCoordinates()
-    {
-        // return a copy of pts
-        return pts->clone();
-    };
-
-    std::unique_ptr<CoordinateSequence> getCoordinatesOriented();
+    std::shared_ptr<const CoordinateSequence> getCoordinatesOriented() const;
 
     /**
     * Adds the coordinates of this edge to the given list,

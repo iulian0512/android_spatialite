@@ -28,6 +28,9 @@
 #include <geos/geom/Polygon.h>
 #include <geos/geom/util/GeometryExtracter.h>
 #include <geos/operation/union/CascadedPolygonUnion.h>
+#include <geos/util/Progress.h>
+
+#include <geos/util.h>
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -91,7 +94,8 @@ public:
     Union(const T& geoms)
     {
         UnaryUnionOp op(geoms);
-        return op.Union();
+        geos::util::ProgressFunction* progressFunction = nullptr;
+        return op.Union(progressFunction);
     }
 
     template <class T>
@@ -100,14 +104,15 @@ public:
           geom::GeometryFactory& geomFact)
     {
         UnaryUnionOp op(geoms, geomFact);
-        return op.Union();
+        geos::util::ProgressFunction* progressFunction = nullptr;
+        return op.Union(progressFunction);
     }
 
     static std::unique_ptr<geom::Geometry>
-    Union(const geom::Geometry& geom)
+    Union(const geom::Geometry& geom, geos::util::ProgressFunction* progressFunction)
     {
         UnaryUnionOp op(geom);
-        return op.Union();
+        return op.Union(progressFunction);
     }
 
     template <class T>
@@ -148,7 +153,7 @@ public:
      * @return an empty GEOMETRYCOLLECTION if no geometries were provided
      *         in the input
      */
-    std::unique_ptr<geom::Geometry> Union();
+    std::unique_ptr<geom::Geometry> Union(geos::util::ProgressFunction* progressFunction);
 
 private:
 
@@ -166,19 +171,7 @@ private:
         }
     }
 
-    void
-    extract(const geom::Geometry& geom)
-    {
-        using namespace geom::util;
-
-        if(! geomFact) {
-            geomFact = geom.getFactory();
-        }
-
-        GeometryExtracter::extract<geom::Polygon>(geom, polygons);
-        GeometryExtracter::extract<geom::LineString>(geom, lines);
-        GeometryExtracter::extract<geom::Point>(geom, points);
-    }
+    void extract(const geom::Geometry& geom);
 
     /**
      * Computes a unary union with no extra optimization,
@@ -210,14 +203,14 @@ private:
      * @return the union of the input(s)
      * @return null if both inputs are null
      */
-    std::unique_ptr<geom::Geometry> unionWithNull(
+    static std::unique_ptr<geom::Geometry> unionWithNull(
         std::unique_ptr<geom::Geometry> g0,
         std::unique_ptr<geom::Geometry> g1
         );
 
     // Members
-    std::vector<const geom::Polygon*> polygons;
-    std::vector<const geom::LineString*> lines;
+    std::vector<const geom::Surface*> polygons;
+    std::vector<const geom::Curve*> lines;
     std::vector<const geom::Point*> points;
 
     const geom::GeometryFactory* geomFact;

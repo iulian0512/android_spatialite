@@ -147,6 +147,20 @@ public:
                                        const geom::CoordinateXY& tail,
                                        const geom::CoordinateXY& tip2);
 
+    /// Computes the angle of the unoriented bisector
+    /// of the smallest angle between two vectors.
+    /// The computed angle will be in the range (-Pi, Pi].
+    /// Collinear inputs are handled.
+    ///
+    /// @param tip1 the tip of v1
+    /// @param tail the tail of each vector
+    /// @param tip2 the tip of v2
+    /// @return the angle of the bisector between v1 and v2
+    ///
+    static double bisector(const geom::CoordinateXY& tip1,
+                           const geom::CoordinateXY& tail,
+                           const geom::CoordinateXY& tip2);
+
     /// Computes the interior angle between two segments of a ring.
     ///
     /// The ring is assumed to be oriented in a clockwise direction.
@@ -204,6 +218,34 @@ public:
     ///
     static double normalizePositive(double angle);
 
+    /// Returns true if angle x is within the counterclockwise
+    /// arc from angle a to angle b
+    ///
+    /// @param angle angle to test
+    /// @param from starting angle of arc
+    /// @param to ending angle of arc
+    ///
+    /// @return true if `angle` is within [from, to]
+    static bool isWithinCCW(double angle, double from, double to);
+
+    /// Return which of the two provided angles would be encountered first when moving
+    /// counterclockwise from the specified start angle.
+    ///
+    /// @param from the starting angle
+    /// @param a the first candidate angle
+    /// @param b the second candidate angle
+    ///
+    /// @return a or b
+    static double nextCCW(double from, double a, double b);
+
+    /// Return the fraction of an angle as a fraction of a larger angle
+    ///
+    /// @param x an angle between a and b
+    /// @param a the starting angle
+    /// @param b the ending angle
+    ///
+    /// @return a value in the range [0, 1]
+    static double fractionCCW(double x, double a, double b);
 
     /// Computes the unoriented smallest difference between two angles.
     ///
@@ -216,6 +258,37 @@ public:
     ///         (in range [0, Pi] )
     ///
     static double diff(double ang1, double ang2);
+
+    /// \brief
+    /// Computes both sin and cos of an angle, snapping near-zero values
+    /// to zero.
+    ///
+    /// The angle does not need to be normalized. Unlike std::sin
+    /// and std::cos, this method will snap near-zero values to zero
+    /// for (e.g.) sin(pi) and cos(pi/2).
+    ///
+    /// @param ang the input angle (in radians)
+    /// @param rSin the result of sin(ang)
+    /// @param rCos the result of cos(ang)
+    ///
+    static inline void sinCosSnap(const double ang, double& rSin, double& rCos) {
+        rSin = std::sin(ang);
+        rCos = std::cos(ang);
+        // snap near-zero values
+        if (std::fabs(rSin) < 5e-16) rSin = 0.0;
+        if (std::fabs(rCos) < 5e-16) rCos = 0.0;
+    }
+
+    /// Projects a point by a given angle and distance.
+    ///
+    /// @param p the point to project
+    /// @param angle the angle at which to project
+    /// @param dist the distance to project
+    /// @return the projected point
+    ///
+    static geom::CoordinateXY project(const geom::CoordinateXY& p,
+        double angle, double dist);
+
 };
 
 

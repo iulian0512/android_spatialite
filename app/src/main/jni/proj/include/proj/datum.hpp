@@ -151,6 +151,9 @@ class PROJ_GCC_DLL DatumEnsemble final : public common::ObjectUsage,
     PROJ_INTERNAL void _exportToJSON(io::JSONFormatter *formatter)
         const override; // throw(io::FormattingException)
 
+    PROJ_INTERNAL static std::string
+    ensembleNameToNonEnsembleName(const std::string &s);
+
     PROJ_FOR_TEST DatumNNPtr
     asDatum(const io::DatabaseContextPtr &dbContext) const;
     //! @endcond
@@ -338,7 +341,8 @@ class PROJ_GCC_DLL Ellipsoid final : public common::IdentifiedObject,
                         //! @endcond
 
     PROJ_INTERNAL static std::string
-    guessBodyName(const io::DatabaseContextPtr &dbContext, double a);
+    guessBodyName(const io::DatabaseContextPtr &dbContext, double a,
+                  const std::string &ellpsName = std::string());
 
     PROJ_INTERNAL bool lookForProjWellKnownEllps(std::string &projEllpsName,
                                                  std::string &ellpsName) const;

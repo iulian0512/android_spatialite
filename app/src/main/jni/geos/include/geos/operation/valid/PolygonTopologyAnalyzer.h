@@ -35,12 +35,12 @@ namespace geos {      // geos.
 namespace operation { // geos.operation
 namespace valid {     // geos.operation.valid
 
-using geos::geom::CoordinateXY;
-using geos::geom::CoordinateSequence;
-using geos::geom::Geometry;
-using geos::geom::LinearRing;
-
 class GEOS_DLL PolygonTopologyAnalyzer {
+    using CoordinateXY = geos::geom::CoordinateXY;
+    using CoordinateSequence = geos::geom::CoordinateSequence;
+    using Geometry = geos::geom::Geometry;
+    using LinearRing = geos::geom::LinearRing;
+    using SegmentString = geos::noding::SegmentString;
 
 private:
 
@@ -55,11 +55,6 @@ private:
     // can pass around pointers with abandon
     std::deque<PolygonRing> polyRingStore;
     std::deque<noding::BasicSegmentString> segStringStore;
-    // when building SegmentStrings we sometimes want
-    // to use deduped CoordinateSequences so we will
-    // keep the deduped ones here so they get cleaned
-    // up when processing is complete
-    std::vector<std::unique_ptr<CoordinateSequence>> coordSeqStore;
 
     PolygonRing* createPolygonRing(const LinearRing* p_ring);
     PolygonRing* createPolygonRing(const LinearRing* p_ring, int p_index, PolygonRing* p_shell);

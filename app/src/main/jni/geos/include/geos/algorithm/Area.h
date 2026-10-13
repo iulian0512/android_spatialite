@@ -23,11 +23,18 @@
 #include <geos/geom/CoordinateSequence.h>
 
 namespace geos {
+
+namespace geom {
+class Curve;
+}
+
 namespace algorithm { // geos::algorithm
 
 
 class GEOS_DLL Area {
 public:
+
+    static double ofClosedCurve(const geom::Curve& ring);
 
     /**
     * Computes the area for a ring.
@@ -36,6 +43,14 @@ public:
     * @return the area of the ring
     */
     static double ofRing(const std::vector<geom::Coordinate>& ring);
+
+    /**
+    * Computes the area for a ring.
+    *
+    * @param ring the coordinates forming the ring
+    * @return the area of the ring
+    */
+    static double ofRing(const std::vector<geom::CoordinateXY>& ring);
 
     /**
     * Computes the area for a ring.

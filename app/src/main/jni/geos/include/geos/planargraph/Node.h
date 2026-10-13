@@ -45,10 +45,10 @@ class GEOS_DLL Node: public GraphComponent {
 protected:
 
     /// The location of this Node
-    geom::Coordinate pt;
+    geom::CoordinateXY pt;
 
     /// The collection of DirectedEdges that leave this Node
-    DirectedEdgeStar* deStar;
+    DirectedEdgeStar deStar;
 
 public:
 
@@ -57,43 +57,23 @@ public:
     /** \brief
      * Returns all Edges that connect the two nodes (which are
      * assumed to be different).
-     *
-     * Note: returned vector is newly allocated, ownership to
-     * the caller.
      */
-    static std::vector<Edge*>* getEdgesBetween(Node* node0,
-            Node* node1);
+    static std::vector<Edge*> getEdgesBetween(const Node* node0,
+            const Node* node1);
 
     /// Constructs a Node with the given location.
-    Node(const geom::Coordinate& newPt)
+    explicit Node(const geom::CoordinateXY& newPt)
         :
         pt(newPt)
-    {
-        deStar = new DirectedEdgeStar();
-    }
-
-    ~Node() override
-    {
-        delete deStar;
-    }
-
-    /**
-     * \brief
-     * Constructs a Node with the given location and
-     * collection of outgoing DirectedEdges.
-     * Takes ownership of the given DirectedEdgeStar!!
-     */
-    Node(geom::Coordinate& newPt, DirectedEdgeStar* newDeStar)
-        :
-        pt(newPt),
-        deStar(newDeStar)
     {}
+
+    ~Node() override = default;
 
     /**
      * \brief Returns the location of this Node.
      */
-    geom::Coordinate&
-    getCoordinate()
+    const geom::CoordinateXY&
+    getCoordinate() const
     {
         return pt;
     }
@@ -104,7 +84,7 @@ public:
     void
     addOutEdge(DirectedEdge* de)
     {
-        deStar->add(de);
+        deStar.add(de);
     }
 
     /**
@@ -114,12 +94,13 @@ public:
     DirectedEdgeStar*
     getOutEdges()
     {
-        return deStar;
+        return &deStar;
     }
+
     const DirectedEdgeStar*
     getOutEdges() const
     {
-        return deStar;
+        return &deStar;
     }
 
     /**
@@ -128,7 +109,7 @@ public:
     size_t
     getDegree() const
     {
-        return deStar->getDegree();
+        return deStar.getDegree();
     }
 
     /**
@@ -139,7 +120,7 @@ public:
     int
     getIndex(Edge* edge)
     {
-        return deStar->getIndex(edge);
+        return deStar.getIndex(edge);
     }
 
 private:

@@ -90,6 +90,10 @@ using GeodeticReferenceFrameNNPtr = util::nn<GeodeticReferenceFramePtr>;
 class VerticalReferenceFrame;
 using VerticalReferenceFramePtr = std::shared_ptr<VerticalReferenceFrame>;
 using VerticalReferenceFrameNNPtr = util::nn<VerticalReferenceFramePtr>;
+
+class EngineeringDatum;
+using EngineeringDatumPtr = std::shared_ptr<EngineeringDatum>;
+using EngineeringDatumNNPtr = util::nn<EngineeringDatumPtr>;
 } // namespace datum
 
 namespace crs {
@@ -113,10 +117,26 @@ class ProjectedCRS;
 using ProjectedCRSPtr = std::shared_ptr<ProjectedCRS>;
 using ProjectedCRSNNPtr = util::nn<ProjectedCRSPtr>;
 
+class DerivedProjectedCRS;
+using DerivedProjectedCRSPtr = std::shared_ptr<DerivedProjectedCRS>;
+using DerivedProjectedCRSNNPtr = util::nn<DerivedProjectedCRSPtr>;
+
 class CompoundCRS;
 using CompoundCRSPtr = std::shared_ptr<CompoundCRS>;
 using CompoundCRSNNPtr = util::nn<CompoundCRSPtr>;
+
+class EngineeringCRS;
+using EngineeringCRSPtr = std::shared_ptr<EngineeringCRS>;
+using EngineeringCRSNNPtr = util::nn<EngineeringCRSPtr>;
 } // namespace crs
+
+namespace coordinates {
+class CoordinateMetadata;
+/** Shared pointer of CoordinateMetadata */
+using CoordinateMetadataPtr = std::shared_ptr<CoordinateMetadata>;
+/** Non-null shared pointer of CoordinateMetadata */
+using CoordinateMetadataNNPtr = util::nn<CoordinateMetadataPtr>;
+} // namespace coordinates
 
 namespace operation {
 class Conversion;
@@ -126,6 +146,10 @@ using ConversionNNPtr = util::nn<ConversionPtr>;
 class CoordinateOperation;
 using CoordinateOperationPtr = std::shared_ptr<CoordinateOperation>;
 using CoordinateOperationNNPtr = util::nn<CoordinateOperationPtr>;
+
+class PointMotionOperation;
+using PointMotionOperationPtr = std::shared_ptr<PointMotionOperation>;
+using PointMotionOperationNNPtr = util::nn<PointMotionOperationPtr>;
 } // namespace operation
 
 /** osgeo.proj.io namespace.
@@ -444,6 +468,8 @@ class PROJ_GCC_DLL PROJStringFormatter {
 
     PROJ_INTERNAL std::set<std::string> getUsedGridNames() const;
 
+    PROJ_INTERNAL bool requiresPerCoordinateInputTime() const;
+
     PROJ_INTERNAL void setTOWGS84Parameters(const std::vector<double> &params);
     PROJ_INTERNAL const std::vector<double> &getTOWGS84Parameters() const;
 
@@ -706,7 +732,7 @@ class PROJ_GCC_DLL IPROJStringExportable {
      *
      * @param formatter PROJ string formatter.
      * @return a PROJ string.
-     * @throw FormattingException */
+     * @throw FormattingException if cannot be exported as a PROJ string */
     PROJ_DLL std::string exportToPROJString(
         PROJStringFormatter *formatter) const; // throw(FormattingException)
 
@@ -780,6 +806,7 @@ class PROJ_GCC_DLL WKTParser {
 
     PROJ_DLL WKTParser &setStrict(bool strict);
     PROJ_DLL std::list<std::string> warningList() const;
+    PROJ_DLL std::list<std::string> grammarErrorList() const;
 
     PROJ_DLL WKTParser &setUnsetIdentifiersIfIncompatibleDef(bool unset);
 
@@ -898,8 +925,12 @@ class PROJ_GCC_DLL DatabaseContext {
                                   bool &directDownload, bool &openLicense,
                                   bool &gridAvailable) const;
 
+    PROJ_DLL unsigned int getQueryCounter() const;
+
     PROJ_INTERNAL std::string
     getProjGridName(const std::string &oldProjGridName);
+
+    PROJ_INTERNAL void invalidateGridInfo(const std::string &projFilename);
 
     PROJ_INTERNAL std::string getOldProjGridName(const std::string &gridName);
 
@@ -947,6 +978,11 @@ class PROJ_GCC_DLL DatabaseContext {
     PROJ_DLL std::vector<std::string>
     getVersionedAuthoritiesFromName(const std::string &authName);
 
+    PROJ_FOR_TEST bool
+    toWGS84AutocorrectWrongValues(double &tx, double &ty, double &tz,
+                                  double &rx, double &ry, double &rz,
+                                  double &scale_difference) const;
+
     //! @endcond
 
   protected:
@@ -973,7 +1009,7 @@ using AuthorityFactoryNNPtr = util::nn<AuthorityFactoryPtr>;
  * A AuthorityFactory should be used only by one thread at a time.
  *
  * \remark Implements [AuthorityFactory]
- * (http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/AuthorityFactory.html)
+ * (http://www.geoapi.org/3.0/javadoc/org.opengis.geoapi/org/opengis/referencing/AuthorityFactory.html)
  * from \ref GeoAPI
  */
 class PROJ_GCC_DLL AuthorityFactory {
@@ -1010,6 +1046,9 @@ class PROJ_GCC_DLL AuthorityFactory {
     PROJ_DLL datum::VerticalReferenceFrameNNPtr
     createVerticalDatum(const std::string &code) const;
 
+    PROJ_DLL datum::EngineeringDatumNNPtr
+    createEngineeringDatum(const std::string &code) const;
+
     PROJ_DLL cs::CoordinateSystemNNPtr
     createCoordinateSystem(const std::string &code) const;
 
@@ -1022,17 +1061,26 @@ class PROJ_GCC_DLL AuthorityFactory {
     PROJ_DLL crs::VerticalCRSNNPtr
     createVerticalCRS(const std::string &code) const;
 
+    PROJ_DLL crs::EngineeringCRSNNPtr
+    createEngineeringCRS(const std::string &code) const;
+
     PROJ_DLL operation::ConversionNNPtr
     createConversion(const std::string &code) const;
 
     PROJ_DLL crs::ProjectedCRSNNPtr
     createProjectedCRS(const std::string &code) const;
 
+    PROJ_DLL crs::DerivedProjectedCRSNNPtr
+    createDerivedProjectedCRS(const std::string &code) const;
+
     PROJ_DLL crs::CompoundCRSNNPtr
     createCompoundCRS(const std::string &code) const;
 
     PROJ_DLL crs::CRSNNPtr
     createCoordinateReferenceSystem(const std::string &code) const;
+
+    PROJ_DLL coordinates::CoordinateMetadataNNPtr
+    createCoordinateMetadata(const std::string &code) const;
 
     PROJ_DLL operation::CoordinateOperationNNPtr
     createCoordinateOperation(const std::string &code,
@@ -1062,6 +1110,8 @@ class PROJ_GCC_DLL AuthorityFactory {
         /** Object of type datum::VerticalReferenceFrame (and derived
            classes) */
         VERTICAL_REFERENCE_FRAME,
+        /** Object of type datum::EngineeringDatum */
+        ENGINEERING_DATUM,
         /** Object of type crs::CRS (and derived classes) */
         CRS,
         /** Object of type crs::GeodeticCRS (and derived classes) */
@@ -1079,7 +1129,11 @@ class PROJ_GCC_DLL AuthorityFactory {
         /** Object of type crs::VerticalCRS (and derived classes) */
         VERTICAL_CRS,
         /** Object of type crs::CompoundCRS (and derived classes) */
+        ENGINEERING_CRS,
+        /** Object of type crs::EngineeringCRS */
         COMPOUND_CRS,
+        /** Object of type crs::DerivedProjectedCRS */
+        DERIVED_PROJECTED_CRS,
         /** Object of type operation::CoordinateOperation (and derived
            classes) */
         COORDINATE_OPERATION,
@@ -1214,7 +1268,8 @@ class PROJ_GCC_DLL AuthorityFactory {
         const std::vector<std::string> &allowedAuthorities =
             std::vector<std::string>(),
         const metadata::ExtentPtr &intersectingExtent1 = nullptr,
-        const metadata::ExtentPtr &intersectingExtent2 = nullptr) const;
+        const metadata::ExtentPtr &intersectingExtent2 = nullptr,
+        bool skipIntermediateExtentIntersection = false) const;
 
     PROJ_DLL std::string getOfficialNameFromAlias(
         const std::string &aliasedName, const std::string &tableName,
@@ -1242,6 +1297,11 @@ class PROJ_GCC_DLL AuthorityFactory {
     PROJ_INTERNAL std::list<crs::GeodeticCRSNNPtr>
     createGeodeticCRSFromDatum(const std::string &datum_auth_name,
                                const std::string &datum_code,
+                               const std::string &geodetic_crs_type) const;
+
+    PROJ_INTERNAL std::list<crs::GeodeticCRSNNPtr>
+    createGeodeticCRSFromDatum(const datum::GeodeticReferenceFrameNNPtr &datum,
+                               const std::string &preferredAuthName,
                                const std::string &geodetic_crs_type) const;
 
     PROJ_INTERNAL std::list<crs::VerticalCRSNNPtr>
@@ -1276,7 +1336,8 @@ class PROJ_GCC_DLL AuthorityFactory {
         bool considerKnownGridsAsAvailable, bool discardSuperseded,
         const std::vector<std::string> &allowedAuthorities,
         const metadata::ExtentPtr &intersectingExtent1,
-        const metadata::ExtentPtr &intersectingExtent2) const;
+        const metadata::ExtentPtr &intersectingExtent2,
+        bool skipIntermediateExtentIntersection = false) const;
 
     typedef std::pair<common::IdentifiedObjectNNPtr, std::string>
         PairObjectName;
@@ -1285,7 +1346,12 @@ class PROJ_GCC_DLL AuthorityFactory {
                             const std::vector<ObjectType> &allowedObjectTypes =
                                 std::vector<ObjectType>(),
                             bool approximateMatch = true,
-                            size_t limitResultCount = 0) const;
+                            size_t limitResultCount = 0,
+                            bool useAliases = true) const;
+
+    PROJ_FOR_TEST std::vector<operation::PointMotionOperationNNPtr>
+    getPointMotionOperationsFor(const crs::GeodeticCRSNNPtr &crs,
+                                bool usePROJAlternativeGridNames) const;
 
     //! @endcond
 

@@ -44,7 +44,7 @@ private:
     const geom::PrecisionModel& targetPM;
 
     std::unique_ptr<geom::CoordinateSequence> reducePointwise(
-        const geom::CoordinateSequence* coordinates);
+        const geom::CoordinateSequence* coordinates) const;
 
 public:
 
@@ -63,7 +63,7 @@ protected:
 
     std::unique_ptr<geom::CoordinateSequence> transformCoordinates(
         const geom::CoordinateSequence* coords,
-        const geom::Geometry* parent);
+        const geom::Geometry* parent) override;
 
 
 };

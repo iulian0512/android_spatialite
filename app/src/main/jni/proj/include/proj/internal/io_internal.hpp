@@ -45,6 +45,17 @@ NS_PROJ_START
 
 namespace io {
 
+// CRS subtypes
+#define CRS_SUBTYPE_GEOG_2D "geographic 2D"
+#define CRS_SUBTYPE_GEOG_3D "geographic 3D"
+#define CRS_SUBTYPE_GEOCENTRIC "geocentric"
+#define CRS_SUBTYPE_OTHER "other"
+#define CRS_SUBTYPE_PROJECTED "projected"
+#define CRS_SUBTYPE_DERIVED_PROJECTED "derived projected"
+#define CRS_SUBTYPE_ENGINEERING "engineering"
+#define CRS_SUBTYPE_VERTICAL "vertical"
+#define CRS_SUBTYPE_COMPOUND "compound"
+
 // ---------------------------------------------------------------------------
 
 class WKTConstants {
@@ -137,12 +148,13 @@ class WKTConstants {
     static const std::string BASEPARAMCRS;
     static const std::string BASETIMECRS;
     static const std::string VERSION;
-    static const std::string GEOIDMODEL;         // WKT2-2019
-    static const std::string COORDINATEMETADATA; // WKT2-2019
-    static const std::string EPOCH;              // WKT2-2019
-    static const std::string AXISMINVALUE;       // WKT2-2019
-    static const std::string AXISMAXVALUE;       // WKT2-2019
-    static const std::string RANGEMEANING;       // WKT2-2019
+    static const std::string GEOIDMODEL;           // WKT2-2019
+    static const std::string COORDINATEMETADATA;   // WKT2-2019
+    static const std::string EPOCH;                // WKT2-2019
+    static const std::string AXISMINVALUE;         // WKT2-2019
+    static const std::string AXISMAXVALUE;         // WKT2-2019
+    static const std::string RANGEMEANING;         // WKT2-2019
+    static const std::string POINTMOTIONOPERATION; // WKT2-2019
 
     // WKT2 alternate (longer or shorter)
     static const std::string GEODETICCRS;
@@ -174,7 +186,7 @@ NS_PROJ_END
 // ---------------------------------------------------------------------------
 
 /** Auxiliary structure to PJ_CONTEXT storing C++ context stuff. */
-struct projCppContext {
+struct PROJ_GCC_DLL projCppContext {
   private:
     NS_PROJ::io::DatabaseContextPtr databaseContext_{};
     PJ_CONTEXT *ctx_ = nullptr;
@@ -207,7 +219,13 @@ struct projCppContext {
         return auxDbPaths_;
     }
 
-    NS_PROJ::io::DatabaseContextNNPtr getDatabaseContext();
+    NS_PROJ::io::DatabaseContextNNPtr PROJ_FOR_TEST getDatabaseContext();
+
+    /** Return the database context only if already opened.
+     * Does not attempt to open proj.db. */
+    inline NS_PROJ::io::DatabaseContextPtr getDatabaseContextIfOpen() const {
+        return databaseContext_;
+    }
 
     void closeDb() { databaseContext_ = nullptr; }
 };

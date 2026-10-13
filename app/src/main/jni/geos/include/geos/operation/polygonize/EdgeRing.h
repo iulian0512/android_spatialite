@@ -20,7 +20,7 @@
 #pragma once
 
 #include <geos/export.h>
-#include <geos/algorithm/locate/IndexedPointInAreaLocator.h>
+#include <geos/algorithm/locate/PointOnGeometryLocator.h>
 #include <geos/operation/polygonize/PolygonizeDirectedEdge.h>
 #include <geos/geom/Geometry.h>
 #include <geos/geom/LinearRing.h>
@@ -38,6 +38,7 @@
 // Forward declarations
 namespace geos {
 namespace geom {
+class Curve;
 class LineString;
 class CoordinateSequence;
 class GeometryFactory;
@@ -64,11 +65,10 @@ private:
     DeList deList;
 
     // cache the following data for efficiency
-    std::unique_ptr<geom::LinearRing> ring;
-    std::unique_ptr<geom::CoordinateSequence> ringPts;
-    std::unique_ptr<algorithm::locate::PointOnGeometryLocator> ringLocator;
+    mutable std::unique_ptr<geom::Curve> ring;
+    mutable std::unique_ptr<algorithm::locate::PointOnGeometryLocator> ringLocator;
 
-    std::unique_ptr<std::vector<std::unique_ptr<geom::LinearRing>>> holes;
+    std::vector<std::unique_ptr<geom::Curve>> holes;
 
     EdgeRing* shell = nullptr;
     bool is_hole;
@@ -78,24 +78,18 @@ private:
     bool is_included = false;
     bool visitedByUpdateIncludedRecursive = false;
 
-    /** \brief
-     * Computes the list of coordinates which are contained in this ring.
-     * The coordinates are computed once only and cached.
-     *
-     * @return an array of the Coordinate in this ring
-     */
-    const geom::CoordinateSequence* getCoordinates();
+    const geom::Envelope& getEnvelope() const {
+        return *getRingInternal()->getEnvelopeInternal();
+    }
 
     static void addEdge(const geom::CoordinateSequence* coords,
                         bool isForward,
                         geom::CoordinateSequence* coordList);
 
-    algorithm::locate::PointOnGeometryLocator* getLocator() {
-        if (ringLocator == nullptr) {
-            ringLocator.reset(new algorithm::locate::IndexedPointInAreaLocator(*getRingInternal()));
-        }
-        return ringLocator.get();
-    }
+    algorithm::locate::PointOnGeometryLocator* getLocator() const;
+
+    bool contains(const EdgeRing& otherRing) const;
+    bool isPointInOrOut(const EdgeRing& otherRing) const;
 
 public:
     /** \brief
@@ -123,7 +117,7 @@ public:
      * @return containing EdgeRing, if there is one
      * @return null if no containing EdgeRing is found
      */
-    EdgeRing* findEdgeRingContaining(const std::vector<EdgeRing*> & erList);
+    EdgeRing* findEdgeRingContaining(const std::vector<EdgeRing*> & erList) const;
 
     /**
      * \brief
@@ -147,7 +141,7 @@ public:
      * @return a Coordinate reference from <code>testPts</code> which is
      * not in <code>pts</code>, or <code>Coordinate::nullCoord</code>
      */
-    static const geom::Coordinate& ptNotInList(
+    static const geom::CoordinateXY& ptNotInList(
         const geom::CoordinateSequence* testPts,
         const geom::CoordinateSequence* pts);
 
@@ -159,7 +153,7 @@ public:
      * @param pts an array of Coordinate to test
      * @return <code>true</code> if the point is in the array
      */
-    static bool isInList(const geom::Coordinate& pt,
+    static bool isInList(const geom::CoordinateXY& pt,
                          const geom::CoordinateSequence* pts);
 
     explicit EdgeRing(const geom::GeometryFactory* newFactory);
@@ -177,7 +171,7 @@ public:
     /** \brief
      * Tests whether this ring is a hole.
      *
-     * Due to the way the edges in the polyongization graph are linked,
+     * Due to the way the edges in the polygonization graph are linked,
      * a ring is a hole if it is oriented counter-clockwise.
      * @return <code>true</code> if this ring is a hole
      */
@@ -285,7 +279,7 @@ public:
      *
      * @param hole the LinearRing forming the hole.
      */
-    void addHole(geom::LinearRing* hole);
+    void addHole(std::unique_ptr<geom::Curve> hole);
 
     void addHole(EdgeRing* holeER);
 
@@ -297,7 +291,7 @@ public:
      *
      * @return the Polygon formed by this ring and its holes.
      */
-    std::unique_ptr<geom::Polygon> getPolygon();
+    std::unique_ptr<geom::Surface> getPolygon();
 
     /** \brief
      * Tests if the LinearRing ring formed by this edge ring
@@ -308,35 +302,23 @@ public:
     void computeValid();
 
     /** \brief
-     * Gets the coordinates for this ring as a LineString.
-     *
-     * Used to return the coordinates in this ring
-     * as a valid geometry, when it has been detected that the ring
-     * is topologically invalid.
-     * @return a LineString containing the coordinates in this ring
-     */
-    std::unique_ptr<geom::LineString> getLineString();
-
-    /** \brief
-     * Returns this ring as a LinearRing, or null if an Exception
+     * Returns this ring or null if an Exception
      * occurs while creating it (such as a topology problem).
      *
-     * Ownership of ring is retained by the object.
-     * Details of problems are written to standard output.
+     * Ownership of the ring is retained by the object.
      */
-    geom::LinearRing* getRingInternal();
+    const geom::Curve* getRingInternal() const;
 
     /** \brief
-     * Returns this ring as a LinearRing, or null if an Exception
+     * Returns this ring or null if an Exception
      * occurs while creating it (such as a topology problem).
      *
-     * Details of problems are written to standard output.
-     * Caller gets ownership of ring.
+     * Caller gets ownership of the ring.
      */
-    std::unique_ptr<geom::LinearRing> getRingOwnership();
+    std::unique_ptr<geom::Curve> getRingOwnership();
 
-    bool isInRing(const geom::Coordinate & pt) {
-        return geom::Location::EXTERIOR != getLocator()->locate(&pt);
+    geom::Location locate(const geom::CoordinateXY& pt) const {
+        return getLocator()->locate(&pt);
     }
 };
 

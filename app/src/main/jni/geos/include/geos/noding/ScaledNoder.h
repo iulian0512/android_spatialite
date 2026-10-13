@@ -77,9 +77,9 @@ public:
 
     ~ScaledNoder() override;
 
-    std::vector<SegmentString*>* getNodedSubstrings() const override;
+    std::vector<std::unique_ptr<SegmentString>> getNodedSubstrings() override;
 
-    void computeNodes(std::vector<SegmentString*>* inputSegStr) override;
+    void computeNodes(const std::vector<SegmentString*>& inputSegStr) override;
 
     //void filter(Coordinate& c);
 
@@ -104,9 +104,9 @@ private:
 
     bool isScaled;
 
-    void rescale(std::vector<SegmentString*>& segStrings) const;
+    void rescale(std::vector<std::unique_ptr<SegmentString>>& segStrings) const;
 
-    void scale(std::vector<SegmentString*>& segStrings) const;
+    void scale(const std::vector<SegmentString*>& segStrings) const;
 
     class Scaler;
 

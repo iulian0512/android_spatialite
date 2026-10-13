@@ -23,6 +23,7 @@
 #include <geos/export.h>
 #include <geos/planargraph/PlanarGraph.h> // for inheritance
 
+#include <memory>
 #include <vector>
 
 #ifdef _MSC_VER
@@ -33,7 +34,7 @@
 // Forward declarations
 namespace geos {
 namespace geom {
-class LineString;
+class Curve;
 class Coordinate;
 }
 namespace planargraph {
@@ -59,27 +60,35 @@ class GEOS_DLL LineMergeGraph: public planargraph::PlanarGraph {
 
 private:
 
-    planargraph::Node* getNode(const geom::Coordinate& coordinate);
+    planargraph::Node* getNode(const geom::CoordinateXY& coordinate);
 
-    std::vector<planargraph::Node*> newNodes;
+    std::vector<std::unique_ptr<planargraph::Node>> newNodes;
 
-    std::vector<planargraph::Edge*> newEdges;
+    std::vector<std::unique_ptr<planargraph::Edge>> newEdges;
 
-    std::vector<planargraph::DirectedEdge*> newDirEdges;
+    std::vector<std::unique_ptr<planargraph::DirectedEdge>> newDirEdges;
 
 public:
 
+    LineMergeGraph();
+
     /** \brief
      * Adds an Edge, DirectedEdges, and Nodes for the given
-     * LineString representation of an edge.
+     * LineString/CircularString/CompoundCurve representation of an edge.
      *
      * Empty lines or lines with all coordinates equal are not added.
      *
-     * @param lineString the linestring to add to the graph
+     * @param curve the curve to add to the graph
      */
-    void addEdge(const geom::LineString* lineString);
+    void addEdge(const geom::Curve* curve);
 
     ~LineMergeGraph() override;
+
+private:
+    // Declared as non-copyable
+    LineMergeGraph(const LineMergeGraph& other) = delete;
+    LineMergeGraph& operator=(const LineMergeGraph& rhs) = delete;
+
 };
 } // namespace geos::operation::linemerge
 } // namespace geos::operation

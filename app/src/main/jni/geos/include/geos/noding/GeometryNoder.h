@@ -25,10 +25,14 @@
 
 // Forward declarations
 namespace geos {
+namespace algorithm {
+class CircularArcIntersector;
+}
 namespace geom {
 class Geometry;
 }
 namespace noding {
+class ArcIntersectionAdder;
 class Noder;
 }
 }
@@ -41,29 +45,46 @@ public:
 
     static std::unique_ptr<geom::Geometry> node(const geom::Geometry& geom);
 
+    static std::unique_ptr<geom::Geometry> node(const geom::Geometry& geom1, const geom::Geometry& geom2);
+
     GeometryNoder(const geom::Geometry& g);
+
+    GeometryNoder(const geom::Geometry& g1, const geom::Geometry& g2);
+
+    ~GeometryNoder();
 
     std::unique_ptr<geom::Geometry> getNoded();
 
+    void setOnlyFirstGeomEdges(bool onlyFirstGeomEdges);
+
+    void setPreserveCompoundCurves(bool preserve);
+
+    // Declare type as noncopyable
+    GeometryNoder(GeometryNoder const&) = delete;
+    GeometryNoder& operator=(GeometryNoder const&) = delete;
+
 private:
 
-    const geom::Geometry& argGeom;
+    bool isInResult(const PathString& ps) const;
 
-    SegmentString::NonConstVect lineList;
+    const geom::Geometry* argGeom1;
+    const geom::Geometry* argGeom2;
+    const bool argGeomHasCurves;
+    bool argGeomHasCompoundCurves;
+    bool onlyFirstGeomEdges;
+    bool preserveCompoundCurves;
 
-    static void extractSegmentStrings(const geom::Geometry& g,
-                                      SegmentString::NonConstVect& to);
+    std::unique_ptr<Noder> noder;
+    std::unique_ptr<algorithm::CircularArcIntersector> m_cai;
+    std::unique_ptr<ArcIntersectionAdder> m_aia;
+
+    void extractPathStrings(const geom::Geometry& g, std::vector<std::unique_ptr<PathString>>& to);
 
     Noder& getNoder();
 
-    std::unique_ptr<Noder> noder;
+    std::unique_ptr<geom::Geometry> toGeometry(std::vector<std::unique_ptr<PathString>>& noded) const;
 
-    std::unique_ptr<geom::Geometry> toGeometry(SegmentString::NonConstVect& noded);
-
-    GeometryNoder(GeometryNoder const&); /*= delete*/
-    GeometryNoder& operator=(GeometryNoder const&); /*= delete*/
 };
 
 } // namespace geos.noding
 } // namespace geos
-

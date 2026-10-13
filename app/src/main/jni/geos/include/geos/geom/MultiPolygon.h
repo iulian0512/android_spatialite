@@ -26,8 +26,6 @@
 #include <geos/geom/GeometryCollection.h> // for inheritance
 #include <geos/geom/Polygon.h> // for inheritance
 #include <geos/geom/Dimension.h> // for Dimension::DimensionType
-#include <geos/geom/MultiPolygon.h>
-#include <geos/geom/GeometryCollection.h>
 
 
 // Forward declarations
@@ -35,6 +33,7 @@ namespace geos {
 namespace geom { // geos::geom
 class Coordinate;
 class MultiPoint;
+class Polygon;
 }
 }
 
@@ -132,6 +131,10 @@ protected:
 
     MultiPolygon* cloneImpl() const override { return new MultiPolygon(*this); }
 
+    GeometryCollection* getCurvedImpl(const algorithm::LineToCurveParams&) const override;
+
+    MultiPolygon* getLinearizedImpl(const algorithm::CurveToLineParams&) const override { return cloneImpl(); }
+
     MultiPolygon* reverseImpl() const override;
 
     int
@@ -139,6 +142,11 @@ protected:
     {
         return SORTINDEX_MULTIPOLYGON;
     };
+
+    bool hasCurvedComponents() const override
+    {
+        return false;
+    }
 
 };
 

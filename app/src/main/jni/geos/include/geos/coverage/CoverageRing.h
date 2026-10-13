@@ -31,18 +31,17 @@ class Polygon;
 }
 }
 
-using geos::geom::Coordinate;
-using geos::geom::CoordinateSequence;
-using geos::geom::Geometry;
-using geos::geom::GeometryFactory;
-using geos::geom::Polygon;
-using geos::geom::LineString;
-using geos::geom::LinearRing;
-
 namespace geos {      // geos.
 namespace coverage { // geos.coverage
 
 class GEOS_DLL CoverageRing : public noding::BasicSegmentString {
+    using Coordinate = geos::geom::Coordinate;
+    using CoordinateSequence = geos::geom::CoordinateSequence;
+    using Geometry = geos::geom::Geometry;
+    using GeometryFactory = geos::geom::GeometryFactory;
+    using Polygon = geos::geom::Polygon;
+    using LineString = geos::geom::LineString;
+    using LinearRing = geos::geom::LinearRing;
 
 private:
 
@@ -79,9 +78,11 @@ private:
 
 public:
 
-    CoverageRing(CoordinateSequence* pts, bool interiorOnRight);
+    CoverageRing(const std::shared_ptr<const CoordinateSequence>& pts, bool interiorOnRight);
 
     CoverageRing(const LinearRing* ring, bool isShell);
+
+    geom::Envelope getEnvelope(std::size_t start, std::size_t end);
 
     /**
     * Tests if all rings have known status (matched or invalid)

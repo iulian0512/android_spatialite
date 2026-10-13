@@ -27,7 +27,7 @@
 // Forward declarations
 namespace geos {
 namespace geom {
-class Coordinate;
+class CoordinateXY;
 }
 namespace planargraph {
 class DirectedEdge;
@@ -101,30 +101,30 @@ public:
     }
 
     /**
-     * \brief Returns the coordinate for the node at wich this
+     * \brief Returns the coordinate for the node at which this
      * star is based
      */
-    geom::Coordinate& getCoordinate() const;
+    const geom::CoordinateXY& getCoordinate() const;
 
     /**
      * \brief Returns the DirectedEdges, in ascending order
      * by angle with the positive x-axis.
      */
-    std::vector<DirectedEdge*>& getEdges();
+    std::vector<DirectedEdge*>& getEdges() const;
 
     /**
      * \brief Returns the zero-based index of the given Edge,
      * after sorting in ascending order by angle with the
      * positive x-axis.
      */
-    int getIndex(const Edge* edge);
+    int getIndex(const Edge* edge) const;
 
     /**
      * \brief Returns the zero-based index of the given DirectedEdge,
      * after sorting in ascending order
      * by angle with the positive x-axis.
      */
-    int getIndex(const DirectedEdge* dirEdge);
+    int getIndex(const DirectedEdge* dirEdge) const;
 
     /**
      * \brief Returns the remainder when i is divided by the number of
@@ -137,7 +137,7 @@ public:
      * of the given DirectedEdge (which must be a member of this
      * DirectedEdgeStar).
      */
-    DirectedEdge* getNextEdge(DirectedEdge* dirEdge);
+    DirectedEdge* getNextEdge(DirectedEdge* dirEdge) const;
 };
 
 } // namespace geos::planargraph

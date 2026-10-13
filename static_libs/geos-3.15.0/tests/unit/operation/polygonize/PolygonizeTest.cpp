@@ -1,0 +1,485 @@
+//
+// Test Suite for geos::operation::polygonize::Polygonizer class.
+//
+// Port of junit/operation/polygonize/PolygonizeTest.java
+//
+
+// tut
+#include <tut/tut.hpp>
+// geos
+#include <geos/operation/polygonize/Polygonizer.h>
+#include <geos/geom/GeometryFactory.h>
+#include <geos/geom/Geometry.h>
+#include <geos/geom/Polygon.h>
+#include <geos/geom/Point.h>
+#include <geos/io/WKTReader.h>
+#include <geos/io/WKTWriter.h>
+// std
+#include <memory>
+#include <string>
+#include <vector>
+#include <iostream>
+
+namespace tut {
+//
+// Test Group
+//
+
+using geos::geom::Geometry;
+
+// Common data used by tests
+struct test_polygonizetest_data {
+    geos::io::WKTReader wktreader;
+    geos::io::WKTWriter wktwriter;
+
+    typedef geos::geom::Geometry::Ptr GeomPtr;
+    typedef geos::geom::Geometry Geom;
+    typedef geos::geom::Polygon Poly;
+    typedef geos::operation::polygonize::Polygonizer Polygonizer;
+
+    enum ResultType {
+        POLYGONS,
+        CUT_EDGES,
+        DANGLES,
+        INVALID_RING_LINES
+    };
+
+    test_polygonizetest_data()
+        : wktreader()
+    {
+    }
+
+    template <class T>
+    void
+    delAll(T& cnt)
+    {
+        for(typename T::iterator i = cnt.begin(), e = cnt.end(); i != e; ++i) {
+            delete *i;
+        }
+    }
+
+    template <class T>
+    void
+    printAll(std::ostream& os, T& cnt)
+    {
+        for(typename T::iterator i = cnt.begin(), e = cnt.end(); i != e; ++i) {
+            os << **i << std::endl;
+        }
+    }
+
+    template <class T>
+    bool
+    contains(T& cnt, const Geom* g)
+    {
+        for(typename T::iterator i = cnt.begin(), e = cnt.end(); i != e; ++i) {
+            const auto& element = *i;
+            if(element->equalsExact(g)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    template <class T, class S>
+    bool
+    compare(T& ex, S& ob)
+    {
+        using std::cout;
+        using std::endl;
+
+        if(ex.size() != ob.size()) {
+            cout << "Expected " << ex.size() << " polygons, obtained "
+                 << ob.size() << endl;
+            return false;
+        }
+        for(typename T::iterator i = ex.begin(), e = ex.end(); i != e; ++i) {
+            if(! contains(ob, i->get())) {
+                cout << "Expected " << wktwriter.write(i->get())
+                     << " not found" << endl;
+                return false;
+            }
+        }
+
+        return true;
+
+    }
+
+    template<class T>
+    std::vector<std::unique_ptr<Geometry>> asGeometry(T&& in) {
+        std::vector<std::unique_ptr<Geometry>> ret(in.size());
+        for (std::size_t i = 0; i < in.size(); i++) {
+            ret[i] = in[i]->clone();
+        }
+        return ret;
+    }
+
+    bool
+    doTest(const std::vector<std::string> & inputWKT, const std::vector<std::string> & expectWKT, bool onlyPolygonal, ResultType typ)
+    {
+        using std::cout;
+        using std::endl;
+
+        std::vector<std::unique_ptr<geos::geom::Geometry>> inputGeoms, expectGeoms, retGeoms;
+
+        for (const auto& wkt : inputWKT) {
+            inputGeoms.push_back(wktreader.read(wkt));
+        }
+
+        for (const auto& wkt : expectWKT) {
+            auto g = wktreader.read(wkt);
+            g->normalize();
+            expectGeoms.push_back(std::move(g));
+        }
+
+        Polygonizer polygonizer(onlyPolygonal);
+        for (const auto& p : inputGeoms) {
+            polygonizer.add(p.get());
+        }
+
+        switch(typ) {
+            case ResultType::POLYGONS: retGeoms = asGeometry(polygonizer.getSurfaces()); break;
+            case ResultType::CUT_EDGES: retGeoms = asGeometry(polygonizer.getCutEdges()); break;
+            case ResultType::DANGLES: retGeoms = asGeometry(polygonizer.getDangles()); break;
+            case ResultType::INVALID_RING_LINES: retGeoms = asGeometry(polygonizer.getInvalidRingLines()); break;
+        }
+
+        for (const auto& g : retGeoms) {
+            g->normalize();
+        }
+
+        bool ok;
+        if (typ == INVALID_RING_LINES) {
+            auto retColl = inputGeoms[0]->getFactory()->buildGeometry(std::move(retGeoms));
+            auto expectColl = inputGeoms[0]->getFactory()->buildGeometry(std::move(expectGeoms));
+            ok = retColl->equals(expectColl.get());
+        } else {
+            ok = compare(expectGeoms, retGeoms);
+        }
+
+        if(! ok) {
+            cout << "EXPECTED(" << expectGeoms.size() << "): " << std::endl;
+            printAll(cout, expectGeoms);
+            cout << "OBTAINED(" << retGeoms.size() << "): " << std::endl;
+            printAll(cout, retGeoms);
+            cout << endl;
+
+            ensure("not all expected geometries in the obtained set", 0);
+        }
+
+        return ok;
+    }
+
+};
+
+typedef test_group<test_polygonizetest_data> group;
+typedef group::object object;
+
+group test_polygonizetest_group("geos::operation::polygonize::Polygonize");
+
+// test1() in JTS
+template<>
+template<>
+void object::test<1>
+()
+{
+    std::vector<std::string> inp {
+        "LINESTRING EMPTY",
+        "LINESTRING EMPTY",
+    };
+
+    std::vector<std::string> exp{};
+
+    doTest(inp, exp, false, POLYGONS);
+}
+
+// test2() in JTS
+template<>
+template<>
+void object::test<2>
+()
+{
+    std::vector<std::string> inp{
+        "LINESTRING (100 180, 20 20, 160 20, 100 180)",
+        "LINESTRING (100 180, 80 60, 120 60, 100 180)",
+    };
+
+    std::vector<std::string> exp{
+        "POLYGON ((100 180, 120 60, 80 60, 100 180))",
+        "POLYGON ((100 180, 160 20, 20 20, 100 180), (100 180, 80 60, 120 60, 100 180))"
+    };
+
+    doTest(inp, exp, false, POLYGONS);
+}
+
+// JTS test3
+template<>
+template<>
+void object::test<3>()
+{
+    std::vector<std::string> inp{
+        "LINESTRING (0 0, 4 0)",
+        "LINESTRING (4 0, 5 3)",
+        "LINESTRING (5 3, 4 6, 6 6, 5 3)",
+        "LINESTRING (5 3, 6 0)",
+        "LINESTRING (6 0, 10 0, 5 10, 0 0)",
+        "LINESTRING (4 0, 6 0)"
+    };
+
+    std::vector<std::string> exp{
+        "POLYGON ((5 3, 4 0, 0 0, 5 10, 10 0, 6 0, 5 3), (5 3, 6 6, 4 6, 5 3))",
+        "POLYGON ((5 3, 4 6, 6 6, 5 3))",
+        "POLYGON ((4 0, 5 3, 6 0, 4 0))"
+    };
+
+    doTest(inp, exp, false, POLYGONS);
+}
+
+// JTS testPolygonal1
+template<>
+template<>
+void object::test<4>()
+{
+    std::vector<std::string> inp{
+            "LINESTRING (100 100, 100 300, 300 300, 300 100, 100 100)",
+            "LINESTRING (150 150, 150 250, 250 250, 250 150, 150 150)"
+    };
+
+    std::vector<std::string> exp{
+            "POLYGON ((100 100, 100 300, 300 300, 300 100, 100 100), (150 150, 150 250, 250 250, 250 150, 150 150))"
+    };
+
+    doTest(inp, exp, true, POLYGONS);
+}
+
+// JTS testPolygonal2
+template<>
+template<>
+void object::test<5>()
+{
+    std::vector<std::string> inp{
+            "LINESTRING (100 100, 100 0, 0 0, 0 100, 100 100)",
+            "LINESTRING (10 10, 10 30, 20 30)",
+            "LINESTRING (20 30, 30 30, 30 20)",
+            "LINESTRING (30 20, 30 10, 10 10)",
+            "LINESTRING (40 40, 40 20, 30 20)",
+            "LINESTRING (30 20, 20 20, 20 30)",
+            "LINESTRING (20 30, 20 40, 40 40)"
+    };
+
+    std::vector<std::string> exp{
+            "POLYGON ((0 0, 0 100, 100 100, 100 0, 0 0), (10 10, 30 10, 30 20, 40 20, 40 40, 20 40, 20 30, 10 30, 10 10))",
+            "POLYGON ((20 20, 20 30, 30 30, 30 20, 20 20))"
+    };
+
+    doTest(inp, exp, true, POLYGONS);
+}
+
+// JTS testPolygonal_OuterOnly_1
+template<>
+template<>
+void object::test<6>()
+{
+    // Two adjacent squares, but since we only get polygonal output
+    // we only get one of the squares back.
+    std::vector<std::string> inp{
+            "LINESTRING (10 10, 10 20, 20 20)",
+            "LINESTRING (20 20, 20 10)",
+            "LINESTRING (20 10, 10 10)",
+            "LINESTRING (20 20, 30 20, 30 10, 20 10)"
+    };
+
+    std::vector<std::string> exp{
+            "POLYGON ((20 20, 20 10, 10 10, 10 20, 20 20))"
+    };
+
+    doTest(inp, exp, true, POLYGONS);
+}
+
+// JTS testPolygonal_OuterOnly_2
+template<>
+template<>
+void object::test<7>()
+{
+    std::vector<std::string> inp{
+            "LINESTRING (100 400, 200 400, 200 300)",
+            "LINESTRING (200 300, 150 300)",
+            "LINESTRING (150 300, 100 300, 100 400)",
+            "LINESTRING (200 300, 250 300, 250 200)",
+            "LINESTRING (250 200, 200 200)",
+            "LINESTRING (200 200, 150 200, 150 300)",
+            "LINESTRING (250 200, 300 200, 300 100, 200 100, 200 200)"
+    };
+
+    std::vector<std::string> exp{
+         "POLYGON ((150 300, 100 300, 100 400, 200 400, 200 300, 150 300))",
+         "POLYGON ((200 200, 250 200, 300 200, 300 100, 200 100, 200 200))"
+    };
+
+    doTest(inp, exp, true, POLYGONS);
+}
+
+// JTS testPolygonal_OuterOnly_Checkerboard
+template<>
+template<>
+void object::test<8>()
+{
+    std::vector<std::string> inp{
+            "LINESTRING (10 20, 20 20)",
+            "LINESTRING (10 20, 10 30)",
+            "LINESTRING (20 10, 10 10, 10 20)",
+            "LINESTRING (10 30, 20 30)",
+            "LINESTRING (10 30, 10 40, 20 40)",
+            "LINESTRING (30 10, 20 10)",
+            "LINESTRING (20 20, 20 10)",
+            "LINESTRING (20 20, 30 20)",
+            "LINESTRING (20 30, 20 20)",
+            "LINESTRING (20 30, 30 30)",
+            "LINESTRING (20 40, 20 30)",
+            "LINESTRING (20 40, 30 40)",
+            "LINESTRING (40 20, 40 10, 30 10)",
+            "LINESTRING (30 20, 30 10)",
+            "LINESTRING (30 20, 40 20)",
+            "LINESTRING (30 30, 30 20)",
+            "LINESTRING (30 30, 40 30)",
+            "LINESTRING (30 40, 30 30)",
+            "LINESTRING (30 40, 40 40, 40 30)",
+            "LINESTRING (40 30, 40 20)"
+    };
+
+    std::vector<std::string> exp{
+            "POLYGON ((10 20, 20 20, 20 10, 10 10, 10 20))",
+            "POLYGON ((20 30, 10 30, 10 40, 20 40, 20 30))",
+            "POLYGON ((30 20, 20 20, 20 30, 30 30, 30 20))",
+            "POLYGON ((30 10, 30 20, 40 20, 40 10, 30 10))",
+            "POLYGON ((30 40, 40 40, 40 30, 30 30, 30 40))"
+    };
+
+    doTest(inp, exp, true, POLYGONS);
+}
+
+// testUniqueInvalidRings
+template<>
+template<>
+void object::test<9>()
+{
+    doTest(
+        {"MULTILINESTRING ((0 0, 2 0, 2 2, 0 2, 0 0), (0 0, 1 1), (2 2, 4 4, 2 4, 4 2, 2 2))"},
+        {"LINESTRING (2 2, 4 2, 2 4, 4 4, 2 2)"},
+        false,
+        INVALID_RING_LINES);
+}
+
+// testUniqueInvalidRings2
+template<>
+template<>
+void object::test<10>()
+{
+    doTest(
+        {"MULTILINESTRING ((3 8, 7 8), (7 8, 7 3), (7 3, 3 3), (3 3, 3 8), (7 3, 9 6, 9 5, 7 8), (3 8, 1 5), (1 5, 1 6), (1 6, 3 3))"},
+        {"MULTILINESTRING ((3 8, 3 3, 1 6, 1 5, 3 8), (7 3, 7 8, 9 5, 9 6, 7 3))"},
+        false,
+        INVALID_RING_LINES);
+}
+
+template<>
+template<>
+void object::test<11>()
+{
+    set_test_name("Z/M preserved");
+
+    doTest(
+        {"GEOMETRYCOLLECTION ("
+            "LINESTRING ZM (10 0 3 4, 0 0 0 0, 0 10 1 2, 10 10 2 3),"
+            "LINESTRING ZM (10 10 2 3, 10 0 3 4),"
+            "LINESTRING M (10 0 8, 20 0 9, 10 10 11))"
+        },
+        {
+          "POLYGON ZM ((0 0 0 0, 0 10 1 2, 10 10 2 3, 10 0 3 4, 0 0 0 0))",
+          "POLYGON ZM ((10 0 3 4, 10 10 2 3, 20 0 NaN 9, 10 0 3 4))"
+        },
+        false,
+        POLYGONS);
+}
+
+template<>
+template<>
+void object::test<12>()
+{
+    set_test_name("curved inputs");
+
+    std::vector<std::string> input{
+        "MULTICURVE ((10 0, 0 0, 0 10, 10 10), CIRCULARSTRING (10 10, 5 5, 10 0), COMPOUNDCURVE ((10 10, 20 10, 20 0, 10 0), CIRCULARSTRING (10 0, 15 5, 10 10)))"
+    };
+
+    std::vector<std::string> expected{
+        "CURVEPOLYGON (COMPOUNDCURVE ((0 0, 0 10, 10 10), CIRCULARSTRING (10 10, 5 5, 10 0), (10 0, 0 0)))",
+        "CURVEPOLYGON (CIRCULARSTRING (10 0, 5 5, 10 10, 15 5, 10 0))",
+        "CURVEPOLYGON (COMPOUNDCURVE (CIRCULARSTRING (10 0, 15 5, 10 10), (10 10, 20 10, 20 0, 10 0)))"
+    };
+
+    doTest(input, expected, false, POLYGONS);
+
+    // remove the hole
+    expected.erase(expected.begin() + 1);
+    doTest(input, expected, true, POLYGONS);
+}
+
+template<>
+template<>
+void object::test<13>()
+{
+    set_test_name("curved dangle");
+
+    doTest({"LINESTRING (0 0, 1 0, 1 1, 0 0)", "CIRCULARSTRING (1 1, 2 2, 3 1)"},
+           {"CIRCULARSTRING (1 1, 2 2, 3 1)"},
+           false,
+           DANGLES);
+}
+
+template<>
+template<>
+void object::test<14>()
+{
+    set_test_name("curved inputs requiring PIP test");
+
+    std::vector<std::string> input{
+        "COMPOUNDCURVE(CIRCULARSTRING (-4 -3, 0 5, 4 -3), (4 -3, -4 -3))",
+        "COMPOUNDCURVE((-4 -3, -1 0), CIRCULARSTRING (-1 0, 0 1, 1 0), (1 0, -4 -3))"
+    };
+
+    std::vector<std::string> expected{
+        "CURVEPOLYGON (COMPOUNDCURVE (CIRCULARSTRING (-4 -3, 0 5, 4 -3), (4 -3, -4 -3)), COMPOUNDCURVE ((-4 -3, 1 0), CIRCULARSTRING (1 0, 0 1, -1 0), (-1 0, -4 -3)))",
+        "CURVEPOLYGON (COMPOUNDCURVE ((-4 -3, -1 0), CIRCULARSTRING (-1 0, 0 1, 1 0), (1 0, -4 -3)))"
+    };
+
+    doTest(input, expected, false, POLYGONS);
+
+    expected.erase(expected.begin() + 1);
+
+    doTest(input, expected, true, POLYGONS);
+}
+
+template<>
+template<>
+void object::test<15>()
+{
+    set_test_name("mixed dimension inputs");
+
+    std::vector<std::string> input{
+        "LINESTRING (0 0, 1 0)",
+        "LINESTRING Z (1 0 6, 2 2 9)",
+        "LINESTRING M (2 2 8, 0 0 7)"};
+
+    std::vector<std::string> expected{
+        "POLYGON ZM ((0 0 NaN 7, 1 0 6 NaN, 2 2 9 8, 0 0 NaN 7))",
+    };
+
+    doTest(input, expected, false, POLYGONS);
+
+    std::reverse(input.begin(), input.end());
+
+    doTest(input, expected, false, POLYGONS);
+}
+
+} // namespace tut
+

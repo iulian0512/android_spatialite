@@ -64,13 +64,25 @@ public class SpatialiteTest {
     @SmallTest
     @Test
     public void testVersion_Proj4() {
-        assertEquals("Rel. 9.2.1, June 1st, 2023", getString("SELECT proj4_version()"));
+        assertEquals("Rel. 9.9.0, September 15th, 2026", getString("SELECT proj4_version()"));
     }
 
     @SmallTest
     @Test
     public void testVersion_GEOS() {
-        assertEquals("3.12.0-CAPI-1.18.0", getString("SELECT geos_version()"));
+        assertEquals("3.15.0-CAPI-1.21.0", getString("SELECT geos_version()"));
+    }
+
+    @SmallTest
+    @Test
+    public void testVersion_SQLite() {
+        assertEquals("3.54.0", getString("SELECT sqlite_version()"));
+    }
+
+    @SmallTest
+    @Test
+    public void testHasRemoveAccents() {
+        assertEquals("tara maine sarpe", getString("SELECT remove_accents('țară mâine șarpe')"));
     }
 
     @SmallTest

@@ -72,7 +72,7 @@ namespace polygonize { // geos::operation::polygonize
  * - <b>Invalid Ring Lines</b> - edges which form rings which are invalid
  *   (e.g. the component lines contain a self-intersection)
  *
- *   The Polygonizer constructor allows extracting only polygons which form a
+ *   The Polygonizer constructor allows extracting only (Curve)Polygons which form a
  *   valid polygonal result.
  *   The set of extracted polygons is guaranteed to be edge-disjoint.
  *   This is useful when it is known that the input lines form a valid
@@ -84,23 +84,23 @@ private:
     /**
      * Add every linear element in a geometry into the polygonizer graph.
      */
-    class GEOS_DLL LineStringAdder: public geom::GeometryComponentFilter {
+    class GEOS_DLL SimpleCurveAdder: public geom::GeometryComponentFilter {
     public:
         Polygonizer* pol;
-        explicit LineStringAdder(Polygonizer* p);
+        explicit SimpleCurveAdder(Polygonizer* p);
         //void filter_rw(geom::Geometry *g);
         void filter_ro(const geom::Geometry* g) override;
     };
 
     // default factory
-    LineStringAdder lineStringAdder;
+    SimpleCurveAdder lineStringAdder;
 
     /**
-     * Add a linestring to the graph of polygon edges.
+     * Add a curve to the graph of polygon edges.
      *
-     * @param line the {@link LineString} to add
+     * @param line the {@link SimpleCurve} to add
      */
-    void add(const geom::LineString* line);
+    void add(const geom::SimpleCurve* line);
 
     /**
      * Perform the polygonization, if it has not already been carried out.
@@ -116,11 +116,11 @@ private:
      * discarding rings which correspond to outer rings and hence contain
      * duplicate linework.
      */
-    std::vector<std::unique_ptr<geom::LineString>> extractInvalidLines(
-            std::vector<EdgeRing*>& invalidRings);
+    static std::vector<std::unique_ptr<geom::Curve> > extractInvalidLines(
+        std::vector<EdgeRing *> &invalidRings);
 
     /**
-     * Tests if a invalid ring should be included in
+     * Tests if an invalid ring should be included in
      * the list of reported invalid rings.
      *
      * Rings are included only if they contain
@@ -134,7 +134,7 @@ private:
      * @param invalidRing the ring to test
      * @return true if the ring should be included
      */
-    bool isIncludedInvalid(EdgeRing* invalidRing);
+    static bool isIncludedInvalid(const EdgeRing* invalidRing);
 
     void findShellsAndHoles(const std::vector<EdgeRing*>& edgeRingList);
 
@@ -142,7 +142,7 @@ private:
 
     static void findOuterShells(std::vector<EdgeRing*>& shellList);
 
-    static std::vector<std::unique_ptr<geom::Polygon>> extractPolygons(std::vector<EdgeRing*> & shellList, bool includeAll);
+    static std::vector<std::unique_ptr<geom::Surface>> extractPolygons(std::vector<EdgeRing*> & shellList, bool includeAll);
 
     bool extractOnlyPolygonal;
     bool computed;
@@ -152,13 +152,13 @@ protected:
     std::unique_ptr<PolygonizeGraph> graph;
 
     // initialize with empty collections, in case nothing is computed
-    std::vector<const geom::LineString*> dangles;
-    std::vector<const geom::LineString*> cutEdges;
-    std::vector<std::unique_ptr<geom::LineString>> invalidRingLines;
+    std::vector<const geom::SimpleCurve*> dangles;
+    std::vector<const geom::SimpleCurve*> cutEdges;
+    std::vector<std::unique_ptr<geom::Curve>> invalidRingLines;
 
     std::vector<EdgeRing*> holeList;
     std::vector<EdgeRing*> shellList;
-    std::vector<std::unique_ptr<geom::Polygon>> polyList;
+    std::vector<std::unique_ptr<geom::Surface>> polyList;
 
 public:
 
@@ -200,35 +200,37 @@ public:
      *
      * @param g a Geometry with linework to be polygonized
      */
-    void add(geom::Geometry* g);
-
-    /**
-     * Add a geometry to the linework to be polygonized.
-     * May be called multiple times.
-     * Any dimension of Geometry may be added;
-     * the constituent linework will be extracted and used
-     *
-     * @param g a Geometry with linework to be polygonized
-     */
     void add(const geom::Geometry* g);
 
     /** \brief
-     * Gets the list of polygons formed by the polygonization.
+     * Gets the list of Polygons formed by the polygonization.
+     * Any CurvePolygons formed will be omitted. This function
+     * is provided for backward-compatibility with callers
+     * expecting a return type of Polygon.
      *
-     * Ownership of vector is transferred to caller, subsequent
-     * calls will return NULL.
+     * Ownership of geometries is transferred to caller. Subsequent
+     * calls will return an empty vector.
      * @return a collection of Polygons
      */
     std::vector<std::unique_ptr<geom::Polygon>> getPolygons();
 
     /** \brief
+     * Gets the list of (Curve)Polygons formed by the polygonization.
+     *
+     * Ownership of geometries is transferred to caller. Subsequent
+     * calls will return an empty vector.
+     * @return a collection of Polygons
+     */
+    std::vector<std::unique_ptr<geom::Surface>> getSurfaces();
+
+    /** \brief
      * Get the list of dangling lines found during polygonization.
      *
      * @return a (possibly empty) collection of pointers to
-     *         the input LineStrings which are dangles.
+     *         the input LineStrings or CircularStrings which are dangles.
      *
      */
-    const std::vector<const geom::LineString*>& getDangles();
+    const std::vector<const geom::SimpleCurve*>& getDangles();
 
     bool hasDangles();
 
@@ -236,10 +238,10 @@ public:
      * Get the list of cut edges found during polygonization.
      *
      * @return a (possibly empty) collection of pointers to
-     *         the input LineStrings which are cut edges.
+     *         the input LineStrings or CircularStrings which are cut edges.
      *
      */
-    const std::vector<const geom::LineString*>& getCutEdges();
+    const std::vector<const geom::SimpleCurve*>& getCutEdges();
 
     bool hasCutEdges();
 
@@ -248,17 +250,17 @@ public:
      * polygonization.
      *
      * @return a (possibly empty) collection of pointers to
-     *         the input LineStrings which form invalid rings
+     *         the invalid rings
      *
      */
-    const std::vector<std::unique_ptr<geom::LineString>>& getInvalidRingLines();
+    const std::vector<std::unique_ptr<geom::Curve>>& getInvalidRingLines();
 
     bool hasInvalidRingLines();
 
     bool allInputsFormPolygons();
 
-// This seems to be needed by    GCC 2.95.4
-    friend class Polygonizer::LineStringAdder;
+// This seems to be needed by GCC 2.95.4
+    friend class Polygonizer::SimpleCurveAdder;
 };
 
 } // namespace geos::operation::polygonize

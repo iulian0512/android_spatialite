@@ -1,0 +1,50 @@
+/**********************************************************************
+ *
+ * GEOS - Geometry Engine Open Source
+ * http://geos.osgeo.org
+ *
+ * Copyright (C) 2006      Refractions Research Inc.
+ * Copyright (C) 2001-2002 Vivid Solutions Inc.
+ *
+ * This is free software; you can redistribute and/or modify it under
+ * the terms of the GNU Lesser General Public Licence as published
+ * by the Free Software Foundation.
+ * See the COPYING file for more information.
+ *
+ **********************************************************************
+ *
+ * Last port: geomgraph/EdgeNodingValidator.java rev. 1.6 (JTS-1.10)
+ *
+ **********************************************************************/
+
+#include <vector>
+
+#include <geos/geomgraph/EdgeNodingValidator.h>
+#include <geos/geomgraph/Edge.h>
+#include <geos/noding/BasicSegmentString.h>
+#include <geos/geom/CoordinateSequence.h>
+
+using namespace geos::noding;
+using namespace geos::geom;
+
+namespace geos {
+namespace geomgraph { // geos.geomgraph
+
+const std::vector<std::unique_ptr<SegmentString>>&
+EdgeNodingValidator::toSegmentStrings(std::vector<Edge*>& edges)
+{
+    // convert Edges to SegmentStrings
+    for(std::size_t i = 0, n = edges.size(); i < n; ++i) {
+        Edge* e = edges[i];
+        auto cs = e->getCoordinates()->clone();
+        segStr.push_back(std::make_unique<BasicSegmentString>(std::move(cs), e));
+    }
+    return segStr;
+}
+
+EdgeNodingValidator::~EdgeNodingValidator()
+{
+}
+
+} // namespace geos.geomgraph
+} // namespace geos

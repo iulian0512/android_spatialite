@@ -39,8 +39,6 @@ namespace geos {      // geos.
 namespace operation { // geos.operation
 namespace overlayng { // geos.operation.overlayng
 
-using namespace geos::geom;
-
 /**
  * A planar graph of {@link OverlayEdge}, representing
  * the topology resulting from an overlay operation.
@@ -52,18 +50,19 @@ using namespace geos::geom;
  *
  */
 class GEOS_DLL OverlayGraph {
+    using Coordinate = geos::geom::Coordinate;
+    using CoordinateXY = geos::geom::CoordinateXY;
+    using CoordinateSequence = geos::geom::CoordinateSequence;
 
 private:
 
     // Members
-    std::unordered_map<Coordinate, OverlayEdge*, geom::Coordinate::HashCode> nodeMap;
+    std::unordered_map<CoordinateXY, OverlayEdge*, geom::Coordinate::HashCode> nodeMap;
     std::vector<OverlayEdge*> edges;
 
     // Locally store the OverlayEdge and OverlayLabel
     std::deque<OverlayEdge> ovEdgeQue;
     std::deque<OverlayLabel> ovLabelQue;
-
-    std::vector<std::unique_ptr<const geom::CoordinateSequence>> csQue;
 
     // Methods
 
@@ -71,13 +70,13 @@ private:
     * Create and add HalfEdge pairs to map and vector containers,
     * using local std::deque storage for objects.
     */
-    OverlayEdge* createEdgePair(const CoordinateSequence* pts, OverlayLabel* lbl);
+    OverlayEdge* createEdgePair(const std::shared_ptr<const CoordinateSequence> &pts, OverlayLabel *lbl, bool isCurved);
 
     /**
     * Create a single OverlayEdge in local std::deque storage, and return the
     * pointer.
     */
-    OverlayEdge* createOverlayEdge(const CoordinateSequence* pts, OverlayLabel* lbl, bool direction);
+    OverlayEdge* createOverlayEdge(const std::shared_ptr<const CoordinateSequence> &pts, OverlayLabel *lbl, bool direction, bool isCurved);
 
     void insert(OverlayEdge* e);
 

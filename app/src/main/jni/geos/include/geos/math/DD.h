@@ -93,6 +93,7 @@
 #pragma once
 
 #include <cmath>
+#include <geos/export.h>
 
 namespace geos {
 namespace math { // geos.math
@@ -113,6 +114,7 @@ class GEOS_DLL DD {
         int signum() const;
         DD rint() const;
 
+        void setNaN();
 
     public:
         DD(double p_hi, double p_lo) : hi(p_hi), lo(p_lo) {};
@@ -157,6 +159,7 @@ class GEOS_DLL DD {
         friend GEOS_DLL DD operator* (const DD &lhs, double rhs);
         friend GEOS_DLL DD operator/ (const DD &lhs, const DD &rhs);
         friend GEOS_DLL DD operator/ (const DD &lhs, double rhs);
+        friend GEOS_DLL DD operator- (const DD& x);
 
         static DD determinant(const DD &x1, const DD &y1, const DD &x2, const DD &y2);
         static DD determinant(double x1, double y1, double x2, double y2);
@@ -164,6 +167,7 @@ class GEOS_DLL DD {
         static DD pow(const DD &d, int exp);
         static DD trunc(const DD &d);
 
+        bool isInf() const;
         bool isNaN() const;
         bool isNegative() const;
         bool isPositive() const;

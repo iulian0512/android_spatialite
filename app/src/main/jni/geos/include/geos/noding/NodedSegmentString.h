@@ -62,7 +62,7 @@ public:
     template <class II>
     static void
     getNodedSubstrings(II from, II too_far,
-                       SegmentString::NonConstVect* resultEdgelist)
+                       std::vector<std::unique_ptr<SegmentString>>& resultEdgelist)
     {
         for(II i = from; i != too_far; ++i) {
             NodedSegmentString* nss = dynamic_cast<NodedSegmentString*>(*i);
@@ -73,18 +73,17 @@ public:
 
     template <class C>
     static void
-    getNodedSubstrings(C* segStrings,
-                       SegmentString::NonConstVect* resultEdgelist)
+    getNodedSubstrings(const C& segStrings,
+                       std::vector<std::unique_ptr<SegmentString>>& resultEdgelist)
     {
-        getNodedSubstrings(segStrings->begin(), segStrings->end(), resultEdgelist);
+        getNodedSubstrings(segStrings.begin(), segStrings.end(), resultEdgelist);
     }
 
     static void getNodedSubstrings(const SegmentString::NonConstVect& segStrings,
-                                   SegmentString::NonConstVect* resultEdgeList);
+                                   std::vector<std::unique_ptr<SegmentString>>& resultEdgeList);
 
-    /// Returns allocated object
-    static SegmentString::NonConstVect* getNodedSubstrings(
-        const SegmentString::NonConstVect& segStrings);
+    static std::vector<std::unique_ptr<SegmentString>> getNodedSubstrings(
+        const std::vector<SegmentString*>& segStrings);
 
     std::unique_ptr<geom::CoordinateSequence> getNodedCoordinates();
 
@@ -103,28 +102,24 @@ public:
      * @param newContext the user-defined data of this segment string
      *                   (may be null)
      */
-    NodedSegmentString(geom::CoordinateSequence* newPts, bool constructZ, bool constructM, const void* newContext)
+    NodedSegmentString(const std::shared_ptr<const geom::CoordinateSequence>& newPts, bool constructZ, bool constructM, const void* newContext)
         : NodableSegmentString(newContext, newPts)
         , nodeList(*this, constructZ, constructM)
     {}
 
     NodedSegmentString(SegmentString* ss, bool constructZ, bool constructM)
-        : NodableSegmentString(ss->getData(), ss->getCoordinates()->clone().release())
+        : NodableSegmentString(ss->getData(), ss->getCoordinates())
         , nodeList(*this, constructZ, constructM)
     {}
 
     ~NodedSegmentString() override {
-        delete seq;
     }
 
     SegmentNodeList& getNodeList();
 
     const SegmentNodeList& getNodeList() const;
 
-    std::unique_ptr<geom::CoordinateSequence> releaseCoordinates();
-
     std::ostream& print(std::ostream& os) const override;
-
 
     /** \brief
      * Add {@link SegmentNode}s for one or both

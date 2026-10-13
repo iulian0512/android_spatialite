@@ -21,9 +21,11 @@
 #pragma once
 
 #include <geos/export.h>
+#include <geos/algorithm/Length.h>
 #include <geos/geom/Coordinate.h>
 #include <geos/geom/CoordinateSequence.h>
 #include <geos/noding/Octant.h>
+#include <geos/noding/PathString.h>
 
 #include <vector>
 
@@ -44,7 +46,7 @@ namespace noding { // geos.noding
  * SegmentStrings can carry a context object, which is useful
  * for preserving topological or parentage information.
  */
-class GEOS_DLL SegmentString {
+class GEOS_DLL SegmentString : public PathString {
 public:
     typedef std::vector<const SegmentString*> ConstVect;
     typedef std::vector<SegmentString*> NonConstVect;
@@ -57,39 +59,20 @@ public:
     /// @param newContext the context associated to this SegmentString
     /// @param newSeq coordinates of this SegmentString
     ///
-    SegmentString(const void* newContext, geom::CoordinateSequence* newSeq)
-        :
-        seq(newSeq),
-        context(newContext)
+    SegmentString(const void* newContext, const std::shared_ptr<const geom::CoordinateSequence>& newSeq)
+        : PathString(newContext),
+        seq(newSeq)
     {}
 
-    virtual
-    ~SegmentString() {}
-
-    /** \brief
-     * Gets the user-defined data for this segment string.
-     *
-     * @return the user-defined data
-     */
-    const void*
-    getData() const
-    {
-        return context;
-    }
-
-    /** \brief
-     * Sets the user-defined data for this segment string.
-     *
-     * @param data an Object containing user-defined data
-     */
-    void
-    setData(const void* data)
-    {
-        context = data;
-    }
+    ~SegmentString() override = default;
 
     std::size_t size() const {
+        // FIXME: Remove this method, or make consistent with getSize
         return seq->size();
+    }
+
+    std::size_t getSize() const override{
+        return seq->size() - 1;
     }
 
     template<typename CoordType = geom::Coordinate>
@@ -97,18 +80,19 @@ public:
         return seq->getAt<CoordType>(i);
     }
 
+    double getLength() const override {
+        return algorithm::Length::ofLine(seq.get());
+    }
+
     /// \brief
     /// Return a pointer to the CoordinateSequence associated
     /// with this SegmentString.
-    ///
-    /// @note The CoordinateSequence is owned by this SegmentString!
-    ///
-    const geom::CoordinateSequence* getCoordinates() const {
+    const std::shared_ptr<const geom::CoordinateSequence>& getCoordinates() const override {
         return seq;
     }
 
-    geom::CoordinateSequence* getCoordinates() {
-        return seq;
+    void setCoordinates(const std::shared_ptr<const geom::CoordinateSequence>& newSeq) {
+        seq = newSeq;
     }
 
     /** \brief
@@ -131,18 +115,56 @@ public:
         return ss.getSegmentOctant(index);
     }
 
+    /**
+     * Gets the next vertex in a ring from a vertex index.
+     *
+     * @param index the vertex index
+     * @return the next vertex in the ring
+     *
+     * @see isClosed
+     */
+    const geom::CoordinateXY& nextInRing(std::size_t index) const
+    {
+        std::size_t nextIndex = index + 1;
+        if (nextIndex > size() - 1) {
+            nextIndex = 1;
+        }
+        return getCoordinate(nextIndex);
+    }
+
+    /**
+     * Gets the previous vertex in a ring from a vertex index.
+     *
+     * @param index the vertex index
+     * @return the previous vertex in the ring
+     *
+     * @see isClosed
+     */
+    const geom::CoordinateXY& prevInRing(std::size_t index) const
+    {
+        std::size_t prevIndex;
+        if (index == 0)
+            prevIndex = size() - 2;
+        else
+            prevIndex = index - 1;
+        return getCoordinate( prevIndex );
+    }
+
+
     bool isClosed() const {
         return seq->front<geom::CoordinateXY>().equals(seq->back<geom::CoordinateXY>());
     }
 
+    static std::vector<SegmentString*> toRawPointerVector(const std::vector<std::unique_ptr<SegmentString>> & segStrings);
+
+    static std::vector<SegmentString*> toRawPointerVector(const std::vector<std::unique_ptr<PathString>> & segStrings);
+
     virtual std::ostream& print(std::ostream& os) const;
 
 protected:
-    geom::CoordinateSequence* seq;
+    std::shared_ptr<const geom::CoordinateSequence> seq;
 
 private:
-    const void* context;
-
     static int safeOctant(const geom::CoordinateXY& p0, const geom::CoordinateXY& p1)
     {
         if(p0.equals2D(p1)) {
